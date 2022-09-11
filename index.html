@@ -1,0 +1,1020 @@
+<!--Copyright 2022 Owen G, and the rest of the bad burrito team. All Rights Reserved.-->
+<!DOCTYPE html>
+<html>
+    <head>
+
+    </head>
+    <body>
+
+        <canvas id="cnvs" width="800" height="608" style="display:none;"></canvas>
+        <script src="phaser.js"></script>
+        <script>
+            //game scenes
+            var gameScene = new Phaser.Scene("game");
+            gameScene.preload = preload;
+            gameScene.create = create;
+            gameScene.update = update;
+
+            var titleScene = new Phaser.Scene("title");
+            /*
+            titleScene.preload = titlePreload;
+            titleScene.create = titleCreate;
+            titleScene.update = titleUpdate;*/
+            //functions are specified further down.
+
+            var config = {
+                type: Phaser.WEBGL,
+                width: 800,
+                height: 608,//for the odd grid size
+                backgroundColor: '#ADD8E6',
+                pixelArt: true,
+                canvas: document.getElementById('cnvs'),
+                physics: {
+                    default: 'arcade',
+                    tileBias: 64,
+                    arcade: {
+                        gravity: { y: 0 },//to let us set this individualy
+                        debug: true
+                    }
+                },
+                
+            };
+
+            var game = new Phaser.Game(config);
+            
+            function preload ()
+            {
+                var percentage = this.add.text(400, 300, '0%', { fontSize: '32px', fill: 'white' });
+                this.load.on('progress', function(value) {
+                    percentage.setText(Math.round(value*100) + '%');
+                    
+                });
+                this.load.on('complete', function () {
+                    percentage.destroy();
+                });
+                //music files
+                this.load.audio('mainMusic', ['assets/UpTown.mp3']);
+                this.load.audio('burritoJump', ['assets/burritojump.wav']);
+                //drill boss images below
+                this.load.image('rock', 'assets/rock.png');
+
+                this.load.image('drill1', 'assets/boss1__1.png');
+                this.load.image('drill2', 'assets/boss1__2.png');
+                this.load.image('drill3', 'assets/boss1__3.png');
+                this.load.image('drill4', 'assets/boss1__4.png');
+                this.load.image('drill5', 'assets/boss1__5.png');
+                this.load.image('drill6', 'assets/boss1__6.png');
+                this.load.image('drill7', 'assets/boss1__7.png');
+                this.load.image('drill8', 'assets/boss1__8.png');
+                this.load.image('drill9', 'assets/boss1__9.png');
+
+                this.load.image('down1', 'assets/down1.png');
+                this.load.image('down2', 'assets/down2.png');
+                this.load.image('down3', 'assets/down3.png');
+                this.load.image('down4', 'assets/down4.png');
+                this.load.image('down5', 'assets/down5.png');
+                this.load.image('down6', 'assets/down6.png');
+                this.load.image('down7', 'assets/down7.png');
+                this.load.image('down8', 'assets/down8.png');
+                this.load.image('down9', 'assets/down9.png');
+                this.load.image('down10', 'assets/down10.png');
+                this.load.image('down11', 'assets/down11.png');
+                this.load.image('down12', 'assets/down12.png');
+                this.load.image('down13', 'assets/down13.png');
+                this.load.image('down14', 'assets/down14.png');
+
+                this.load.image('up1', 'assets/up1.png');
+                this.load.image('up2', 'assets/up2.png');
+                this.load.image('up3', 'assets/up3.png');
+                this.load.image('up4', 'assets/up4.png');
+                this.load.image('up5', 'assets/up5.png');
+                //burrito images below
+                
+                this.load.image('burrito1', 'assets/burrito__1.png');
+                this.load.image('burrito2', 'assets/burrito__2.png');
+                this.load.image('burrito3', 'assets/burrito__3.png');
+                this.load.image('burrito4', 'assets/burrito__4.png');
+                this.load.image('burrito5', 'assets/burrito__5.png');
+                this.load.image('burrito6', 'assets/burrito__6.png');
+                this.load.image('burrito7', 'assets/burrito__7.png');
+                this.load.image('burrito8', 'assets/burrito__8.png');
+
+                //terrain images
+                this.load.image('grass', 'assets/Dirt.png');
+                this.load.image('dirt', 'assets/underground.png');
+                this.load.image('tree1', 'assets/tree 1.png');
+
+                this.load.image('landscape', 'assets/newLand.png');
+                //this.load.image
+
+                //sky images
+                this.load.image('sky1', 'assets/sky.png');
+
+                //lava images
+                this.load.image('lava1', 'assets/lavaTiles__1.png');
+                this.load.image('lava2', 'assets/lavaTiles__2.png');
+                this.load.image('lava3', 'assets/lavaTiles__3.png');
+                this.load.image('lava4', 'assets/lavaTiles__4.png');
+                this.load.image('lava5', 'assets/lavaTiles__5.png');
+                this.load.image('lava6', 'assets/lavaTiles__6.png');
+                this.load.image('lava7', 'assets/lavaTiles__7.png');
+                this.load.image('lava8', 'assets/lavaTiles__8.png');
+
+                //player images
+                this.load.image('left1', 'assets/L1.png');
+                this.load.image('left2', 'assets/L2.png');
+                this.load.image('right1', 'assets/R1.png');
+                this.load.image('right2', 'assets/R2.png');
+                this.load.image('still', 'assets/Stanstill.png');
+
+                //coin images
+                this.load.image('coin1', 'assets/coin__1.png');
+                this.load.image('coin2', 'assets/coin__2.png');
+                this.load.image('coin3', 'assets/coin__3.png');
+                this.load.image('coin4', 'assets/coin__4.png');
+
+                //images for stlagmites (spelling is irrelevent haha).
+                this.load.image('mite1', 'assets/stlagmite1.png');
+                this.load.image('mite2', 'assets/stlagmite2.png');
+                this.load.image('mite3', 'assets/stlagmite3.png');
+                this.load.image('mite4', 'assets/stlagmite4.png');
+                this.load.image('mite5', 'assets/stlagmite5.png');
+
+
+            }
+            //global game functions and variables.
+            function random (one, two) {
+                return(Math.round(Math.random()*(two-one))+one);
+            }
+            //deaths
+            function death(/*player, spike*/) {
+                taco.body.x = 100;
+                taco.body.y = 300;
+                taco.body.velocity.x = 0;
+                taco.body.velocity.y = 0;
+                returnSprites();
+                resumeSprites();
+                camera.startFollow(taco, false, 0.1, 0.1);
+                drillers.children.iterate(function(child) {
+                    child.started = false;
+                });
+            }
+            //creating entities
+            function newEntity(type, x, y) {
+                
+                if (type == 4) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 4;
+                    var coin = coins.create(x+16, y+16, 'coin1').setScale(2)//.refreshBody(); this causes a bug i think?
+                    coin.originX = 0.5;
+                    coin.originY = 0.5;
+                    coin.anims.play('coin');
+                    coin.body.gravity.y = 0;
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                } 
+                if (type == 5) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 5;
+                    var burrito = burritos.create(x+16, y+32, 'burrito1').setGravity(0, 1500);//32 because it is two "blocks" tall.
+                    burrito.anims.play('burritoAnimation');
+                    burrito.setScale(2)//.refreshBody(); apparently this causes bugs???
+                    burrito.body.bounce.y = 1;
+                    burrito.body.bounce.x = 1;
+                    burrito.body.velocity.x = 0;//normally 200 but doesn't need to move yet.
+                    burrito.body.allowGravity = false;
+                    //look above :)
+                    burrito.initX = x;
+                    burrito.initY = y;
+                    burrito.initXV = 200;
+                    burrito.initYV = 0;
+                    
+                }
+                if (type == 6) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 6;
+                    var driller = drillers.create(x+16+8, y+32+16, 'drill1').setGravity(0, 1000);//32 because it is two "blocks" tall.
+                    driller.anims.play('drillingAnimation');
+                    driller.setScale(3)//.refreshBody(); apparently this causes bugs???
+                    //driller.body.bounce.y = 1;
+                    driller.body.bounce.x = 1;
+                    driller.body.allowGravity = false;
+                    //look above :)
+                    driller.initX = x;
+                    driller.initY = y;
+                    driller.initXV = 200;
+                    driller.initYV = 0;
+                    driller.started = false;
+                    driller.que = 0;
+                    
+                }
+                if (type == 7) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 7;
+                    var tree = trees.create(x+76, y+118, 'tree1');
+                    tree.setScale(1.5)//.refreshBody(); apparently this causes bugs???
+                    
+                    tree.body.allowGravity = false;
+                    //look above :)
+                    tree.initX = x;
+                    tree.initY = y;
+                    tree.initXV = 0;
+                    tree.initYV = 0;
+                }
+                if (type == 8) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 8;//because this isn't going to be perfectly centered, we don't add anything to the y
+                    var mite = mites.create(x+16, y+0, 'mite1')
+                    mite.setScale(3)//.refreshBody(); apparently this causes bugs???
+                    mite.anims.play('growingMite');
+                    mite.originY = 0;
+                    //mite.body.allowGravity = false;
+                    //look above :)
+                    mite.initX = x;
+                    mite.initY = y;
+                    mite.initXV = 0;
+                    mite.initYV = 0;
+                }
+                if (type == 9) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 9;
+                    var rock = rocks.create(x+16, y+0, 'rock').setGravity(0, 500);//throwing should be a bit more moonlike.
+                    rock.setScale(2);
+                    rock.bounce = 0.3;
+                    //look above :)
+                    rock.initX = x;
+                    rock.initY = y;
+                    rock.initXV = 0;
+                    rock.initYV = 0;
+                }
+            }
+            function returnSprites() {
+                camera.stopFollow();
+                camera.startFollow(taco, false, 0.1, 0.1);
+                coins.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('coin');
+                    child.enableBody(true, child.body.x, child.body.y, true, true);
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.originX = 0.5;
+                    child.originY = 0.5;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                
+                });
+                burritos.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('burritoAnimation');
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                            
+                });
+                drillers.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('drillingAnimation');
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.originX = 0.5;
+                    child.originY = 0.5;
+                    child.body.allowGravity = false;
+                });
+                
+            }
+            function resumeSprites() {
+                
+                coins.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('coin');
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                    
+
+                
+                });
+                burritos.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                            
+                });
+                drillers.children.iterate(function(child) {/*
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;*/
+
+                    child.body.gravity.y = 1000;
+                    child.que = 0;
+                });
+                mites.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                    child.anims.stop();
+                    child.anims.play('growingMite');
+                            
+                });
+                
+            }
+
+            function updateColliders() {
+                //player update collider
+                taco.body.offset.x =  0;
+                taco.body.offset.y = 0;
+                taco.body.width = taco.width*taco._scaleX;
+                taco.body.height = taco.height*taco._scaleY;
+                //coins update collider
+                coins.children.iterate(function(child) {
+                    child.body.offset.x = 0;
+                    child.body.offset.y = 0;
+                    child.body.width = child.width*child._scaleX;
+                    child.body.height = child.height*child._scaleY;
+                });
+                //mites update collider
+                mites.children.iterate(function(child) {
+                    child.body.offset.x = 0;
+                    child.body.offset.y = 0;
+                    child.body.width = child.width*child._scaleX;
+                    child.body.height = child.height*child._scaleY;
+                });
+                //burrito update collider *commented because changing collider effects bounce badly*
+                /*
+                burritos.children.iterate(function(child) {
+                    child.body.offset.x = 0;
+                    child.body.offset.y = 0;
+                    child.body.width = child.width*child._scaleX;
+                    child.body.height = child.height*child._scaleY;
+                });*/
+                //drill boss 
+                /*
+                drillers.children.iterate(function(child) {
+                    child.body.offset.x = 0;
+                    child.body.offset.y = 0;
+                    child.body.width = child.width*child._scaleX;
+                    child.body.height = child.height*child._scaleY;
+                });*/
+            }
+            //this variable is used later for the level editing
+            var typeEdit = 0;
+            var creative = false;
+            function create ()
+            {
+                //we don't want this to be shown yet
+                this.physics.world.drawDebug = false;
+                this.cameras.main.roundPixels = true;
+                camera = this.cameras.main;
+                //music
+                var mainMusic = this.sound.add('mainMusic');
+                burritoJump = this.sound.add('burritoJump');
+                
+                mainMusic.loop = true;
+                mainMusic.play();
+                this.graphics = this.add.graphics();
+                //the variables of the game.
+                tacoVelocityX = 0;
+                select = 0;
+
+                //the background
+                //game.stage.backgroundColor = "#4488AA";
+                //main game tilemap below
+                
+                map1 = [
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]];
+                /*if (prompt("load map? y/n") == "y") {
+                    leveldata = prompt("code?");
+                }*/
+                
+                map = this.make.tilemap({data: map1, tileWidth: 32, tileHeight: 32});
+                map.addTilesetImage('landscape')//.setScale(0.5).refreshBody();
+                layer1 = map.createLayer(0, 'landscape', 0, 0);
+                
+                //we need to also have a list for moving or animated level parts
+                entity1 = [
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1]];
+                
+                function createEntities(entityList, gridWidth, gridHeight) {
+                    creative = true;
+                    for (var i=0; i<entityList.length; i += 1) {
+                        for (var e=0; e<entityList[0].length; e += 1) {
+                            
+                            newEntity(entityList[i][e], -16+(e*gridHeight)+gridHeight/2, -16+(i*gridWidth)+gridWidth/2);
+                        }
+                    }
+                    creative = false;
+                    resumeSprites();
+                }
+                
+                
+                
+                //initial gathering the special tiles :)
+                spikes = map.filterTiles(function (tile) {
+                    return (tile.index == 1);
+                });
+                
+                
+                //layer1.setFrictionX(5);
+                
+
+                //animations below
+                //drilling around
+                this.anims.create({key:'drillingAnimation',
+                 frames: [{key: 'drill1'},
+                 {key: 'drill2'/*, width:16, height:31*/},
+                 {key: 'drill3'},
+                 {key: 'drill4'},
+                 {key: 'drill5'},
+                 {key: 'drill6'},
+                 {key: 'drill7'},
+                 {key: 'drill8'},
+                 {key: 'drill9'},],
+                frameRate:10,
+                repeat:-1});
+                this.anims.create({key:'downAnimation',
+                 frames: [{key: 'down1'},
+                 {key: 'down2'/*, width:16, height:31*/},
+                 {key: 'down3'},
+                 {key: 'down4'},
+                 {key: 'down5'},
+                 {key: 'down6'},
+                 {key: 'down7'},
+                 {key: 'down8'},
+                 {key: 'down9'},
+                 {key: 'down10'},
+                 {key: 'down11'},
+                 {key: 'down12'},
+                 {key: 'down13'},
+                 {key: 'down14'},],
+                frameRate:10,
+                repeat:0});
+                //burrito
+                this.anims.create({key:'burritoAnimation',
+                 frames: [{key: 'burrito1'},
+                 {key: 'burrito2'/*, width:16, height:31*/},
+                 {key: 'burrito3'},
+                 {key: 'burrito4'},
+                 {key: 'burrito5'},
+                 {key: 'burrito6'},
+                 {key: 'burrito7'},
+                 {key: 'burrito8'},],
+                frameRate:10,
+                repeat:-1});
+                //lava
+                this.anims.create({key:'lavaAnimation',
+                 frames: [{key: 'lava1'},
+                 {key: 'lava2', width:16, height:31},
+                 {key: 'lava3'},
+                 {key: 'lava4'},
+                 {key: 'lava5'},
+                 {key: 'lava6'},
+                 {key: 'lava7'},
+                 {key: 'lava8'},],
+                frameRate:10,
+                repeat:-1});
+                //moving right
+                this.anims.create({key: 'right',
+                 frames: [{key: 'right1'},
+                {key: 'right2'},],
+                frameRate:10,
+                repeat:-1});
+                //moving left
+                this.anims.create({key: 'left',
+                 frames: [{key: 'left1'},
+                {key: 'left2'},],
+                frameRate:10,
+                repeat:-1});
+                //holding still
+                this.anims.create({key: 'holdStill',
+                 frames: [{key: 'still'},],
+                frameRate:10,
+                repeat:-1});
+                //coin
+                this.anims.create({key: 'coin',
+                 frames: [{key: 'coin1'},
+                {key: 'coin3'},
+                {key: 'coin2'},
+                {key: 'coin4'},],
+                frameRate:10,
+                repeat:-1});
+                //mites
+                this.anims.create({key: 'growingMite',
+                 frames: [{key: 'mite1'},
+                {key: 'mite2'},
+                {key: 'mite3'},
+                {key: 'mite4'},
+                {key: 'mite5'},],
+                frameRate:0.3,
+                repeat:0});
+
+
+                //end of animations :)
+
+                //player sprite
+                taco = this.physics.add.sprite(100, 300, 'still').setScale(1.75).refreshBody();
+                taco.body.gravity.y = 1500;
+                taco.body.drag.x = 100;
+                taco.depth = 1;
+                //collisions with player
+                layer1.setCollision([0, 2, 3]);
+                this.physics.add.collider(taco, layer1);
+                //entity groups etc
+                //creating the groups
+                coins = this.physics.add.group();
+                burritos = this.physics.add.group();
+                drillers = this.physics.add.group();
+                trees = this.physics.add.group();
+                mites = this.physics.add.group();
+                rocks = this.physics.add.group();
+                //colliding/overlaping the groups
+                this.physics.add.overlap(taco, coins, collectCoin, null, this);
+                this.physics.add.overlap(taco, burritos, hitBurrito, null, this);
+                this.physics.add.overlap(taco, drillers, hitDrill, null, this);
+                this.physics.add.overlap(taco, trees, touchingTree, null, this);
+                this.physics.add.overlap(taco, rocks, touchingRock, null, this);
+                this.physics.add.collider(rocks, rocks);
+                this.physics.add.collider(burritos, layer1);
+                this.physics.add.collider(drillers, layer1);
+                this.physics.add.collider(rocks, layer1);
+
+                //reaction functions
+                function collectCoin(Taco, coin) {//taco capitalized so that we don't confuse it with regular "taco"
+                    coin.disableBody(true, true);
+                    
+                }
+                function hitBurrito(Taco, burrito) {
+                    death();
+                }
+                function hitDrill (Taco, Drill) {
+                    death();
+                };
+                function touchingTree(Taco, Tree) {
+
+                }
+                this.dirX = 0;
+                this.dirY = -500;
+                this.dirChange = 1;
+                function touchingRock(Taco, Rock) {
+                    
+                    if (Math.abs(Rock.body.velocity.y) < 100 && Math.round(Rock.body.velocity.x) == 0) {
+                        Rock.originX = 0.5;
+                        Rock.originY = 0.5;
+                        Rock.body.gravity.y = 0;
+                        Rock.body.velocity.x = 0;
+                        Rock.body.velocity.y = 0;
+                        Rock.body.x = Taco.body.x+Taco._displayOriginX/*/2*/+5;
+                        Rock.body.y = Taco.body.y+Taco._displayOriginY/2;
+                        Rock.depth = 2;
+                        this.pressed;
+                        this.line;
+                        
+                        if (keySpace.isDown) {
+                            this.graphics.destroy();
+                            this.graphics = this.add.graphics();
+                            this.graphics.lineStyle(4, 0xffffff, 1);
+                            this.line = this.graphics.lineBetween(Taco.body.x+Taco.body.width/2, Taco.body.y+17, (Taco.body.width/2)+Taco.body.x+this.dirX/4, Taco.body.y+this.dirY/4);
+                            //panning back and forth :)
+                            if (this.dirX > 800 || this.dirX < -800) {
+                                this.dirChange *= -1;
+                                if (this.dirX > 800) {
+                                    this.dirX = 800;
+                                } else if (this.dirX < -800) {
+                                    this.dirX = -800;
+                                }
+                            }
+                            this.dirX += this.dirChange*40;
+                            this.pressed = true;
+                        } else if (this.pressed == true) {
+                            this.graphics.destroy();
+                            Rock.body.velocity.x = this.dirX;
+                            Rock.body.velocity.y = this.dirY;
+                            Rock.body.gravity.y = 500;
+                            this.pressed = false;
+                        }
+                        
+                    }
+                    
+
+                }
+                //create the entities
+                createEntities(entity1, 32, 32);
+                
+                //the main camera
+                this.cameras.main.setBounds(0, 0, map.widthInPixels+9999999, map.heightInPixels);//infinite worlds
+                this.cameras.main.startFollow(taco, false, 0.1, 0.1);
+                
+
+            }
+            
+            function update ()
+            {
+                
+                
+                var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
+
+                
+                var tileSelectX = map.worldToTileX(mousePointer.x);
+                var tileSelectY = map.worldToTileY(mousePointer.y);
+
+                //keys
+                cursors = this.input.keyboard.createCursorKeys();
+                keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+                keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+                keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+                keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+                //debugging cursor position
+                if (keyC.isDown) {
+                    alert(String(Math.round(mousePointer.x)) + ' ' + String(Math.round(mousePointer.y)));
+                }
+
+                //before doing anything with creative, it is important that the positions of sprites are all working the right way animations wise
+                updateColliders();
+                
+                //creative mode decisions
+                
+                if (keyM.isDown) {
+                    if (creative == false) {
+                        creative = true;
+                        returnSprites();
+                        taco.body.checkCollision.none = true;
+                        taco.body.allowGravity = false;
+                        taco.body.velocity.y = 0;
+                        this.physics.world.drawDebug = true;
+                        camera.startFollow(taco, false, 0.1, 0.1);
+                        alert('creative mode on');
+                    } else {
+                        creative = false;
+                        resumeSprites();
+                        taco.body.checkCollision.none = false;
+                        taco.body.allowGravity = true;
+                        this.physics.world.drawDebug = false;
+                        this.physics.world.debugGraphic.clear();
+                        camera.startFollow(taco, false, 0.1, 0.1);
+                        alert('creative mode off');
+                    }
+                }
+                //the map editing
+                
+                //typeEdit is defined at the beggining of the code :)
+                if (keyB.isDown && creative == true) {
+                    if (prompt('1.entity 2.block') == '1') {
+                        typeEdit = 1;
+                        select = prompt('type');
+                        select = Number(select);
+                    } else {
+                        typeEdit = 2;
+                        select = prompt('type');
+                        select = Number(select);
+                    }
+                    
+                }
+                
+;                if (this.input.manager.activePointer.isDown && typeEdit == 1 && hold == false && creative == true) {
+                    newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32);
+
+                }
+                if (this.input.manager.activePointer.isDown) {
+                    hold = true;
+                    //this isn't in the above statement because it ends up alternating.
+                } else {
+                    hold = false;
+                }
+                if (keyE.isDown && typeEdit == 2) {
+                    var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
+                    
+                    if (tile !== null) {
+                        map.removeTile(tile, -1, false);
+                    }
+                }
+                
+                if (keyE.isDown && typeEdit == 1) {
+                    coins.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            child.destroy();
+                        }
+                    });
+                    burritos.children.iterate(function(child) {
+                        
+                            
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            child.destroy();
+                        }
+                    });
+                    drillers.children.iterate(function(child) {
+                        
+                        
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            child.destroy();
+                        }
+                    });
+                    trees.children.iterate(function(child) {
+                        
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            child.destroy();
+                            
+                        }
+                    });
+                    mites.children.iterate(function(child) {
+                        
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            child.destroy();
+                            
+                        }
+                    });
+                }
+
+                if (this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true) {
+                        map.putTileAt(select, tileSelectX, tileSelectY);
+                    //we need to make sure that block groups get updated when we change the map
+                    spikes = map.filterTiles(function (tile) {
+                        return (tile.index == 1);
+                    });
+                }
+
+                
+                if (cursors.left.isDown)
+                {
+                    tacoVelocityX -= 45;
+                    if (creative == true) {
+                        tacoVelocityX -= 90;
+                    }
+                    taco.anims.play('left', true);
+                } else if (cursors.right.isDown)
+                {
+                    tacoVelocityX += 45;
+                    if (creative == true) {
+                        tacoVelocityX += 90;
+                    }
+                    taco.anims.play('right', true);
+                } else
+                {
+                    taco.anims.play('holdStill');
+                }
+
+                taco.body.velocity.x = tacoVelocityX;
+                
+                tacoVelocityX = tacoVelocityX * 0.8;
+
+                if (cursors.up.isDown && taco.body.blocked.down)
+                {
+                    taco.body.velocity.y = -750;
+                    
+                }
+
+                //we need to be able to move up and down in creative too
+                if (creative == true) {
+                    if (cursors.up.isDown) {
+                        taco.body.y -= 8;
+                    }
+                    if (cursors.down.isDown) {
+                        taco.body.y += 8;
+                    }
+                }
+                
+                //make sure that we die when we fall into the void :)
+                if (taco.body.y > 1000) {
+                    death();
+                }
+                //here we do up to date collisions etc
+                if (creative == false) {
+                    this.physics.world.overlapTiles(taco, spikes, death, null, this);
+                }
+
+                //sound effects for burritos
+                burritos.children.iterate(function(child) {
+                    if (child.body.blocked.down) {
+
+                        this.burritoJump.play();
+                    }
+                })
+                //slow down the rocks
+                rocks.children.iterate(function(child) {
+                    child.body.velocity.x *= 0.97;
+                    if (child.body.blocked.down == true) {
+                        child.body.velocity.x = 0;
+                    }
+                });
+                //here we have the code for the drill boss
+                
+                drillers.children.iterate(function(child) {
+                    
+                    if (creative == false/* && camera.worldView.contains(child.body.x, child.body.y) && taco.x > 105*/) {
+                        
+                        if (child.started == false) {
+                            console.log(camera);
+                            child.started = true;
+                            //camera.stopFollow();
+                            //camera.pan(child.body.x+64, child.body.y, 3000);
+                            console.log('hi');
+                            //camera.startFollow(child, false, 0.001, 0.001);
+                        }
+                        if (child.body.allowGravity == false) {
+                            child.body.x = child.initX;
+                            child.body.y = child.initY;
+                            child.body.velocity.x = child.initXV;
+                            child.body.velocity.y = child.initYV;
+                            child.body.allowGravity = true;
+                            child.que = -20;//give it time to get to the ground ya know
+                        } else {
+                            child.que += 1;
+                        }
+                        
+                        if (child.que == 1) { 
+                            child.body.velocity.y = -600;
+                            child.body.velocity.x *= -1;
+                            camera.shake(700, 0.025);
+
+                        } else if (child.que == 75) {
+                            child.body.velocity.y = -600;
+                            child.body.velocity.x *= -1;
+                            camera.shake(500, 0.015);
+                            
+                        } else if (child.que == 150) {
+                            child.body.velocity.y = -300;
+                            child.body.velocity.x *= -1;
+                            camera.shake(300, 0.003);
+
+                        } else if (child.que == 190) {
+                            child.body.velocity.y = -300;
+                            camera.shake(300, 0.003);
+                            
+                        } else if (child.que == 230) {
+                            child.body.velocity.y = -300;
+                            camera.shake(300, 0.003);
+                            
+                        } else if (child.que == 275) {
+                            child.originY = 1;
+                            child.pastXV = child.body.velocity.x;
+                            child.pastGY = child.body.gravity.y;
+                            child.body.gravity.y = 0;
+                            child.body.velocity.x = 0;
+                            child.body.y += (child.body.height/2);
+                            child.anims.play('downAnimation');
+                        } else if (child.que == 400) {
+                            child.originY = 0.5;
+                            child.originX = 0.5;
+                            child.body.velocity.x = child.pastXV;
+                            child.body.gravity.y = child.pastGY;
+                            child.body.y -= (child.body.height/2);
+                            child.anims.play('drillingAnimation');
+                            child.que = 0;
+                        }
+                        
+                    }/* else {
+                        child.body.x = child.initX;
+                        child.body.y = child.initY;
+                        child.body.velocity.x = child.initXV;
+                        child.body.velocity.x = child.initXV;
+                    }*/
+                    
+                });
+                
+                
+                
+            }  
+            
+            //the titlescreen functions 
+            function startGame() {
+                game.scene.stop('title');
+                game.scene.start('game');
+            }
+            titleScene.preload = function () {
+                this.load.image('background', 'assets/title.png');
+                this.load.image('play', 'assets/playButton.png');
+                this.load.image('cloud1', 'assets/cloud-c.png');
+                this.load.image('cloud2', 'assets/cloud-b.png');
+                this.load.audio('titleMusic', ['assets/Good\ Gummy\ Bears.mp3']);
+                
+            }
+
+            titleScene.create = function () {
+                this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
+                var titleMusic = this.sound.add('titleMusic');
+                
+                titleMusic.loop = true;
+                titleMusic.play();
+                //clouds
+                clouds = this.physics.add.group();
+                for (var i=0; i<15; i += 1) {
+                    if (random(1, 2) == 1) {
+                        cloudV = random(50, 100);
+                    } else {
+                        cloudV = -1*random(50, 100);
+                    }
+                    if (random(1, 2) == 1) {
+                        cloudT = 'cloud1';
+                    } else {
+                        cloudT = 'cloud2';
+                    }
+                    
+                    var cloud = clouds.create(random(10, 790), random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
+                    cloud.body.velocity.x = cloudV;
+                }
+                //the non moving parts (except for button kindof)
+                logo = this.add.image(400, 200, 'background').setScale(2.5);
+                
+                var playButton = this.add.image(400, 500, 'play').setScale(1.5);
+                logo.depth = 1;
+                playButton.depth = 1;
+                playButton.setInteractive({ useHandCursor: true });
+                playButton.on('pointerover', () => { playButton.setScale(2); });
+                playButton.on('pointerout', () => { playButton.setScale(1.5); });
+                playButton.on('pointerdown', () => {startGame(); titleMusic.stop()});
+                
+
+
+                
+            }
+            titleScene.update = function () {
+                if (random(1, 50) == 3) {
+                    if (random(1, 2) == 1) {
+                        cloudX = -150;
+                        cloudV = random(50, 100);
+                    } else {
+                        cloudX = 1050;
+                        cloudV = -1*random(50, 100);
+                    }
+                    if (random(1, 2) == 1) {
+                        cloudT = 'cloud1';
+                    } else {
+                        cloudT = 'cloud2';
+                    }
+                    
+                    var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
+                    cloud.body.velocity.x = cloudV;
+                }
+            }
+
+            //we add the games different scenes
+            game.scene.add('title', titleScene);
+            game.scene.add('game', gameScene);
+
+            //game.scene.start('game');
+        </script>
+        <h4 id='error'>Error 404. Page not found.</h4>
+        
+        <script>
+            document.addEventListener('keydown', function(e) {
+                if (e.code == 'KeyP') {
+                    var password = prompt('Enter Password');
+                    if (password == 'mickeymouse') {
+
+                        document.getElementById('cnvs').style = "display: block;";
+                        document.getElementById('error').style = "display: none;";
+                        game.scene.start('title');
+                    }
+                    
+                }
+            })
+        </script>
+    </body>
+    </html>

@@ -1,0 +1,53 @@
+.sprite {
+    background-image: url(spritesheet.png);
+    background-repeat: no-repeat;
+    display: block;
+}
+
+.sprite-burrito__1 {
+    width: 16px;
+    height: 31px;
+    background-position: 0 0;
+}
+
+.sprite-burrito__2 {
+    width: 12px;
+    height: 30px;
+    background-position: -16px 0;
+}
+
+.sprite-burrito__3 {
+    width: 16px;
+    height: 31px;
+    background-position: -28px 0;
+}
+
+.sprite-burrito__4 {
+    width: 12px;
+    height: 30px;
+    background-position: -44px 0;
+}
+
+.sprite-burrito__5 {
+    width: 16px;
+    height: 31px;
+    background-position: -56px 0;
+}
+
+.sprite-burrito__6 {
+    width: 12px;
+    height: 30px;
+    background-position: -72px 0;
+}
+
+.sprite-burrito__7 {
+    width: 16px;
+    height: 31px;
+    background-position: -84px 0;
+}
+
+.sprite-burrito__8 {
+    width: 12px;
+    height: 30px;
+    background-position: -100px 0;
+}
