@@ -6,7 +6,7 @@
     </head>
     <body>
 
-        <canvas id="cnvs" width="800" height="608" style="display:none;"></canvas>
+        <canvas id="cnvs" width="800" height="608" style="display:block;"></canvas>
         <script src="phaser.js"></script>
         <script>
             //game scenes
@@ -57,6 +57,14 @@
                 this.load.audio('burritoJump', ['assets/burritojump.wav']);
                 //drill boss images below
                 this.load.image('rock', 'assets/rock.png');
+                this.load.image('drop1', 'assets/gumdrop1.png');
+                this.load.image('drop2', 'assets/gumdrop2.png');
+                this.load.image('drop3', 'assets/gumdrop3.png');
+                this.load.image('drop4', 'assets/gumdrop4.png');
+                this.load.image('drop5', 'assets/gumdrop5.png');
+                this.load.image('drop6', 'assets/gumdrop6.png');
+
+                this.load.image('aimArrow', 'assets/aimArrow.png');
 
                 this.load.image('drill1', 'assets/boss1__1.png');
                 this.load.image('drill2', 'assets/boss1__2.png');
@@ -90,7 +98,7 @@
                 this.load.image('up5', 'assets/up5.png');
                 //burrito images below
                 
-                this.load.image('burrito1', 'assets/burrito__1.png');
+                this.load.image('burrito1', ' data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAfCAYAAADupU20AAAAAXNSR0IArs4c6QAAAVFJREFUSEtjZMADMpYy/AdJz4hmYMSlDKcESAM2A0BiopLcDM1OX8F6MQyAaXK182d4mnqY4VrsOwaQhtfPv6LQIM0gQ7AaANIg2sWO4urXZT/BfJA4iA0yEKsL/h+M+l/3dyNYgdZiIRRDkF0DCxsUF4A0gyQmt+8AOx3ZABA/pQdi3jFxIYbcSg8GRvtlqF5ANgCk0OrlO7gL5pQwEG8AepSdLVgGthUGQLbDAFYv4EsbT199g0tLi3GhRiPIC4z2y8AK/h+MwmcOA8ggFANg/ifWAHAUIgcizABs1uIylH4G4MxIMC/gcz6+kIR7gRwDQJrheWGIG0CJ88FhQLEB0HQPLgeIBbAYIDsWBtYAUDaWCd0AL0fADFICkiIDQJq5OVkYBH3WoLqAGFfANIPUYjUAnyG4NMOjERb/6GEBK0BBzka3GWupDHMFMRphBgAAgJHVd22KZEgAAAAASUVORK5CYII=');
                 this.load.image('burrito2', 'assets/burrito__2.png');
                 this.load.image('burrito3', 'assets/burrito__3.png');
                 this.load.image('burrito4', 'assets/burrito__4.png');
@@ -210,6 +218,7 @@
                     driller.initYV = 0;
                     driller.started = false;
                     driller.que = 0;
+                    driller.lives = 3;
                     
                 }
                 if (type == 7) {
@@ -239,14 +248,17 @@
                 }
                 if (type == 9) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 9;
-                    var rock = rocks.create(x+16, y+0, 'rock').setGravity(0, 500);//throwing should be a bit more moonlike.
+                    image = 'drop' + String(random(1, 6));
+                    var rock = rocks.create(x+16, y+0, image).setGravity(0, 500);//throwing should be a bit more moonlike.
                     rock.setScale(2);
-                    rock.bounce = 0.3;
-                    //look above :)
+                    rock.body.bounce.x = 0.3;
+                    rock.body.bounce.y = 0.3;
+                    rock.allowGravity = false;
                     rock.initX = x;
                     rock.initY = y;
                     rock.initXV = 0;
                     rock.initYV = 0;
+                    rock.held = false;
                 }
             }
             function returnSprites() {
@@ -278,13 +290,24 @@
                 drillers.children.iterate(function(child) {
                     child.anims.stop();
                     child.anims.play('drillingAnimation');
+                    child.originX = 0.5;
+                    child.originY = 0.5;
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.enableBody(true, child.body.x, child.body.y, true, true);
+                    
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    
+                    child.body.allowGravity = false;
+                });
+                rocks.children.iterate(function(child) {
                     child.body.x = child.initX;
                     child.body.y = child.initY;
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
-                    child.originX = 0.5;
-                    child.originY = 0.5;
                     child.body.allowGravity = false;
+                            
                 });
                 
             }
@@ -328,6 +351,17 @@
                     child.anims.play('growingMite');
                             
                 });
+                rocks.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                    //we need to re enable gravity as well because of the way we hold the rock
+                    child.body.gravity.y = 500;
+                            
+                });
+                
                 
             }
 
@@ -430,7 +464,7 @@
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-                [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, 8, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -469,7 +503,7 @@
                 //drilling around
                 this.anims.create({key:'drillingAnimation',
                  frames: [{key: 'drill1'},
-                 {key: 'drill2'/*, width:16, height:31*/},
+                 {key: 'drill2'},
                  {key: 'drill3'},
                  {key: 'drill4'},
                  {key: 'drill5'},
@@ -574,12 +608,20 @@
                 trees = this.physics.add.group();
                 mites = this.physics.add.group();
                 rocks = this.physics.add.group();
+                //not necesariily a group but goes along with rocks
+                arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
+                arrow.setOrigin(0.5, 1);
+                arrow.visible = false;
+                arrow.depth = 3;
+                arrow.direction = 1;
                 //colliding/overlaping the groups
                 this.physics.add.overlap(taco, coins, collectCoin, null, this);
                 this.physics.add.overlap(taco, burritos, hitBurrito, null, this);
                 this.physics.add.overlap(taco, drillers, hitDrill, null, this);
                 this.physics.add.overlap(taco, trees, touchingTree, null, this);
                 this.physics.add.overlap(taco, rocks, touchingRock, null, this);
+                this.physics.add.overlap(mites, rocks, rockHitMite, null, this);
+                this.physics.add.overlap(mites, drillers, drillerHitMite, null, this);
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
@@ -599,49 +641,35 @@
                 function touchingTree(Taco, Tree) {
 
                 }
+                function rockHitMite(mite, rock) {
+                    mite.body.gravity.y = 1000;
+                    mite.anims.stop();
+                }
+                function drillerHitMite(mite, driller) {
+                    mite.body.x = mite.initX;
+                    mite.body.y = mite.initY;
+                    mite.body.gravity.y = 0;
+                    mite.body.velocity.y = 0;
+                    mite.anims.stop();
+                    mite.anims.play("growingMite");
+                    driller.lives -= 1;
+                    if (driller.lives == 0) {
+                        driller.disableBody(true, true);
+                    }
+                }
                 this.dirX = 0;
                 this.dirY = -500;
                 this.dirChange = 1;
                 function touchingRock(Taco, Rock) {
-                    
-                    if (Math.abs(Rock.body.velocity.y) < 100 && Math.round(Rock.body.velocity.x) == 0) {
-                        Rock.originX = 0.5;
-                        Rock.originY = 0.5;
-                        Rock.body.gravity.y = 0;
-                        Rock.body.velocity.x = 0;
-                        Rock.body.velocity.y = 0;
-                        Rock.body.x = Taco.body.x+Taco._displayOriginX/*/2*/+5;
-                        Rock.body.y = Taco.body.y+Taco._displayOriginY/2;
-                        Rock.depth = 2;
-                        this.pressed;
-                        this.line;
-                        
-                        if (keySpace.isDown) {
-                            this.graphics.destroy();
-                            this.graphics = this.add.graphics();
-                            this.graphics.lineStyle(4, 0xffffff, 1);
-                            this.line = this.graphics.lineBetween(Taco.body.x+Taco.body.width/2, Taco.body.y+17, (Taco.body.width/2)+Taco.body.x+this.dirX/4, Taco.body.y+this.dirY/4);
-                            //panning back and forth :)
-                            if (this.dirX > 800 || this.dirX < -800) {
-                                this.dirChange *= -1;
-                                if (this.dirX > 800) {
-                                    this.dirX = 800;
-                                } else if (this.dirX < -800) {
-                                    this.dirX = -800;
-                                }
+                    if (keySpace.isDown) {
+                        rocks.children.iterate(function(child) {
+                            if (child.held == true && child !== Rock) {
+                                Rock.held = false;
+                            } else {
+                                Rock.held = true;
                             }
-                            this.dirX += this.dirChange*40;
-                            this.pressed = true;
-                        } else if (this.pressed == true) {
-                            this.graphics.destroy();
-                            Rock.body.velocity.x = this.dirX;
-                            Rock.body.velocity.y = this.dirY;
-                            Rock.body.gravity.y = 500;
-                            this.pressed = false;
-                        }
-                        
+                        });
                     }
-                    
 
                 }
                 //create the entities
@@ -670,7 +698,7 @@
                 keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
                 keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
                 keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-                keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+                keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
                 //debugging cursor position
                 if (keyC.isDown) {
                     alert(String(Math.round(mousePointer.x)) + ' ' + String(Math.round(mousePointer.y)));
@@ -828,7 +856,47 @@
                 if (creative == false) {
                     this.physics.world.overlapTiles(taco, spikes, death, null, this);
                 }
-
+                rocks.children.iterate(function(child) {
+                    if (child.held == true) {
+                        arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
+                        arrow.body.y = taco.body.y-arrow.body.height-18;
+                        if (arrow.direction == 1) {
+                            arrow.angle += 6;
+                        } else {
+                            arrow.angle -= 6;
+                        }
+                        if (arrow.angle > 70 || arrow.angle < -70) {
+                            arrow.direction *= -1;
+                        }
+                        arrow.visible = true;
+                        child.originX = 0.5;
+                        child.originY = 0.5;
+                        //child.body.gravity.y = 0;
+                        child.body.velocity.x = 0;
+                        child.body.velocity.y = 0;
+                        child.body.x = taco.body.x+taco._displayOriginX;
+                        child.body.y = taco.body.y-43+taco._displayOriginY/2;
+                        child.depth = 5;
+                        if (keySpace.isDown == false) {
+                            child.held = false;
+                            child.body.velocity.x = 1000*Math.sin(arrow.angle * Math.PI/180);
+                            child.body.velocity.y = -500*Math.cos(arrow.angle * Math.PI/180);
+                            arrow.angle = 0;
+                            arrow.visible = false;
+                        }
+                    }
+                })
+                //reset mites when below screen
+                mites.children.iterate(function(child) {
+                    if (child.body.y > 1000) {
+                        child.body.x = child.initX;
+                        child.body.y = child.initY;
+                        child.body.gravity.y = 0;
+                        child.body.velocity.y = 0;
+                        child.anims.stop();
+                        child.anims.play('growingMite');
+                    }
+                });
                 //sound effects for burritos
                 burritos.children.iterate(function(child) {
                     if (child.body.blocked.down) {
@@ -847,7 +915,7 @@
                 
                 drillers.children.iterate(function(child) {
                     
-                    if (creative == false/* && camera.worldView.contains(child.body.x, child.body.y) && taco.x > 105*/) {
+                    if (creative == false && child.active == true/* && camera.worldView.contains(child.body.x, child.body.y) && taco.x > 105*/) {
                         
                         if (child.started == false) {
                             console.log(camera);
@@ -881,15 +949,12 @@
                         } else if (child.que == 150) {
                             child.body.velocity.y = -300;
                             child.body.velocity.x *= -1;
-                            camera.shake(300, 0.003);
 
                         } else if (child.que == 190) {
                             child.body.velocity.y = -300;
-                            camera.shake(300, 0.003);
                             
                         } else if (child.que == 230) {
                             child.body.velocity.y = -300;
-                            camera.shake(300, 0.003);
                             
                         } else if (child.que == 275) {
                             child.originY = 1;
@@ -998,7 +1063,7 @@
             game.scene.add('title', titleScene);
             game.scene.add('game', gameScene);
 
-            //game.scene.start('game');
+            game.scene.start('game');
         </script>
         <h4 id='error'>Error 404. Page not found.</h4>
         
