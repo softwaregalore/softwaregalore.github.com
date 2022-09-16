@@ -98,7 +98,7 @@
                 this.load.image('up5', 'assets/up5.png');
                 //burrito images below
                 
-                this.load.image('burrito1', ' data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAfCAYAAADupU20AAAAAXNSR0IArs4c6QAAAVFJREFUSEtjZMADMpYy/AdJz4hmYMSlDKcESAM2A0BiopLcDM1OX8F6MQyAaXK182d4mnqY4VrsOwaQhtfPv6LQIM0gQ7AaANIg2sWO4urXZT/BfJA4iA0yEKsL/h+M+l/3dyNYgdZiIRRDkF0DCxsUF4A0gyQmt+8AOx3ZABA/pQdi3jFxIYbcSg8GRvtlqF5ANgCk0OrlO7gL5pQwEG8AepSdLVgGthUGQLbDAFYv4EsbT199g0tLi3GhRiPIC4z2y8AK/h+MwmcOA8ggFANg/ifWAHAUIgcizABs1uIylH4G4MxIMC/gcz6+kIR7gRwDQJrheWGIG0CJ88FhQLEB0HQPLgeIBbAYIDsWBtYAUDaWCd0AL0fADFICkiIDQJq5OVkYBH3WoLqAGFfANIPUYjUAnyG4NMOjERb/6GEBK0BBzka3GWupDHMFMRphBgAAgJHVd22KZEgAAAAASUVORK5CYII=');
+                this.load.image('burrito1', 'assets/burrito__1.png');
                 this.load.image('burrito2', 'assets/burrito__2.png');
                 this.load.image('burrito3', 'assets/burrito__3.png');
                 this.load.image('burrito4', 'assets/burrito__4.png');
@@ -218,7 +218,7 @@
                     driller.initYV = 0;
                     driller.started = false;
                     driller.que = 0;
-                    driller.lives = 3;
+                    driller.lives = 5;
                     
                 }
                 if (type == 7) {
@@ -394,13 +394,13 @@
                     child.body.height = child.height*child._scaleY;
                 });*/
                 //drill boss 
-                /*
+                
                 drillers.children.iterate(function(child) {
                     child.body.offset.x = 0;
                     child.body.offset.y = 0;
                     child.body.width = child.width*child._scaleX;
                     child.body.height = child.height*child._scaleY;
-                });*/
+                });
             }
             //this variable is used later for the level editing
             var typeEdit = 0;
@@ -468,7 +468,7 @@
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
-                [-1, -1, -1, -1, -1, -1, -1, -1, -1, 9, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
+                [-1, -1, -1, -1, -1, -1, -1, -1, -1, 9, -1, -1, -1, -1, -1, -1, -1, 6, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
                 [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1],
@@ -529,6 +529,22 @@
                  {key: 'down13'},
                  {key: 'down14'},],
                 frameRate:10,
+                repeat:0});
+                this.anims.create({key:'upAnimation',
+                 frames: [{key: 'down13'},
+                 {key: 'down12'/*, width:16, height:31*/},
+                 {key: 'down11'},
+                 {key: 'down10'},
+                 {key: 'down9'},
+                 {key: 'down8'},
+                 {key: 'down7'},
+                 {key: 'down6'},
+                 {key: 'down5'},
+                 {key: 'down4'},
+                 {key: 'down3'},
+                 {key: 'down2'},
+                 {key: 'down1'},],
+                frameRate:45,
                 repeat:0});
                 //burrito
                 this.anims.create({key:'burritoAnimation',
@@ -622,6 +638,7 @@
                 this.physics.add.overlap(taco, rocks, touchingRock, null, this);
                 this.physics.add.overlap(mites, rocks, rockHitMite, null, this);
                 this.physics.add.overlap(mites, drillers, drillerHitMite, null, this);
+                this.physics.add.overlap(taco, mites, tacoHitMites, null, this);
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
@@ -653,9 +670,12 @@
                     mite.anims.stop();
                     mite.anims.play("growingMite");
                     driller.lives -= 1;
-                    if (driller.lives == 0) {
+                    if (driller.lives < 1) {
                         driller.disableBody(true, true);
                     }
+                }
+                function tacoHitMites(taco, mite) {
+                    death();
                 }
                 this.dirX = 0;
                 this.dirY = -500;
@@ -861,9 +881,9 @@
                         arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
                         arrow.body.y = taco.body.y-arrow.body.height-18;
                         if (arrow.direction == 1) {
-                            arrow.angle += 6;
+                            arrow.angle += 4;
                         } else {
-                            arrow.angle -= 6;
+                            arrow.angle -= 4;
                         }
                         if (arrow.angle > 70 || arrow.angle < -70) {
                             arrow.direction *= -1;
@@ -964,7 +984,10 @@
                             child.body.velocity.x = 0;
                             child.body.y += (child.body.height/2);
                             child.anims.play('downAnimation');
-                        } else if (child.que == 400) {
+                        }else if (child.que == 400) {
+                            child.anims.play('upAnimation');
+                        }
+                         else if (child.que == 415) {
                             child.originY = 0.5;
                             child.originX = 0.5;
                             child.body.velocity.x = child.pastXV;
@@ -1063,7 +1086,7 @@
             game.scene.add('title', titleScene);
             game.scene.add('game', gameScene);
 
-            game.scene.start('game');
+            game.scene.start('title');
         </script>
         <h4 id='error'>Error 404. Page not found.</h4>
         
