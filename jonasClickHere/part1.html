@@ -1,0 +1,473 @@
+
+<!doctype html> 
+<html>
+<body>
+<script src="phaser.js"></script>
+<script>
+
+    var config = {
+        type: Phaser.AUTO,
+        width: 800,
+        height: 600,
+        backgroundColor: '#ADD8E6',
+        pixelArt: false,
+        scene: {
+            preload: preload,
+            create: create,
+            update: update
+        },
+        physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 000 },
+            debug: false
+        }
+        },
+    };
+
+    var game = new Phaser.Game(config);
+    function random (one, two) {
+        return(Math.round(Math.random()*(two-one))+one);
+    }
+    function preload ()
+    {
+        this.load.audio('engine1', ['assets/engineProp.wav']);
+        this.load.audio('gun1', ['assets/gunProp1.mp3']);
+        this.load.audio('gunHit1', ['assets/bulletHitProp.wav']);
+
+        this.load.image('landscape', 'assets/land.png');
+        this.load.image('plane1', 'assets/rocket.svg');
+        this.load.image('plane2', 'assets/rocket.svg');
+        this.load.image('rocket', 'assets/rocket.svg')
+        this.load.image('bullet1', 'assets/bullet.svg');
+        this.load.image('cloud1', 'assets/cloud.svg');
+        this.load.image('reactor1', 'assets/propChimney.svg');
+        this.load.image('wasteStick1', 'assets/Sticks.svg');   
+
+        this.load.image('stick1', 'assets/stick1.png');
+        this.load.image('stick2', 'assets/stick2.png');
+        this.load.image('stick3', 'assets/stick3.png');
+        this.load.image('stick4', 'assets/stick4.png');
+
+        this.load.image('wasteCan', 'assets/can.svg');
+
+        this.load.image('smoke', 'assets/smoke.svg');
+
+        this.load.image('reactor', 'assets/reactor.svg');
+
+    }
+
+    //before game stuff
+    var cpu = true;
+    var cpuPhase = 1;
+    //var runCpuTiming = setInterval(function(){cpuPhase += 1;if(cpuPhase == 3) {cpuPhase = 1};}, 6000);
+    var cpuHit = 0;
+    
+    function create ()
+    {
+        //animations
+        this.anims.create({key:'stickAnim',
+             frames: [{key: 'stick1'},
+             {key: 'stick2'/*, width:16, height:31*/},
+             {key: 'stick3'},
+             {key: 'stick4'},],
+            frameRate:10,
+        repeat:-1});
+        //sounds
+        engineSound = this.sound.add('engine1');
+        engineSound.loop = true;
+        engineSound.play();
+        gunSound = this.sound.add('gun1');
+        //background
+        clouds = this.physics.add.group();
+        for (var i=0; i<25; i += 1) {
+            var cloud = clouds.create(random(-200, 2600), random(-200, 1800), 'cloud1');
+            cloud.setScale(2).refreshBody();
+            if (random(-100, 100) > 0 ) {
+                cloud.body.velocity.x = random(40, 100);
+            } else {
+                cloud.body.velocity.x = random(-40, -100);
+            }
+            
+            if (cloud.body.velocity.x == 0){
+                cloud.body.velocity.x += 30;
+            }
+            cloud.body.allowGravity = false;
+
+        }
+        setInterval(updateClouds, 1000);
+        //land and border
+        map1 = [
+            [15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  7, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  7, -1, -1, -1, -1, -1, 15], 
+            [15, -1, -1, -1,  6, -1, -1, -1, -1, -1, -1,  2,  0,  1, -1, -1, -1, -1, -1, -1, -1, -1, -1,  6, -1, -1, -1, -1, -1, -1,  2,  0,  1, -1, -1, -1, -1, 15],
+            [15, -1,  2,  0,  0,  0,  0,  1, -1, -1,  9,  5,  3,  4,  1, -1, -1, -1, -1, -1, -1,  2,  0,  0,  0,  0,  1, -1, -1,  9,  5,  3,  4,  1, -1, -1, -1, 15], 
+            [ 0,  0,  5,  3,  3,  3,  3,  4,  0,  0,  5,  3,  3,  3,  4,  0,  0,  0,  0,  0,  0,  5,  3,  3,  3,  3,  4,  0,  0,  5,  3,  3,  3,  4,  0,  0,  0,  0], 
+        ];
+        map = this.make.tilemap({data: map1, tileWidth: 64, tileHeight: 64});
+        map.addTilesetImage('landscape')//.setScale(0.5).refreshBody();
+        layer1 = map.createLayer(0, 'landscape', 0, 0);
+        
+        //reactor particles
+        smoke = this.add.particles('smoke').setScale(1);
+        smokeEmitter = smoke.createEmitter({
+            x: 1216/1,
+            y: 1462/1,
+            //scaleX: 3,
+            //scaleY: 3,
+            quantity: 5,
+            frequency: 150,
+            angle: { min: -100, max: -80 },
+            speed: 200,
+            gravityY: 00,
+            lifespan: { min: 10000, max: 20000 },
+        });
+        //reactor
+        reactor = this.physics.add.sprite(1216, 1383, 'reactor').setScale(1.3).refreshBody();
+        reactor.body.allowGravity = false;
+
+        waste = this.physics.add.group();
+
+        plane1 = this.physics.add.sprite(250, 140, 'plane1').setScale(1.3).refreshBody();
+        plane1.barrel = 1;//machine gun delay.
+        plane1.engineSpeed = 60;
+        plane1.health = 100;
+        plane1.amo = 120;
+        plane1.body.gravity.y = 1000;
+
+        bullets1 = this.physics.add.group();
+        //healthbar and other graphics
+        plane1.healthBar = this.add.text(plane1.body.x+plane1.body.width/2, plane1.body.y-20, '100', { fontSize: '32px', fill: 'black' }).setOrigin(0.5, 0.5);
+        
+        plane1.amoBar = this.add.text(-300, -270, 'Amo: 120', { fontSize: '32px', fill: 'black' }).setOrigin(0.5, 0.5);
+        plane1.amoBar.scrollFactorX = 0;
+        plane1.amoBar.scrollFactorY = 0;
+
+
+        plane2 = this.physics.add.sprite(2100, 140, 'plane2').setScale(1.3).refreshBody();
+        plane2.angle = 180;
+        plane2.barrel = 1;//machine gun delay.
+        plane2.engineSpeed = 60;
+        plane2.health = 100;
+        plane2.amo = 120;
+        plane2.body.gravity.y = 1000;
+
+        bullets2 = this.physics.add.group();
+        //healthbar
+        plane2.healthBar = this.add.text(plane2.body.x+plane2.body.width/2, plane2.body.y-20, '100', { fontSize: '32px', fill: 'black' });
+
+        //setup split screen
+        if (cpu==false) {
+            this.cameras.main.setSize(400, 600);
+            this.camera2 = this.cameras.add(400, 0);
+            this.camera2.setSize(400, 600);
+            this.cameras.main.startFollow(plane1, false, 1, 1);
+            this.camera2.startFollow(plane2, false, 1, 1);
+
+            this.cameras.main.zoom = 0.5;
+            this.camera2.zoom = 0.5;
+
+            camera1= this.cameras.main;
+            camera2 = this.camera2;
+            camera1.setBounds(0, 0, layer1.width, layer1.height);
+            camera2.setBounds(0, 0, layer1.width, layer1.height);
+        } else {
+            this.cameras.main.startFollow(plane1, false, 1, 1);
+            this.cameras.main.zoom = 0.5;
+            this.cameras.main.setBounds(0, 0, layer1.width, layer1.height);
+        }
+
+        
+
+        //collisions
+        layer1.setCollision([0, 3, 4, 5, 15]);
+        this.physics.add.collider(plane1, layer1);
+        this.physics.add.collider(plane2, layer1);
+        this.physics.add.overlap(plane1, bullets2, plane1Hit, null, this);
+        this.physics.add.overlap(plane2, bullets1, plane2Hit, null, this);
+        this.physics.add.collider(waste, layer1);
+        function plane1Hit(plane, bullet) {
+            
+            //plane.body.velocity.x *= 0.3;
+            //plane.body.velocity.y *= 0.3;
+            plane.health -= random(4, 7);
+            bullet.destroy();
+            this.sound.play('gunHit1');
+
+            if (cpu) {
+                cpuHit += 1;
+            }
+        }
+        function plane2Hit(plane, bullet) {
+            
+            //plane.body.velocity.x *= 0.3;
+            //plane.body.velocity.y *= 0.3;
+            plane.health -= random(4, 7);
+            bullet.destroy();
+            this.sound.play('gunHit1');
+        }
+    }
+    function resetPlane1() {
+        plane1.body.x = 250;
+        plane1.body.y = 140;
+        plane1.engineSpeed = 60;
+        plane1.health = 100;
+        plane1.angle = 0;
+        plane1.amo = 120;
+    }
+    function resetPlane2() {
+        plane2.body.x = 2100;
+        plane2.body.y = 140;
+        plane2.engineSpeed = 60;
+        plane2.health = 100;
+        plane2.angle = 0;
+        plane2.amo = 120;
+    }
+    function launchRadium() {
+        danger = waste.create(reactor.x, reactor.y, 'wasteCan');
+        //danger.body.allowGravity = false;
+        danger.body.setGravity(0, 400);
+        danger.body.velocity.y = random(-500, -1300);
+        danger.body.velocity.x = random(-700, 700);
+        danger.body.bounce.x = 1;
+        danger.body.bounce.y = 1;
+        danger.setScale(3.4).refreshBody();
+    }
+    function updateClouds() {
+        var cloud;
+        if (random(-100, 100) > 0 ) {
+            var cloud = clouds.create(random(-2000, -100), random(-200, 1800), 'cloud1');
+            cloud.body.velocity.x = random(60, 100);
+        } else {
+            var cloud = clouds.create(random(5000, 6000), random(-200, 1800), 'cloud1');
+            cloud.body.velocity.x = random(-60, -100);
+        }
+        cloud.setScale(2).refreshBody();
+        cloud.body.allowGravity = false;
+        clouds.children.iterate(function(child){
+            if (child) {
+                if (child.body.x > 8000 || child.body.x < -8000) {
+                    child.destroy();
+                }
+            }
+            
+        });
+        cloud.depth = -2;
+    }
+    
+    function update ()
+    {
+        //updateClouds();
+        if (random(1, 600) == 100) {
+            launchRadium();
+        }
+        waste.children.iterate(function(child) {
+            child.angle += 5;
+        });
+        arrows = this.input.keyboard.createCursorKeys();
+        keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+        keyQ = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Q);
+        keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+        keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+        keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+        //camera zoom
+        
+        
+        /*console.log(distance);
+        camera1.zoom = 200/distance;
+        camera2.zoom = 200/distance;*/
+        //calculate direction to plane2
+        direction2 = Math.atan2(plane2.body.y-plane1.body.y,plane2.body.x-plane1.body.x)*57.2958;
+        direction1 = 0 + Math.atan2(plane1.body.y-plane2.body.y,plane1.body.x-plane2.body.x)*57.2958;
+        if (arrows.left.isDown) {
+            plane1.angle -= 4;
+        }
+        if (arrows.right.isDown) {
+            plane1.angle += 4;
+        }
+        plane1.body.velocity.x += plane1.engineSpeed*Math.cos(plane1.angle * Math.PI/180);
+        plane1.body.velocity.y += 0.50*plane1.engineSpeed*Math.sin(plane1.angle * Math.PI/180)-12;
+        //simulate drag on the plane
+        plane1.body.velocity.x *= 0.94;
+        plane1.body.velocity.y *= 0.97;
+        
+        //plane1.angle += random(-5, 5);
+        //plane1.body.velocity.x + random(-25, 25);
+        //plane1.body.velocity.y + random(-25, 25);
+        
+        //flip the plane when necesary
+        if (plane1.angle < -90 && plane1.angle > -180 || plane1.angle > 90 && plane1.angle < 180) {
+            //plane1.flipX = true;
+            plane1.flipY = true;
+        } else {
+            //plane1.flipX = false;
+            plane1.flipY = false;
+        }
+        
+        if (keySpace.isDown) {
+            plane1.barrel += 1;
+            if (plane1.barrel == 6) {
+                plane1.barrel = 0;
+            }
+        }
+
+        if (keySpace.isDown && plane1.barrel == 0 && plane1.amo > 0) {
+            var bullet = bullets1.create(plane1.body.x+plane1.body.width/2, plane1.body.y+plane1.body.height/2, 'stick1').setScale(3.4).refreshBody();
+            bullet.angle = random(-180, 180);//plane1.angle;
+            bullet.body.velocity.x = 1500*Math.cos(plane1.angle * Math.PI/180);
+            bullet.body.velocity.y = 1500*Math.sin(plane1.angle * Math.PI/180);
+            bullet.anims.play('stickAnim');
+            bullet.body.gravity.y = 1000;
+            //gunSound.play();
+            this.sound.play('gun1');
+            plane1.amo -= 1;
+        }
+        //repeat of what we just did for player 2
+        //before the controls, calculate the cpu
+        right = false;
+        left = false;
+        shoot = false;
+        if (cpu == true) {
+            
+            if (cpuPhase == 1) {
+                if (plane2.angle>direction1+5) {
+                    left = true;
+                }
+                if (plane2.angle<direction1-5) {
+                    right = true;
+                }
+                if (plane2.angle + 15 > direction1 && plane2.angle-15 < direction1 && random(4, 5)==5) {
+                    shoot = true;
+                }
+                if (cpuHit > 3) {
+                    cpuPhase = 2;
+                    cpuHit = 0;
+                }
+            }
+            if (cpuPhase == 2) {
+                if (plane2.angle>-80) {
+                    left = true;
+                }
+                if (plane2.angle<-100) {
+                    right = true;
+                }
+                if (plane2.body.blocked.up) {
+                    cpuPhase = 1;
+                }
+            }
+            
+        }
+        
+        if (keyA.isDown && cpu == false || left == true) {
+            plane2.angle -= 4;
+        }
+        if (keyD.isDown && cpu == false || right == true) {
+            plane2.angle += 4;
+        }
+        plane2.body.velocity.x += plane2.engineSpeed*Math.cos(plane2.angle * Math.PI/180);
+        plane2.body.velocity.y += 0.5*plane2.engineSpeed*Math.sin(plane2.angle * Math.PI/180)-12;
+        //simulate drag on the plane
+        plane2.body.velocity.x *= 0.94;
+        plane2.body.velocity.y *= 0.97;
+        
+        //plane2.angle += random(-5, 5);
+        //plane2.body.velocity.x + random(-25, 25);
+        //plane2.body.velocity.y + random(-25, 25);
+
+        //flip the plane when necesary
+        if (plane2.angle < -90 && plane2.angle > -180 || plane2.angle > 90 && plane2.angle < 180) {
+            //plane1.flipX = true;
+            plane2.flipY = true;
+        } else {
+            //plane1.flipX = false;
+            plane2.flipY = false;
+        }
+
+        if (shoot == true || keyQ.isDown) {
+            plane2.barrel += 1;
+            if (plane2.barrel == 6) {
+                plane2.barrel = 0;
+            }
+        }
+
+        if (shoot == true && plane2.barrel == 0 && cpu == true && plane2.amo > 0 || cpu == false && keyQ.isDown && plane2.barrel == 0 && plane2.amo > 0) {
+            var bullet = bullets2.create(plane2.body.x+plane2.body.width/2, plane2.body.y+plane2.body.height/2, 'stick1').setScale(3.4).refreshBody();
+            bullet.angle = random(-180, 180);
+            bullet.body.velocity.x = 1500*Math.cos(plane2.angle * Math.PI/180);
+            bullet.body.velocity.y = 1500*Math.sin(plane2.angle * Math.PI/180);
+            bullet.anims.play('stickAnim');
+            bullet.body.gravity.y = 1000;
+            //gunSound.play();
+            this.sound.play('gun1');
+            plane2.amo -= 1;
+        }
+
+        if (plane1.health < 1) {
+            resetPlane1();
+            resetPlane2();
+        }
+        if (plane2.health < 1) {
+            resetPlane2();
+            resetPlane1();
+        }
+        //healthBars and such
+        plane1.healthBar.setText(plane1.health);
+        plane1.healthBar.x = plane1.body.x+plane1.body.width/2;
+        plane1.healthBar.y = plane1.body.y-20;
+
+        plane2.healthBar.setText(plane2.health);
+        plane2.healthBar.x = plane2.body.x+plane2.body.width/2;
+        plane2.healthBar.y = plane2.body.y-20;
+        
+        plane1.amoBar.setText('Amo: ' + plane1.amo);
+        
+        //arrows
+        //distance = Math.sqrt(((plane2.body.x-plane1.body.x)*(plane2.body.x-plane1.body.x))+((plane2.body.y-plane1.body.y)*(plane2.body.y-plane1.body.y)));
+        var a = plane1.body.x - plane2.body.x;
+        var b = plane1.body.y - plane2.body.y;
+
+        var c = Math.sqrt( a*a + b*b );
+        var distance = c;
+        
+        //alert(distance);
+        /*
+        arrow1.setOrigin(0, 0.5);
+        arrow1.body.x = plane1.body.x;
+        arrow1.body.y = plane1.body.y;
+        arrow1.body.velocity.y = 0;
+        difX = plane2.body.x - plane1.body.x;
+        difY = plane2.body.y - plane1.body.y;
+        arrow1.angle = Math.acosh(difX/distance)*100;*/
+        if (keyC.isDown) {
+            //alert(Math.atan2(plane2.body.y-plane1.body.y,plane2.body.x-plane1.body.x)*57.2958);
+            alert(plane2.angle+' '+ direction1);
+        }
+
+
+        
+    }
+
+</script>
+
+</body>
+</html>
