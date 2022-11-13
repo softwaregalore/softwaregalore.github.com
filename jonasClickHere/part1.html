@@ -9,7 +9,7 @@
         type: Phaser.AUTO,
         width: 800,
         height: 600,
-        backgroundColor: '#ADD8E6',
+        backgroundColor: '#ADD8E6',//#00008B #ADD8E6
         pixelArt: false,
         scene: {
             preload: preload,
@@ -49,7 +49,12 @@
         this.load.image('stick3', 'assets/stick3.png');
         this.load.image('stick4', 'assets/stick4.png');
 
-        this.load.image('wasteCan', 'assets/can.svg');
+        this.load.image('fire1', 'assets/fire1.png');
+        this.load.image('fire2', 'assets/fire2.png');
+        this.load.image('fire3', 'assets/fire3.png');
+        this.load.image('fire4', 'assets/fire4.svg');
+
+        this.load.image('wasteCan', 'assets/can.png');
 
         this.load.image('smoke', 'assets/smoke.svg');
 
@@ -151,26 +156,55 @@
         plane1 = this.physics.add.sprite(250, 140, 'plane1').setScale(1.3).refreshBody();
         plane1.barrel = 1;//machine gun delay.
         plane1.engineSpeed = 60;
-        plane1.health = 100;
+        plane1.health = 70;
         plane1.amo = 120;
         plane1.body.gravity.y = 1000;
+        plane1.depth = 1;
 
+        fire1 = this.add.particles('fire2');
+        fire2 = this.add.particles('fire2');
+        fire3 = this.add.particles('fire3');
+        fire4 = this.add.particles('fire4');
+
+        fireEmitter1 = fire4.createEmitter({
+            x: 0,
+            y: 0,
+            quantity: 6,
+            frequency: 50,
+            angle: {min: plane1.angle-10, max: plane1.angle+10},
+            speed: 600,
+            lifespan: {min: 50, max: 300},
+            gravityY: 1000
+        });
+        //fireEmitter1.startFollow(plane1);
         bullets1 = this.physics.add.group();
         //healthbar and other graphics
         plane1.healthBar = this.add.text(plane1.body.x+plane1.body.width/2, plane1.body.y-20, '100', { fontSize: '32px', fill: 'black' }).setOrigin(0.5, 0.5);
         
+        /*
         plane1.amoBar = this.add.text(-300, -270, 'Amo: 120', { fontSize: '32px', fill: 'black' }).setOrigin(0.5, 0.5);
         plane1.amoBar.scrollFactorX = 0;
         plane1.amoBar.scrollFactorY = 0;
-
+*/
 
         plane2 = this.physics.add.sprite(2100, 140, 'plane2').setScale(1.3).refreshBody();
         plane2.angle = 180;
         plane2.barrel = 1;//machine gun delay.
         plane2.engineSpeed = 60;
-        plane2.health = 100;
+        plane2.health = 70;
         plane2.amo = 120;
         plane2.body.gravity.y = 1000;
+
+        fireEmitter2 = fire4.createEmitter({
+            x: 0,
+            y: 0,
+            quantity: 6,
+            frequency: 50,
+            angle: {min: plane1.angle-10, max: plane1.angle+10},
+            speed: 600,
+            lifespan: {min: 50, max: 300},
+            gravityY: 1000
+        });
 
         bullets2 = this.physics.add.group();
         //healthbar
@@ -205,12 +239,18 @@
         this.physics.add.collider(plane2, layer1);
         this.physics.add.overlap(plane1, bullets2, plane1Hit, null, this);
         this.physics.add.overlap(plane2, bullets1, plane2Hit, null, this);
+        this.physics.add.overlap(plane1, waste, hitRadium, null, this);
+        this.physics.add.overlap(plane2, waste, hitRadium, null, this);
         this.physics.add.collider(waste, layer1);
+        function hitRadium(plane, radium) {
+            plane.health += 25;
+            radium.destroy();
+        }
         function plane1Hit(plane, bullet) {
             
             //plane.body.velocity.x *= 0.3;
             //plane.body.velocity.y *= 0.3;
-            plane.health -= random(4, 7);
+            plane.health += random(4, 7);
             bullet.destroy();
             this.sound.play('gunHit1');
 
@@ -222,7 +262,7 @@
             
             //plane.body.velocity.x *= 0.3;
             //plane.body.velocity.y *= 0.3;
-            plane.health -= random(4, 7);
+            plane.health += random(4, 7);
             bullet.destroy();
             this.sound.play('gunHit1');
         }
@@ -231,7 +271,7 @@
         plane1.body.x = 250;
         plane1.body.y = 140;
         plane1.engineSpeed = 60;
-        plane1.health = 100;
+        plane1.health = 70;
         plane1.angle = 0;
         plane1.amo = 120;
     }
@@ -239,8 +279,8 @@
         plane2.body.x = 2100;
         plane2.body.y = 140;
         plane2.engineSpeed = 60;
-        plane2.health = 100;
-        plane2.angle = 0;
+        plane2.health = 70;
+        plane2.angle = 180;
         plane2.amo = 120;
     }
     function launchRadium() {
@@ -274,11 +314,23 @@
         });
         cloud.depth = -2;
     }
+    function updateEmitters() {
+        fireEmitter1.setAngle({min: 180+plane1.angle-30, max: 180+plane1.angle+30});
+        fireEmitter1.setPosition(plane1.x -120*Math.cos(plane1.angle * Math.PI/180), plane1.y -120*Math.sin(plane1.angle * Math.PI/180));
+        //fireEmitter1.setY(plane1.y -100*Math.sin(plane2.angle * Math.PI/180));
+        //fireEmitter1.depth = 1;
+
+        fireEmitter2.setAngle({min: 180+plane2.angle-30, max: 180+plane2.angle+30});
+        fireEmitter2.setPosition(plane2.x -120*Math.cos(plane2.angle * Math.PI/180), plane2.y -120*Math.sin(plane2.angle * Math.PI/180));
+        //fireEmitter2.setY(plane1.y -100*Math.sin(plane2.angle * Math.PI/180));
+        //fireEmitter2.depth = 1;
+    }
     
     function update ()
     {
+        updateEmitters();
         //updateClouds();
-        if (random(1, 600) == 100) {
+        if (random(1, 300) == 100) {
             launchRadium();
         }
         waste.children.iterate(function(child) {
@@ -331,7 +383,7 @@
             }
         }
 
-        if (keySpace.isDown && plane1.barrel == 0 && plane1.amo > 0) {
+        if (keySpace.isDown && plane1.barrel == 0 && plane1.health > 0) {
             var bullet = bullets1.create(plane1.body.x+plane1.body.width/2, plane1.body.y+plane1.body.height/2, 'stick1').setScale(3.4).refreshBody();
             bullet.angle = random(-180, 180);//plane1.angle;
             bullet.body.velocity.x = 1500*Math.cos(plane1.angle * Math.PI/180);
@@ -340,7 +392,7 @@
             bullet.body.gravity.y = 1000;
             //gunSound.play();
             this.sound.play('gun1');
-            plane1.amo -= 1;
+            plane1.health -= 2;
         }
         //repeat of what we just did for player 2
         //before the controls, calculate the cpu
@@ -410,7 +462,7 @@
             }
         }
 
-        if (shoot == true && plane2.barrel == 0 && cpu == true && plane2.amo > 0 || cpu == false && keyQ.isDown && plane2.barrel == 0 && plane2.amo > 0) {
+        if (shoot == true && plane2.barrel == 0 && cpu == true && plane2.health > 0 || cpu == false && keyQ.isDown && plane2.barrel == 0 && plane2.amo > 0) {
             var bullet = bullets2.create(plane2.body.x+plane2.body.width/2, plane2.body.y+plane2.body.height/2, 'stick1').setScale(3.4).refreshBody();
             bullet.angle = random(-180, 180);
             bullet.body.velocity.x = 1500*Math.cos(plane2.angle * Math.PI/180);
@@ -419,14 +471,14 @@
             bullet.body.gravity.y = 1000;
             //gunSound.play();
             this.sound.play('gun1');
-            plane2.amo -= 1;
+            plane2.health -= 2;
         }
 
-        if (plane1.health < 1) {
+        if (plane1.health > 120) {
             resetPlane1();
             resetPlane2();
         }
-        if (plane2.health < 1) {
+        if (plane2.health > 120) {
             resetPlane2();
             resetPlane1();
         }
@@ -439,7 +491,7 @@
         plane2.healthBar.x = plane2.body.x+plane2.body.width/2;
         plane2.healthBar.y = plane2.body.y-20;
         
-        plane1.amoBar.setText('Amo: ' + plane1.amo);
+        //plane1.amoBar.setText('Amo: ' + plane1.amo);
         
         //arrows
         //distance = Math.sqrt(((plane2.body.x-plane1.body.x)*(plane2.body.x-plane1.body.x))+((plane2.body.y-plane1.body.y)*(plane2.body.y-plane1.body.y)));
