@@ -884,7 +884,7 @@
             //goes with text function as global var
             var currentDialog;
             function text(text, delay, action) {
-                var makeText = setInterval(drawCurrentText, 70);
+                var makeText = setInterval(drawCurrentText, 7);
                 if (currentDialog) {
                     currentDialog.destroy();
                 }
@@ -918,10 +918,10 @@
                 }
             }
             function nextLevel() {
-                this.game.sound.stopAll();
+                
                 level += 1;
                 updateCurrentLevel();
-                this.restartGame();
+                
             }
             function update ()
             {
@@ -1050,8 +1050,10 @@
                         tutorialSequence = 21;
                         text('', 10, function(){console.log('good luck')});
                         textBox.visible = false;
+                        this.game.sound.stopAll();
                         tutorial = false;
                         nextLevel();
+                        this.restartGame();
                     }
                 }
                 //the map editing
@@ -1203,7 +1205,7 @@
                 //here we do up to date collisions etc
                 if (creative == false) {
                     this.physics.world.overlapTiles(taco, spikes, death, null, this);
-                    this.physics.world.overlapTiles(taco, flag, nextLevel, null, this);
+                    this.physics.world.overlapTiles(taco, flag, function(){nextLevel();this.restartGame();}, null, this);
                 }
                 trees.children.iterate(function(child) {
                     if (child.triggered == true) {
