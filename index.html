@@ -306,7 +306,7 @@
                     tree.triggered = "none";
                     tree.angleSpeed = 0;
                     tree.setOrigin(0.5, 1);
-                    tree.depth = 1;
+                    tree.depth = -1;
                 }
                 if (type == 8) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 8;//because this isn't going to be perfectly centered, we don't add anything to the y
@@ -733,6 +733,19 @@
 
 
                 //end of animations :)
+                //but start of particle emitters
+                ingredients = this.add.particles('burritoParticles');
+                ingredientEmitter = ingredients.createEmitter({
+                    frame: [0, 1, 2],
+                    x: 500,
+                    y: 500,
+                    frequency: 50,
+                    quantity: 0,
+                    angle: { min: -180, max: 180 },
+                    speed: 100,
+                    gravityY: 100,
+                    lifespan: { min: 1000, max: 2000 },
+                });
                 //able to restart later
                 this.restartGame = function() {
                     this.scene.restart();
@@ -741,6 +754,7 @@
                     //tutorial potato
                     potat = this.physics.add.sprite(400, 300, 'potat1').setScale(2.3).refreshBody();
                     potat.anims.play('potatAnim');
+                    potat.depth = 2;
                 }
                 
                 //player sprite
@@ -752,19 +766,20 @@
                 
                 taco.body.gravity.y = 1500;
                 taco.body.drag.x = 100;
-                taco.depth = 1;
+                taco.depth = 2;
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8]);
                 this.physics.add.collider(taco, layer1);
                 //entity groups etc
                 //creating the groups
                 coins = this.physics.add.group();
-                burritos = this.physics.add.group();
                 drillers = this.physics.add.group();
                 trees = this.physics.add.group();
+                burritos = this.physics.add.group();
                 mites = this.physics.add.group();
                 rocks = this.physics.add.group();
                 drillerFlags = this.physics.add.group();
+                
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
                 arrow.setOrigin(0.5, 1);
@@ -798,7 +813,15 @@
                 }
                 function burritoHitTree(burrito, tree) {
                     if (tree.triggered == true) {
-                        burrito.disableBody(true, true);
+                        
+                        ingredientEmitter.setPosition(burrito.x, burrito.y);
+                        ingredientEmitter.setQuantity(25);
+                        setTimeout(function() {burrito.disableBody(true, true);ingredientEmitter.setQuantity(0)}, 300);
+                        //setTimeout(function(){console.log('hi');ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode();}, 200);
+                        //setTimeout(function(){ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode()}, 400);
+                        //setTimeout(function(){ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode()}, 500);
+                        
+                        
                     }
                 }
                 function rockHitMite(mite, rock) {
@@ -848,6 +871,9 @@
                 function tacoHitTree(Taco, Tree) {
                     if (Tree.triggered == "none" && keySpace.isDown) {
                         Tree.triggered = true;
+                        Tree.body.offset.x =  0;
+                        Tree.body.offset.y = 0;
+                        Tree.body.width += 175;
                     }
                 }
                 //create the entities
@@ -884,7 +910,7 @@
             //goes with text function as global var
             var currentDialog;
             function text(text, delay, action) {
-                var makeText = setInterval(drawCurrentText, 7);
+                var makeText = setInterval(drawCurrentText, 70);
                 if (currentDialog) {
                     currentDialog.destroy();
                 }
@@ -997,9 +1023,9 @@
                 access = this;
                 if (tutorial == true) {
                     if (potat.body.x > taco.body.x+50) {
-                        potat.body.velocity.x = -120;
+                        potat.body.velocity.x = -200;
                     }else if (potat.body.x < taco.body.x-50) {
-                        potat.body.velocity.x = 120;
+                        potat.body.velocity.x = 200;
                     } else {
                         potat.body.velocity.x *= 0.94;
                     }
@@ -1101,7 +1127,6 @@
                     });
                     burritos.children.iterate(function(child) {
                         
-                            
                         if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
                             entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
                             child.destroy();
@@ -1179,12 +1204,12 @@
                     
                 }
                 //walking sound effects
-                if (cursors.right.isDown || cursors.left.isDown && taco.body.blocked.down) {
+                if ((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down) {
                     if (this.walkingSound.isPlaying == false) {
                         this.walkingSound.play();
                     }
                 }
-                if (!(cursors.right.isDown || cursors.left.isDown && taco.body.blocked.down)) {
+                if (!((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down)) {
                     this.walkingSound.stop();
                 }
 
