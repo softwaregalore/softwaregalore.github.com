@@ -176,6 +176,7 @@
 
                 this.load.spritesheet('burritoParticles', 'assets/burritoParticles.svg', { frameWidth: 9, frameHeight: 9 });
 
+                this.load.image('barrier', 'assets/barrier.png');
                 //terrain images
                 this.load.image('grass', 'assets/Dirt.png');
                 this.load.image('dirt', 'assets/underground.png');
@@ -270,6 +271,8 @@
                     burrito.initY = y;
                     burrito.initXV = 200;
                     burrito.initYV = 0;
+                    //tree killing
+                    burrito.triggered = false;
                     
                 }
                 if (type == 6) {
@@ -335,6 +338,19 @@
                     rock.initYV = 0;
                     rock.held = false;
                 }
+                if (type == 10) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 10;
+                    var coin = burritoBarriers.create(x+16, y+16, 'barrier').setScale(1.1).refreshBody(); //this causes a bug i think?
+                    coin.originX = 0.5;
+                    coin.originY = 0.5;
+                    coin.body.gravity.y = 0;
+                    //too lazy to rename the coin.
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                }
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -362,6 +378,7 @@
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
+                    child.triggered = false;
                             
                 });
                 drillers.children.iterate(function(child) {
@@ -469,13 +486,13 @@
                     child.body.height = child.height*child._scaleY;
                 });
                 //burrito update collider 
-                
+                /*
                 burritos.children.iterate(function(child) {
                     child.body.offset.x = 0;
                     child.body.offset.y = 0;
                     child.body.width = child.width*child._scaleX;
                     child.body.height = child.height*child._scaleY;
-                });
+                });*/
                 //drill boss 
                 
                 drillers.children.iterate(function(child) {
@@ -735,14 +752,29 @@
                 //end of animations :)
                 //but start of particle emitters
                 ingredients = this.add.particles('burritoParticles');
+                //we make a few of these just in case more than one burrito needs one.
+                ingredientEmitters = [];
+                for (var i=0; i < 6; i += 1) {
+                    ingredientEmitters.push(ingredients.createEmitter({
+                        frame: [0, 1, 2, 3],
+                        x: 500,
+                        y: 500,
+                        frequency: 50,
+                        quantity: 0,
+                        angle: { min: -180, max: 180 },
+                        speed: 200,
+                        gravityY: 100,
+                        lifespan: { min: 1000, max: 2000 },
+                    }));
+                }
                 ingredientEmitter = ingredients.createEmitter({
-                    frame: [0, 1, 2],
+                    frame: [0, 1, 2, 3],
                     x: 500,
                     y: 500,
                     frequency: 50,
                     quantity: 0,
                     angle: { min: -180, max: 180 },
-                    speed: 100,
+                    speed: 200,
                     gravityY: 100,
                     lifespan: { min: 1000, max: 2000 },
                 });
@@ -779,6 +811,7 @@
                 mites = this.physics.add.group();
                 rocks = this.physics.add.group();
                 drillerFlags = this.physics.add.group();
+                burritoBarriers = this.physics.add.staticGroup();
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -801,6 +834,7 @@
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
                 this.physics.add.collider(rocks, layer1);
+                this.physics.add.collider(burritos, burritoBarriers);
                 
 
                 //reaction functions
@@ -812,11 +846,22 @@
                     death();
                 }
                 function burritoHitTree(burrito, tree) {
-                    if (tree.triggered == true) {
-                        
-                        ingredientEmitter.setPosition(burrito.x, burrito.y);
-                        ingredientEmitter.setQuantity(25);
-                        setTimeout(function() {burrito.disableBody(true, true);ingredientEmitter.setQuantity(0)}, 300);
+                    if (tree.triggered == true && burrito.triggered == false) {
+                        burrito.triggered = true;
+                        var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
+                        //loop through emitters
+                        for (var i = 0; i < ingredientEmitters.length; i += 1) {
+                            if (ingredientEmitters[i].quantity.propertyValue == 0) {
+                                //when we find the right one give us it.
+                                ingredientSelect = i;
+                                break;
+                                
+                            }
+                        }
+                        ingredientEmitters[ingredientSelect].setPosition(burrito.x, burrito.y);
+                        ingredientEmitters[ingredientSelect].setQuantity(10);
+                        setTimeout(function() {burrito.body.blocked.down = false;burrito.disableBody(true, true);ingredientEmitters[ingredientSelect].setQuantity(0)}, 300);
+                        //we set the burrito blocked to false, so that the sound that it makes doesn't persist.
                         //setTimeout(function(){console.log('hi');ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode();}, 200);
                         //setTimeout(function(){ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode()}, 400);
                         //setTimeout(function(){ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode()}, 500);
@@ -1160,6 +1205,20 @@
                             
                         }
                     });
+                    burritoBarriers.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    rocks.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
                 }
 
                 if (this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true) {
@@ -1238,6 +1297,7 @@
                         child.angleSpeed += 0.2;
                         if (child.angle > 60) {
                             child.triggered = false;
+                            child.body.width -= 175;//counter for the first collider extension.
                         }
                     }
                 })
