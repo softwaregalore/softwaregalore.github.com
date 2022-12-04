@@ -8,22 +8,21 @@
         <script src="data.js"></script>
         <script>
             var loaded = false;
-            var levelMaps = [tutorialMap1, levelMap1, demoMap1];
-            var levelEntitys = [tutorialEntity1, levelEntity1, entity1];
+            var levelMaps = [tutorialMap1, levelMap1, demoMap1, bossMap1];
+            var levelEntitys = [tutorialEntity1, levelEntity1, entity1, bossEntity1];
             var level = 0;
-            var map1 = levelMaps[level];
-            var entity1 = levelEntitys[level];
             var tutorial;
-            if (level == 0) {
-                tutorial = true;
-            } else {
-                tutorial = false;
-            }
+            
             function updateCurrentLevel() {
+                if (level == 0) {
+                    tutorial = true;
+                } else {
+                    tutorial = false;
+                }
                 map1 = levelMaps[level];
                 entity1 = levelEntitys[level];
             }
-            
+            updateCurrentLevel();
             
         </script>
         <canvas id="cnvs" width="800" height="608" style="display:block;"></canvas>
@@ -508,6 +507,8 @@
             var mainMusic;
             function create ()
             {
+                //text and menu type stuff.
+                //levelDisplay = this.add.text(400, 300, 'Level ' + level, {fontFamily: 'Arial', fontSize: '32px', fill: 'white' });//.setOrigin(0.5);
                 //vars for tutorial
                 
                 // "tutorial" var is in the code above
@@ -778,6 +779,18 @@
                     gravityY: 100,
                     lifespan: { min: 1000, max: 2000 },
                 });
+                dirtEmitter = ingredients.createEmitter({
+                    frame: [0, 3],
+                    x: 500,
+                    y: 500,
+                    frequency: 120,
+                    quantity: 0,
+                    angle: { min: -150, max: -30 },
+                    speed: 100,
+                    gravityY: 200,
+                    lifespan: { min: 200, max: 400 },
+                });
+                dirtEmitter.setScale(0.5);
                 //able to restart later
                 this.restartGame = function() {
                     this.scene.restart();
@@ -796,7 +809,7 @@
                     taco = this.physics.add.sprite(100, 300, 'still').setScale(1.75).refreshBody();
                 }
                 
-                taco.body.gravity.y = 1500;
+                taco.body.gravity.y = 1150;
                 taco.body.drag.x = 100;
                 taco.depth = 2;
                 //collisions with player
@@ -1236,14 +1249,16 @@
                 
                 if (cursors.left.isDown)
                 {
-                    tacoVelocityX -= 45;
+                    dirtEmitter.setPosition(taco.x, taco.y + 40);
+                    tacoVelocityX -= 47;
                     if (creative == true) {
                         tacoVelocityX -= 90;
                     }
                     taco.anims.play('left', true);
                 } else if (cursors.right.isDown)
                 {
-                    tacoVelocityX += 45;
+                    dirtEmitter.setPosition(taco.x, taco.y + 40);
+                    tacoVelocityX += 47;
                     if (creative == true) {
                         tacoVelocityX += 90;
                     }
@@ -1259,17 +1274,20 @@
 
                 if (cursors.up.isDown && taco.body.blocked.down)
                 {
-                    taco.body.velocity.y = -750;
+                    taco.body.velocity.y = -640;
                     
                 }
                 //walking sound effects
                 if ((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down) {
                     if (this.walkingSound.isPlaying == false) {
                         this.walkingSound.play();
+                        
+                        dirtEmitter.setQuantity(3);
                     }
                 }
                 if (!((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down)) {
                     this.walkingSound.stop();
+                    dirtEmitter.setQuantity(0);
                 }
 
                 //we need to be able to move up and down in creative too
@@ -1497,9 +1515,13 @@
                 this.load.image('play', 'assets/playButton.png');
                 this.load.image('cloud1', 'assets/cloud-c.png');
                 this.load.image('cloud2', 'assets/cloud-b.png');
+                this.load.image('button1', 'assets/Dirt.png');
+                this.load.image('menu', 'assets/textBox.png');
                 this.load.audio('titleMusic', ['assets/Good\ Gummy\ Bears.mp3']);
                 
             }
+            //vars?
+            var menuOpen = false;
 
             titleScene.create = function () {
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
@@ -1533,11 +1555,17 @@
                 playButton.setInteractive({ useHandCursor: true });
                 playButton.on('pointerover', () => { playButton.setScale(2); });
                 playButton.on('pointerout', () => { playButton.setScale(1.5); });
-                playButton.on('pointerdown', () => {startGame(); titleMusic.stop()});
+                playButton.on('pointerdown', () => {/*startGame(); titleMusic.stop()*/ menuOpen = true;});
                 
-
-
-                
+                menu = this.physics.add.sprite(400, 300, 'menu').setScale(0.2).refreshBody();
+                menu.depth = 2;
+                menu.targetScale = 7;
+                menu.visible = false;
+                buttons = this.physics.add.group();
+                // here we have some config type things for the button layout.
+                buttons.opened = false;
+                buttons.count = 5;
+                buttons.spacing = 100;
             }
             titleScene.update = function () {
                 if (random(1, 50) == 3) {
@@ -1556,6 +1584,38 @@
                     
                     var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
+                }
+                if (menuOpen) {
+                    menu.visible = true;
+                    if (menu.scaleX <= menu.targetScale) {
+                        menu.scaleX += 0.2;
+                        menu.scaleY += 0.2;
+                    } else if (buttons.opened == false) {//once the opening is done.
+                        buttons.opened = true;
+
+                        for (var i = 0; i < buttons.count; i += 1) {
+                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'button1');
+                            button.depth = 3;
+                            button.body.x += button.width;
+                            button.setOrigin(0.5, 0.5).refreshBody();
+                            button.order = i;//determine which level it is later.
+                            //button.setScale(1).refreshBody();
+                            
+                        }
+                        //set the interactiveness afterwards
+                        buttons.children.iterate(function(child){
+                            console.log(child);
+                            child.setInteractive({ useHandCursor: true });
+                            child.on('pointerover', () => { child.setScale(2.5).refreshBody(); });
+                            child.on('pointerout', () => { child.setScale(2).refreshBody(); });
+                            child.on('pointerdown', () => {level = child.order;updateCurrentLevel();startGame();});
+                            child.refreshBody();
+                            child.setOrigin(0.5, 0.5);
+                            child.setScale(2);
+                        })
+                        
+                        
+                    }
                 }
             }
 
