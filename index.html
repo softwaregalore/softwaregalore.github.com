@@ -176,6 +176,10 @@
                 this.load.spritesheet('burritoParticles', 'assets/burritoParticles.svg', { frameWidth: 9, frameHeight: 9 });
 
                 this.load.image('barrier', 'assets/barrier.png');
+
+                //burrito specific killers
+                this.load.image('iceBottle', 'assets/Ice sauce.png');
+                this.load.image('iceBall', 'assets/Iceball.png');
                 //terrain images
                 this.load.image('grass', 'assets/Dirt.png');
                 this.load.image('dirt', 'assets/underground.png');
@@ -272,6 +276,7 @@
                     burrito.initYV = 0;
                     //tree killing
                     burrito.triggered = false;
+                    burrito.frozen = false;
                     
                 }
                 if (type == 6) {
@@ -350,6 +355,21 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                 }
+                if (type == 11) {
+                    //bottles, but variables are called coins from the first one. Same with type 10.
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 11;
+                    var coin = bottles.create(x+16, y+16, 'iceBottle').setScale(2);//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    
+                    coin.body.gravity.y = 500;
+                    coin.body.bounce.y = 0.3;
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                    coin.depth = 2;
+                } 
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -378,6 +398,9 @@
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
                     child.triggered = false;
+                    child.frozen = false;
+                    Phaser.tacoHarmony.active = true;
+                    child.setTint(0xffffff);//clear tint.
                             
                 });
                 drillers.children.iterate(function(child) {
@@ -398,9 +421,21 @@
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
+                    child.held = false;
                             
                 });
-                
+                bottles.children.iterate(function(child) {
+                    child.enableBody(true, child.body.x, child.body.y, true, true);
+                    child.x = child.initX;
+                    child.y = child.initY;
+                    //child.originX = 0.5;
+                    //child.originY = 0.5;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                    child.held = false;
+                    child.angle = 0;
+                });
             }
             function resumeSprites() {
                 
@@ -460,7 +495,10 @@
                     child.triggered = "none";
                     child.angleSpeed = 0;
                 });
-                
+                bottles.children.iterate(function(child){
+                    child.body.allowGravity = true;
+                    child.body.gravity.y = 500;
+                });
                 
             }
 
@@ -825,6 +863,8 @@
                 rocks = this.physics.add.group();
                 drillerFlags = this.physics.add.group();
                 burritoBarriers = this.physics.add.staticGroup();
+                bottles = this.physics.add.group();
+                iceBalls = this.physics.add.group();
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -843,12 +883,18 @@
                 this.physics.add.overlap(rocks, drillers, rockHitDriller, null, this);
                 this.physics.add.overlap(taco, trees, tacoHitTree, null, this);
                 this.physics.add.overlap(burritos, trees, burritoHitTree, null, this);
+                this.physics.add.overlap(taco, bottles, tacoHitBottle, null, this);
+                this.physics.add.overlap(burritos, iceBalls, burritoHitIceBall, null, this);
+                this.physics.add.overlap(burritos, burritos, burritoHitBurrito, null, this);
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
                 this.physics.add.collider(rocks, layer1);
                 this.physics.add.collider(burritos, burritoBarriers);
-                
+                this.physics.add.collider(bottles, layer1);
+                this.physics.add.collider(burritos, burritos);
+                Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
+                Phaser.tacoHarmony.active = false;
 
                 //reaction functions
                 function collectCoin(Taco, coin) {//taco capitalized so that we don't confuse it with regular "taco"
@@ -856,11 +902,16 @@
                     
                 }
                 function hitBurrito(Taco, burrito) {
-                    death();
+                    if (burrito.frozen == false) {
+                        death();
+                    }
+
+                    
                 }
                 function burritoHitTree(burrito, tree) {
                     if (tree.triggered == true && burrito.triggered == false) {
                         burrito.triggered = true;
+                        /*
                         var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
                         //loop through emitters
                         for (var i = 0; i < ingredientEmitters.length; i += 1) {
@@ -874,6 +925,8 @@
                         ingredientEmitters[ingredientSelect].setPosition(burrito.x, burrito.y);
                         ingredientEmitters[ingredientSelect].setQuantity(10);
                         setTimeout(function() {burrito.body.blocked.down = false;burrito.disableBody(true, true);ingredientEmitters[ingredientSelect].setQuantity(0)}, 300);
+                        */
+                       ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);
                         //we set the burrito blocked to false, so that the sound that it makes doesn't persist.
                         //setTimeout(function(){console.log('hi');ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode();}, 200);
                         //setTimeout(function(){ingredientEmitter.setPosition(burrito.x, burrito.y);ingredientEmitter.explode()}, 400);
@@ -882,6 +935,7 @@
                         
                     }
                 }
+                
                 function rockHitMite(mite, rock) {
                     mite.body.gravity.y = 1000;
                     mite.anims.stop();
@@ -934,6 +988,50 @@
                         Tree.body.width += 175;
                     }
                 }
+                function tacoHitBottle(Taco, Bottle) {
+                    if (keySpace.isDown) {
+                        
+                        Bottle.held = true;
+                        //Bottle.allowGravity = false;
+                        Bottle.body.gravity.y = 0;
+                        Bottle.body.velocity.y = 0;
+                    }
+                }
+                function burritoHitIceBall(Burrito, Ball) {
+                    Burrito.frozen = true;
+                    Burrito.body.velocity.x = 0;
+                    Burrito.setTint(0x0101CC);
+                    //Phaser.tacoHarmony.active = true;
+                    Burrito.anims.stop();
+                    Ball.destroy();
+                }
+                function burritoHitBurrito(burrito1, burrito2) {
+                    if (burrito1.frozen == true && Math.abs(burrito1.body.velocity.x) > 220 && burrito2.frozen == false) {
+                        burrito2.disableBody(true, true);
+                        ingredientParticleEmit(burrito2.x, burrito2.y, 10, 300, burrito2);
+                    }
+                }
+                //burritoparticles
+                function ingredientParticleEmit(x, y, quantity, time, burrito) {
+                    var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
+                        //loop through emitters
+                        for (var i = 0; i < ingredientEmitters.length; i += 1) {
+                            if (ingredientEmitters[i].quantity.propertyValue == 0) {
+                                //when we find the right one give us it.
+                                ingredientSelect = i;
+                                break;
+                                
+                            }
+                        }
+                        ingredientEmitters[ingredientSelect].setPosition(x, y);
+                        ingredientEmitters[ingredientSelect].setQuantity(quantity);
+                        if (burrito) {//checks if it exists.
+                            setTimeout(function() {burrito.body.blocked.down = false;burrito.disableBody(true, true);ingredientEmitters[ingredientSelect].setQuantity(0)}, time);
+                        } else {
+                            setTimeout(function() {ingredientEmitters[ingredientSelect].setQuantity(0)}, time);
+                        }
+                        
+                }
                 //create the entities
                 createEntities(entity1, 32, 32);
                 //text on top
@@ -957,7 +1055,7 @@
                 //tutorial vars at the top of create function, for earlier use.
                 
                 //the main camera
-                this.cameras.main.setBounds(0, 0, map.widthInPixels+9999999, map.heightInPixels);//infinite worlds
+                this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);//infinite worlds
                 this.cameras.main.startFollow(taco, false, 0.1, 0.1);
                 //restart
                 this.restart = function () {
@@ -1095,7 +1193,7 @@
                     }
                     if (keySpace.isDown && tutorialSequence == 2) {
                         tutorialSequence = 3;
-                        text('Try using the arrow\nkeys to move/jump.', 150, function(){tutorialSequence = 4;})
+                        text('Try pressing the \narrow keys to \nmove/jump.', 150, function(){tutorialSequence = 4;})
                     }
                     if (cursors.up.isDown && tutorialSequence == 4) {
                         tutorialSequence = 5;
@@ -1103,27 +1201,27 @@
                     }
                     if (taco.x > 810 && tutorialSequence == 6) {
                         tutorialSequence = 7;
-                        text('Great Job!\nNow try walking.. I\nmean jumping over\nthose spikes.', 150, function(){tutorialSequence = 8;})
+                        text('Great Job!\nNow try jumping \n over those spikes.', 150, function(){tutorialSequence = 8;})
                     }
                     if (taco.x > 1370 && tutorialSequence == 8) {
                         tutorialSequence = 9;
-                        text('If you walk forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
+                        text('If you look forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
                     }
                     if (taco.x > 1680 && tutorialSequence == 10) {
                         tutorialSequence = 11;
-                        text('Im sure it\'s harmless\ninside but until it\nhas a change of \nheart don\'t touch it.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1000)})
+                        text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1000)})
                     }
                     if (tutorialSequence == 12) {
                         tutorialSequence = 13;
-                        text('However, this \nburrito seems to \nhave a tree in it\'s\nway.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1000)})
+                        text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1000)})
                     }
                     if (tutorialSequence == 14) {
                         tutorialSequence = 15;
-                        text('Go up to the\ntree and press space\nto move it.', 150, function(){tutorialSequence = 16;})
+                        text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
                     }
                     if (keySpace.isDown && tutorialSequence == 16) {
                         tutorialSequence = 17;
-                        text('hmm... \ninteresting...\nlets move on...', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1000)})
+                        text('hmm... \nsatisfying...\nlets move on...', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1000)})
                         
                     }
                     if (tutorialSequence == 18) {
@@ -1232,6 +1330,13 @@
                             
                         }
                     });
+                    bottles.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
                 }
 
                 if (this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true) {
@@ -1246,7 +1351,38 @@
                     });
                 }
 
-                
+                //before we move, run this
+                bottles.children.iterate(function(child){
+                    if (child.held) {
+                        //child.x = taco.x;
+                        //child.y = taco.y;
+                        child.body.x = taco.body.x+taco._displayOriginX/2;
+                        child.body.y = taco.body.y+8+taco._displayOriginY/2;
+                        /*
+                        if (taco.body.velocity.x > 0) {
+                            child.angle = 90;
+                        }
+                        if (taco.body.velocity.x < 0) {
+                            child.angle = -90;
+                        }
+                        */
+                       child.angle += 3;
+                        if (keySpace.isDown == false/*Phaser.Input.Keyboard.JustDown(keySpace)*/) {
+                            iceBall = iceBalls.create(child.x, child.y, 'iceBall').setScale(0.8);
+                            
+                            iceBall.body.velocity.x = 500*Math.sin(child.angle * Math.PI/180);
+                            iceBall.body.velocity.y = -500*Math.cos(child.angle * Math.PI/180);
+                            iceBall.angle = child.angle-90;
+                            child.held = false;
+                            child.angle = 0;
+                            child.body.velocity.x = 0;
+                            child.body.velocity.y = -260;
+                            child.body.allowGravity = true;
+                            child.body.gravity.y = 500;
+                            
+                        }
+                    }
+                });
                 if (cursors.left.isDown)
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
@@ -1339,6 +1475,9 @@
                         child.body.velocity.y = 0;
                         child.body.x = taco.body.x+taco._displayOriginX;
                         child.body.y = taco.body.y-43+taco._displayOriginY/2;
+                        //child.x = taco.x;
+                        //child.y = taco.y;
+                        
                         child.depth = 5;
                         if (keySpace.isDown == false) {
                             child.held = false;
@@ -1370,14 +1509,18 @@
                         child.anims.play('growingMite');
                     }
                 });
-                //sound effects for burritos
+                //sound effects for burritos and ice effect
                 burritos.children.iterate(function(child) {
-                    if (child.body.blocked.down) {
+                    if (child.body.blocked.down && !child.frozen) {
                         child.body.velocity.y = -410;
                         if (camera.worldView.contains(child.body.x, child.body.y)) {
                             this.burritoJump.play();
                         }
                         
+                    }
+                    if (child.frozen) {
+                        //child.body.velocity.x *= 0.99;
+                        //child.body.velocity.x = 0;
                     }
                 })
                 //slow down the rocks
@@ -1387,6 +1530,7 @@
                         child.body.velocity.x = 0;
                     }
                 });
+                
                 //here we have the code for the drill boss
                 
                 drillers.children.iterate(function(child) {
