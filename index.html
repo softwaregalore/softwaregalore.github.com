@@ -186,13 +186,14 @@
                 this.load.image('tree1', 'assets/tree 1.png');
 
                 this.load.image('landscape', 'assets/newLand.png');
+                this.load.image('platform', 'assets/platform.png');
                 //this.load.image
 
                 //sky images
                 this.load.image('sky1', 'assets/sky.png');
 
                 //lava images
-                /*
+                
                 this.load.image('lava1', 'assets/lavaTiles__1.png');
                 this.load.image('lava2', 'assets/lavaTiles__2.png');
                 this.load.image('lava3', 'assets/lavaTiles__3.png');
@@ -200,7 +201,7 @@
                 this.load.image('lava5', 'assets/lavaTiles__5.png');
                 this.load.image('lava6', 'assets/lavaTiles__6.png');
                 this.load.image('lava7', 'assets/lavaTiles__7.png');
-                this.load.image('lava8', 'assets/lavaTiles__8.png');*/
+                this.load.image('lava8', 'assets/lavaTiles__8.png');
 
                 //player images
                 this.load.image('left1', 'assets/L1.png');
@@ -370,6 +371,39 @@
                     coin.initYV = 0;
                     coin.depth = 2;
                 } 
+                if (type == 12) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 12;
+                    var coin = lava.create(x, y+14, 'lava1').setScale(2)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.anims.play('lava');
+                    coin.body.gravity.y = 0;
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                } 
+                if (type == 13) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 13;
+                    var coin = platforms.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    coin.body.setAllowGravity(false);
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 250;
+                    coin.initYV = 0;
+                    coin.distance = 300;//how far it goes.
+                    coin.setFrictionX(1);
+                    coin.dir = 1;
+                    coin.body.setImmovable = true;
+                    
+                } 
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -436,6 +470,22 @@
                     child.held = false;
                     child.angle = 0;
                 });
+                lava.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('lava');
+                
+                });
+                platforms.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    //child.originX = 0.5;
+                    //child.originY = 0.5;
+                    child.setOrigin(0.5, 0.5);
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                
+                });
             }
             function resumeSprites() {
                 
@@ -499,7 +549,11 @@
                     child.body.allowGravity = true;
                     child.body.gravity.y = 500;
                 });
-                
+                platforms.children.iterate(function(child) {
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    //child.body.allowGravity = true;
+                });
             }
 
             function updateColliders() {
@@ -786,7 +840,18 @@
                 {key: 'potat2'},],
                 frameRate:10,
                 repeat:-1});
-
+                //lava
+                this.anims.create({key: 'lava',
+                 frames: [{key: 'lava1'},
+                {key: 'lava2'},
+                {key: 'lava3'},
+                {key: 'lava4'},
+                {key: 'lava5'},
+                {key: 'lava6'},
+                {key: 'lava7'},
+                {key: 'lava8'},],
+                frameRate:10,
+                repeat:-1});
 
                 //end of animations :)
                 //but start of particle emitters
@@ -818,7 +883,7 @@
                     lifespan: { min: 1000, max: 2000 },
                 });
                 dirtEmitter = ingredients.createEmitter({
-                    frame: [0, 3],
+                    frame: [0],
                     x: 500,
                     y: 500,
                     frequency: 120,
@@ -850,6 +915,7 @@
                 taco.body.gravity.y = 1150;
                 taco.body.drag.x = 100;
                 taco.depth = 2;
+                taco.setFrictionX(1);
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8]);
                 this.physics.add.collider(taco, layer1);
@@ -865,6 +931,10 @@
                 burritoBarriers = this.physics.add.staticGroup();
                 bottles = this.physics.add.group();
                 iceBalls = this.physics.add.group();
+                lava = this.physics.add.group();
+                platforms = this.physics.add.group({
+                    immovable: true
+                });
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -886,6 +956,7 @@
                 this.physics.add.overlap(taco, bottles, tacoHitBottle, null, this);
                 this.physics.add.overlap(burritos, iceBalls, burritoHitIceBall, null, this);
                 this.physics.add.overlap(burritos, burritos, burritoHitBurrito, null, this);
+                this.physics.add.overlap(taco, lava, tacoHitLava, null, this);
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
@@ -893,6 +964,7 @@
                 this.physics.add.collider(burritos, burritoBarriers);
                 this.physics.add.collider(bottles, layer1);
                 this.physics.add.collider(burritos, burritos);
+                this.physics.add.collider(taco, platforms);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -1010,6 +1082,9 @@
                         burrito2.disableBody(true, true);
                         ingredientParticleEmit(burrito2.x, burrito2.y, 10, 300, burrito2);
                     }
+                }
+                function tacoHitLava(Taco, Lava) {
+                    death();
                 }
                 //burritoparticles
                 function ingredientParticleEmit(x, y, quantity, time, burrito) {
@@ -1337,6 +1412,20 @@
                             
                         }
                     });
+                    lava.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    platforms.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
                 }
 
                 if (this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true) {
@@ -1386,7 +1475,7 @@
                 if (cursors.left.isDown)
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
-                    tacoVelocityX -= 47;
+                    tacoVelocityX -= 27;//47
                     if (creative == true) {
                         tacoVelocityX -= 90;
                     }
@@ -1394,7 +1483,7 @@
                 } else if (cursors.right.isDown)
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
-                    tacoVelocityX += 47;
+                    tacoVelocityX += 27;
                     if (creative == true) {
                         tacoVelocityX += 90;
                     }
@@ -1406,7 +1495,7 @@
 
                 taco.body.velocity.x = tacoVelocityX;
                 
-                tacoVelocityX = tacoVelocityX * 0.8;
+                tacoVelocityX = tacoVelocityX * 0.88;//0.8
 
                 if (cursors.up.isDown && taco.body.blocked.down)
                 {
@@ -1454,7 +1543,7 @@
                             child.body.width -= 175;//counter for the first collider extension.
                         }
                     }
-                })
+                });
                 rocks.children.iterate(function(child) {
                     if (child.held == true) {
                         arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
@@ -1509,6 +1598,17 @@
                         child.anims.play('growingMite');
                     }
                 });
+                platforms.children.iterate(function(child) {
+                    if (creative == false) {
+                        if (child.x > child.initX+child.distance) {
+                            child.dir = -1;
+                        }
+                        if (child.body.x < child.initX) {
+                            child.dir = 1;
+                        }
+                        child.body.velocity.x = child.dir*130;
+                    }
+                })
                 //sound effects for burritos and ice effect
                 burritos.children.iterate(function(child) {
                     if (child.body.blocked.down && !child.frozen) {
@@ -1756,7 +1856,7 @@
                             child.refreshBody();
                             child.setOrigin(0.5, 0.5);
                             child.setScale(2);
-                        })
+                        });
                         
                         
                     }
