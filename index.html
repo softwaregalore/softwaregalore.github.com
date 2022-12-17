@@ -7,6 +7,7 @@
     <body>
         <script src="data.js"></script>
         <script>
+            var fullScreen = false;
             var loaded = false;
             var levelMaps = [tutorialMap1, levelMap1, demoMap1, bossMap1];
             var levelEntitys = [tutorialEntity1, levelEntity1, entity1, bossEntity1];
@@ -43,11 +44,19 @@
             titleScene.create = titleCreate;
             titleScene.update = titleUpdate;*/
             //functions are specified further down.
-
+            var width, height;
+            if (fullScreen) {
+                width = window.innerWidth;
+                height = window.innerHeight;
+                document.getElementById('cnvs').requestFullscreen();
+            } else {
+                width = 800;
+                height = 600;
+            }
             var config = {
                 type: Phaser.WEBGL,
-                width: 800,
-                height: 608,//for the odd grid size
+                width: width,
+                height: height,//for the odd grid size
                 backgroundColor: '#ADD8E6',
                 pixelArt: true,
                 canvas: document.getElementById('cnvs'),
@@ -180,6 +189,7 @@
                 //burrito specific killers
                 this.load.image('iceBottle', 'assets/Ice sauce.png');
                 this.load.image('iceBall', 'assets/Iceball.png');
+                this.load.image('lime', 'assets/lime.png');
                 //terrain images
                 this.load.image('grass', 'assets/Dirt.png');
                 this.load.image('dirt', 'assets/underground.png');
@@ -187,6 +197,8 @@
 
                 this.load.image('landscape', 'assets/newLand.png');
                 this.load.image('platform', 'assets/platform.png');
+
+                this.load.image('flag', 'assets/flag.svg');
                 //this.load.image
 
                 //sky images
@@ -296,7 +308,7 @@
                     driller.initYV = 0;
                     driller.started = false;
                     driller.que = 0;
-                    driller.lives = 4;
+                    driller.lives = 0;
                     driller.invincible = false;
                     
                 }
@@ -342,6 +354,7 @@
                     rock.initXV = 0;
                     rock.initYV = 0;
                     rock.held = false;
+
                 }
                 if (type == 10) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 10;
@@ -370,6 +383,7 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                     coin.depth = 2;
+                    coin.body.allowGravity = false;
                 } 
                 if (type == 12) {
                     
@@ -403,6 +417,35 @@
                     coin.dir = 1;
                     coin.body.setImmovable = true;
                     
+                } 
+                if (type == 14) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 4;
+                    var coin = limes.create(x, y, 'lime').setScale(3)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 500;
+                    coin.body.bounce.x = 1;
+                    coin.body.bounce.y = 0.3;
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                    coin.body.allowGravity = false;
+                    coin.body.mass = 1;
+                } 
+                if (type == 15) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 4;
+                    var coin = flags.create(x+16, y+8, 'flag').setScale(0.15)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
                 } 
             }
             function returnSprites() {
@@ -486,6 +529,14 @@
                     child.body.allowGravity = false;
                 
                 });
+                limes.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                            
+                });
             }
             function resumeSprites() {
                 
@@ -554,6 +605,14 @@
                     child.body.velocity.y = child.initYV;
                     //child.body.allowGravity = true;
                 });
+                limes.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                            
+                });
             }
 
             function updateColliders() {
@@ -611,6 +670,11 @@
                 this.physics.world.drawDebug = false;
                 this.cameras.main.roundPixels = true;
                 camera = this.cameras.main;
+                camera.zoom = 1.3;
+                this.camera = camera; //better access.
+                if (fullScreen) {
+                    camera.zoom = 1.5;
+                }
                 //music
                 mainMusic = this.sound.add('mainMusic');
                 burritoJump = this.sound.add('burritoJump');
@@ -900,7 +964,7 @@
                 }
                 if (tutorial == true) {
                     //tutorial potato
-                    potat = this.physics.add.sprite(400, 300, 'potat1').setScale(2.3).refreshBody();
+                    potat = this.physics.add.sprite(400, 400, 'potat1').setScale(2.3).refreshBody();
                     potat.anims.play('potatAnim');
                     potat.depth = 2;
                 }
@@ -911,7 +975,6 @@
                 } else {
                     taco = this.physics.add.sprite(100, 300, 'still').setScale(1.75).refreshBody();
                 }
-                
                 taco.body.gravity.y = 1150;
                 taco.body.drag.x = 100;
                 taco.depth = 2;
@@ -935,6 +998,8 @@
                 platforms = this.physics.add.group({
                     immovable: true
                 });
+                limes = this.physics.add.group();
+                flags = this.physics.add.group();
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -957,6 +1022,10 @@
                 this.physics.add.overlap(burritos, iceBalls, burritoHitIceBall, null, this);
                 this.physics.add.overlap(burritos, burritos, burritoHitBurrito, null, this);
                 this.physics.add.overlap(taco, lava, tacoHitLava, null, this);
+                this.physics.add.overlap(burritos, limes, burritoHitLime, null, this);
+                this.physics.add.overlap(taco, limes, tacoHitLime, null, this);
+                this.physics.add.overlap(taco, flags, tacoHitFlag, null, this);
+
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
@@ -965,6 +1034,10 @@
                 this.physics.add.collider(bottles, layer1);
                 this.physics.add.collider(burritos, burritos);
                 this.physics.add.collider(taco, platforms);
+                this.physics.add.collider(limes, layer1);
+                this.physics.add.collider(taco, limes);
+                this.physics.add.collider(limes, limes);
+                this.physics.add.collider(limes, burritos);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -1022,7 +1095,12 @@
                         mite.anims.play("growingMite");
                         driller.lives -= 1;
                         if (driller.lives < 1) {
+                            
+                            setTimeout(function(){camera.shake(2000, 0.03)}, 400);
+                            
                             driller.disableBody(true, true);
+                            ingredientParticleEmit(driller.x, driller.y, 40, 1500, false);
+                            
                         }
                     }
                 }
@@ -1085,6 +1163,22 @@
                 }
                 function tacoHitLava(Taco, Lava) {
                     death();
+                } 
+                function burritoHitLime(Burrito, Lime) {
+                    if (Math.abs(Lime.body.velocity.x) > 150) {
+                        ingredientParticleEmit(Burrito.x, Burrito.y, 10, 400, Burrito);
+                        Burrito.disableBody(true, true);
+                        Lime.body.velocity.x *= 3;
+                    }
+                }
+                function tacoHitLime(Taco, Lime) {
+                    if (Math.abs(Lime.body.velocity.x) > 300) {
+                        death();
+                    }
+                }
+                function tacoHitFlag(Taco, Flag) {
+                    nextLevel();
+                    this.restartGame();
                 }
                 //burritoparticles
                 function ingredientParticleEmit(x, y, quantity, time, burrito) {
@@ -1123,8 +1217,9 @@
                     }
                 });
                 if (tutorial == true) {
-                    textBox = this.add.image(400, 115, 'text').setScale(5);
+                    textBox = this.add.image(400, /*115*/170, 'text').setScale(4);
                     textBox.scrollFactorX = 0;
+                    textBox.scrollFactorY = 0;
                 }
                 
                 //tutorial vars at the top of create function, for earlier use.
@@ -1153,8 +1248,9 @@
                     active: function ()
                     {
                         
-                        currentDialog = add.text(230, 40, text.charAt(0), { fontFamily: 'mono', fontSize: 30, color: '#ffffff' });
+                        currentDialog = add.text(263, 40 + 68, text.charAt(0), { fontFamily: 'mono', fontSize: 17, color: '#ffffff' });
                         currentDialog.scrollFactorX = 0;
+                        currentDialog.scrollFactorY = 0;
                     }
 
                 });
@@ -1276,7 +1372,7 @@
                     }
                     if (taco.x > 810 && tutorialSequence == 6) {
                         tutorialSequence = 7;
-                        text('Great Job!\nNow try jumping \n over those spikes.', 150, function(){tutorialSequence = 8;})
+                        text('Great Job!\nNow try jumping \nover those spikes.', 150, function(){tutorialSequence = 8;})
                     }
                     if (taco.x > 1370 && tutorialSequence == 8) {
                         tutorialSequence = 9;
@@ -1420,6 +1516,20 @@
                         }
                     });
                     platforms.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    limes.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    flags.children.iterate(function(child) {
                         if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
                             entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
                             child.destroy();
@@ -1630,6 +1740,11 @@
                         child.body.velocity.x = 0;
                     }
                 });
+                //we want to slow down and turn the limes
+                limes.children.iterate(function(child) {
+                    child.angle += 0.012 * child.body.velocity.x;
+                    child.body.velocity.x *= 0.995;
+                })
                 
                 //here we have the code for the drill boss
                 
@@ -1762,6 +1877,9 @@
                 this.load.image('button1', 'assets/Dirt.png');
                 this.load.image('menu', 'assets/textBox.png');
                 this.load.audio('titleMusic', ['assets/Good\ Gummy\ Bears.mp3']);
+                for (var i = 0; i <= 5; i += 1) {
+                    this.load.image('level' + String(i), 'assets/level' + String(i) + '.png');
+                }
                 
             }
             //vars?
@@ -1808,8 +1926,8 @@
                 buttons = this.physics.add.group();
                 // here we have some config type things for the button layout.
                 buttons.opened = false;
-                buttons.count = 5;
-                buttons.spacing = 100;
+                buttons.count = 6;
+                buttons.spacing = 88;
             }
             titleScene.update = function () {
                 if (random(1, 50) == 3) {
@@ -1838,7 +1956,8 @@
                         buttons.opened = true;
 
                         for (var i = 0; i < buttons.count; i += 1) {
-                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'button1');
+                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'level' + String(i));
+                            
                             button.depth = 3;
                             button.body.x += button.width;
                             button.setOrigin(0.5, 0.5).refreshBody();
@@ -1850,12 +1969,12 @@
                         buttons.children.iterate(function(child){
                             console.log(child);
                             child.setInteractive({ useHandCursor: true });
-                            child.on('pointerover', () => { child.setScale(2.5).refreshBody(); });
-                            child.on('pointerout', () => { child.setScale(2).refreshBody(); });
+                            child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
+                            child.on('pointerout', () => { child.setScale(1).refreshBody(); });
                             child.on('pointerdown', () => {level = child.order;updateCurrentLevel();startGame();});
                             child.refreshBody();
                             child.setOrigin(0.5, 0.5);
-                            child.setScale(2);
+                            child.setScale(1);
                         });
                         
                         
