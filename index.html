@@ -120,6 +120,9 @@
                 this.load.audio('walking', ['assets/walking.mp3']);
                 //text box
                 this.load.image('text', 'assets/textBox.png');
+                //clouds/background
+                this.load.image('cloud1', 'assets/cloud-c.png');
+                this.load.image('cloud2', 'assets/cloud-b.png');
                 //tutorial
                 this.load.image('potat1', 'assets/potato1.png');
                 this.load.image('potat2', 'assets/potato2.png');
@@ -447,6 +450,63 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                 } 
+                if (type == 16) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 16;
+                    var coin = platformsLeft.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    coin.body.setAllowGravity(false);
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = -250;
+                    coin.initYV = 0;
+                    coin.distance = 300;//how far it goes.
+                    coin.setFrictionX(1);
+                    coin.dir = 1;
+                    coin.body.setImmovable = true;
+                    
+                } 
+                if (type == 17) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 17;
+                    var coin = platformsUp.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    coin.body.setAllowGravity(false);
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = -250;
+                    coin.distance = 300;//how far it goes.
+                    coin.setFrictionX(1);
+                    coin.dir = -1;
+                    coin.body.setImmovable = true;
+                    
+                } 
+                if (type == 18) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 18;
+                    var coin = platformsDown.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    coin.body.setAllowGravity(false);
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 250;
+                    coin.distance = 300;//how far it goes.
+                    coin.setFrictionX(1);
+                    coin.dir = 1;
+                    coin.body.setImmovable = true;
+                    
+                } 
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -519,6 +579,39 @@
                 
                 });
                 platforms.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    //child.originX = 0.5;
+                    //child.originY = 0.5;
+                    child.setOrigin(0.5, 0.5);
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                
+                });
+                platformsLeft.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    //child.originX = 0.5;
+                    //child.originY = 0.5;
+                    child.setOrigin(0.5, 0.5);
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                
+                });
+                platformsUp.children.iterate(function(child) {
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    //child.originX = 0.5;
+                    //child.originY = 0.5;
+                    child.setOrigin(0.5, 0.5);
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                
+                });
+                platformsDown.children.iterate(function(child) {
                     child.body.x = child.initX;
                     child.body.y = child.initY;
                     //child.originX = 0.5;
@@ -603,7 +696,18 @@
                 platforms.children.iterate(function(child) {
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
-                    //child.body.allowGravity = true;
+                });
+                platformsLeft.children.iterate(function(child) {
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                });
+                platformsUp.children.iterate(function(child) {
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                });
+                platformsDown.children.iterate(function(child) {
+                    child.body.velocity.x = /*child.initXV*/0;
+                    child.body.velocity.y = child.initYV;
                 });
                 limes.children.iterate(function(child) {
                     child.body.x = child.initX;
@@ -689,8 +793,7 @@
                 tacoVelocityX = 0;
                 select = 0;
 
-                //the background
-                //game.stage.backgroundColor = "#4488AA";
+                
                 //main game tilemap below
                 
                 mmap1 = [
@@ -752,7 +855,22 @@
                     creative = false;
                     resumeSprites();
                 }
-                
+                //the background
+                clouds = this.physics.add.group();
+                for (var i = 0; i < 15; i += 1) {
+                    cloud = clouds.create(random(1, layer1.width), random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                    if (random(1, 2) == 1) {
+                        cloud.body.velocity.x = random(25, 50);
+                    } else {
+                        cloud.body.velocity.x = random(-25, -50);
+                    }
+                    cloud.depth = -2;
+                    if (random(1, 2) == 1) {
+                        cloud.flipX = true;
+                    }
+                }
+
+                //game.stage.backgroundColor = "#4488AA";
                 
                 
                 //initial gathering the special tiles :)
@@ -998,6 +1116,15 @@
                 platforms = this.physics.add.group({
                     immovable: true
                 });
+                platformsLeft = this.physics.add.group({
+                    immovable: true
+                });
+                platformsUp = this.physics.add.group({
+                    immovable: true
+                });
+                platformsDown = this.physics.add.group({
+                    immovable: true
+                });
                 limes = this.physics.add.group();
                 flags = this.physics.add.group();
                 
@@ -1034,6 +1161,9 @@
                 this.physics.add.collider(bottles, layer1);
                 this.physics.add.collider(burritos, burritos);
                 this.physics.add.collider(taco, platforms);
+                this.physics.add.collider(taco, platformsLeft);
+                this.physics.add.collider(taco, platformsUp);
+                this.physics.add.collider(taco, platformsDown);
                 this.physics.add.collider(limes, layer1);
                 this.physics.add.collider(taco, limes);
                 this.physics.add.collider(limes, limes);
@@ -1145,6 +1275,9 @@
                         //Bottle.allowGravity = false;
                         Bottle.body.gravity.y = 0;
                         Bottle.body.velocity.y = 0;
+                        if (camera.zoom > 1) {
+                            camera.zoom -= 0.015;
+                        }
                     }
                 }
                 function burritoHitIceBall(Burrito, Ball) {
@@ -1168,7 +1301,11 @@
                     if (Math.abs(Lime.body.velocity.x) > 150) {
                         ingredientParticleEmit(Burrito.x, Burrito.y, 10, 400, Burrito);
                         Burrito.disableBody(true, true);
-                        Lime.body.velocity.x *= 3;
+                        Lime.body.velocity.x *= 2;
+                        if (Math.abs(Lime.body.velocity.x) > 550) {
+                            Lime.body.velocity.x = 550 * (Lime.body.velocity.x / Math.abs(Lime.body.velocity.x));
+                        }
+
                     }
                 }
                 function tacoHitLime(Taco, Lime) {
@@ -1278,6 +1415,22 @@
             }
             function update ()
             {
+                //update clouds and background
+                if (random(1, 100) == 3) {
+                    
+                    if (random(1, 2) == 1) {
+                        cloud = clouds.create(-200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                        cloud.body.velocity.x = random(25, 50);
+                    } else {
+                        cloud = clouds.create(layer1.width + 200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                        cloud.body.velocity.x = random(-25, -50);
+                    }
+                    cloud.depth = -2;
+                    if (random(1, 2) == 1) {
+                        cloud.flipX = true;
+                    }
+                }
+                
                 var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
 
                 
@@ -1292,6 +1445,11 @@
                 keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
                 keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
                 keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+
+                //make sure the camera zoom is right
+                if (camera.zoom <= 1.3 && keySpace.isDown == false) {
+                    camera.zoom += 0.015;
+                }
                 //debugging cursor position
                 if (keyC.isDown) {
                     alert(String(Math.round(mousePointer.x)) + ' ' + String(Math.round(mousePointer.y)));
@@ -1522,6 +1680,27 @@
                             
                         }
                     });
+                    platformsLeft.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    platformsUp.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    platformsDown.children.iterate(function(child) {
+                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
                     limes.children.iterate(function(child) {
                         if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
                             entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
@@ -1710,7 +1889,7 @@
                 });
                 platforms.children.iterate(function(child) {
                     if (creative == false) {
-                        if (child.x > child.initX+child.distance) {
+                        if (child.body.x > child.initX+child.distance) {
                             child.dir = -1;
                         }
                         if (child.body.x < child.initX) {
@@ -1718,7 +1897,40 @@
                         }
                         child.body.velocity.x = child.dir*130;
                     }
-                })
+                });
+                platformsLeft.children.iterate(function(child) {
+                    if (creative == false) {
+                        if (child.body.x < child.initX-child.distance) {
+                            child.dir = 1;
+                        }
+                        if (child.body.x > child.initX) {
+                            child.dir = -1;
+                        }
+                        child.body.velocity.x = child.dir*130;
+                    }
+                });
+                platformsDown.children.iterate(function(child) {
+                    if (creative == false) {
+                        if (child.body.y > child.initY+child.distance) {
+                            child.dir = -1;
+                        }
+                        if (child.body.y < child.initY) {
+                            child.dir = 1;
+                        }
+                        child.body.velocity.y = child.dir*130;
+                    }
+                });
+                platformsUp.children.iterate(function(child) {
+                    if (creative == false) {
+                        if (child.body.y < child.initY-child.distance) {
+                            child.dir = 1;
+                        }
+                        if (child.body.y > child.initY) {
+                            child.dir = -1;
+                        }
+                        child.body.velocity.y = child.dir*130;
+                    }
+                });
                 //sound effects for burritos and ice effect
                 burritos.children.iterate(function(child) {
                     if (child.body.blocked.down && !child.frozen) {
@@ -1769,13 +1981,13 @@
                         if (child.que == 1) { 
                             child.body.velocity.y = -600;
                             child.body.velocity.x *= -1;
-                            camera.shake(700, 0.005);
+                            camera.shake(400, 0.005);
 
                         }
                         if (child.que == 75) {
                             child.body.velocity.y = -600;
                             child.body.velocity.x *= -1;
-                            camera.shake(500, 0.005);
+                            camera.shake(400, 0.005);
                             
                         }
                         if (child.que == 150) {
