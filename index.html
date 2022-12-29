@@ -9,8 +9,8 @@
         <script>
             var fullScreen = false;
             var loaded = false;
-            var levelMaps = [tutorialMap1, levelMap1, demoMap1, bossMap1];
-            var levelEntitys = [tutorialEntity1, levelEntity1, entity1, bossEntity1];
+            var levelMaps = [tutorialMap1, levelMap1, levelMap2, demoMap1, bossMap1];
+            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, entity1, bossEntity1];
             var level = 0;
             var tutorial;
             
@@ -202,6 +202,8 @@
                 this.load.image('platform', 'assets/platform.png');
 
                 this.load.image('flag', 'assets/flag.svg');
+
+                this.load.image('cream', 'assets/Cream.png');
                 //this.load.image
 
                 //sky images
@@ -245,7 +247,33 @@
                 return(Math.round(Math.random()*(two-one))+one);
             }
             //deaths
-            function death(/*player, spike*/) {
+            var dead = false;
+            function death(Taco, spike) {
+                /*
+                if (dead == false) {
+                    dead = true;
+                    console.log('hi');
+                    taco.active = false;
+                    setTimeout(function(){
+                        taco.active = true;
+                        taco.x = 100;//for tutorial
+                        taco.y = 300;
+                        taco.body.velocity.x = 0;
+                        taco.body.velocity.y = 0;
+                        returnSprites();
+                        resumeSprites();
+                        camera.startFollow(taco, false, 0.1, 0.1);
+                        drillers.children.iterate(function(child) {
+                            child.started = false;
+                        });
+                        dead = false;
+                    }, 450);
+                }*/
+                
+                burritos.children.iterate(function(child) {
+                    child.dying = false;
+                });
+                
                 taco.body.x = 100;//for tutorial
                 taco.body.y = 300;
                 taco.body.velocity.x = 0;
@@ -258,20 +286,22 @@
                 });
             }
             //creating entities
-            function newEntity(type, x, y) {
+            function newEntity(type, x, y, offsetX) {
                 
                 if (type == 4) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 4;
-                    var coin = coins.create(x+16, y+16, 'coin1').setScale(2)//.refreshBody(); this causes a bug i think?
-                    coin.originX = 0.5;
-                    coin.originY = 0.5;
+                    var coin = coins.create(x+16, y+16, 'coin1');//.setScale(2);//.refreshBody();// this causes a bug i think?
                     coin.anims.play('coin');
+                    coin.setOrigin(0.5, 0.5);
+                    coin.setScale(2);
                     coin.body.gravity.y = 0;
                     
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
                     coin.initY = y;
+                    //coin.body.x = x;
+                    //coin.body.y = y;
                     coin.initXV = 0;
                     coin.initYV = 0;
                 } 
@@ -405,8 +435,8 @@
                 if (type == 13) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 13;
-                    var coin = platforms.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
-                    coin.setOrigin(0.5, 0.5);
+                    var coin = platforms.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -419,6 +449,7 @@
                     coin.setFrictionX(1);
                     coin.dir = 1;
                     coin.body.setImmovable = true;
+                    coin.setOrigin(0.5, 0.5);
                     
                 } 
                 if (type == 14) {
@@ -453,8 +484,8 @@
                 if (type == 16) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 16;
-                    var coin = platformsLeft.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
-                    coin.setOrigin(0.5, 0.5);
+                    var coin = platformsLeft.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -467,32 +498,31 @@
                     coin.setFrictionX(1);
                     coin.dir = 1;
                     coin.body.setImmovable = true;
+                    coin.setOrigin(0.5, 0.5);
                     
                 } 
                 if (type == 17) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 17;
-                    var coin = platformsUp.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
-                    coin.setOrigin(0.5, 0.5);
+                    var coin = platformsUp.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
-                    
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
                     coin.initY = y;
                     coin.initXV = 0;
                     coin.initYV = -250;
                     coin.distance = 300;//how far it goes.
-                    coin.setFrictionX(1);
                     coin.dir = -1;
                     coin.body.setImmovable = true;
-                    
+                    coin.setOrigin(0.5, 0.5);
                 } 
                 if (type == 18) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 18;
-                    var coin = platformsDown.create(x+16, y+16, 'platform').setScale(0.5)//.refreshBody(); this causes a bug i think?
-                    coin.setOrigin(0.5, 0.5);
+                    var coin = platformsDown.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody();// this causes a bug i think?
+                    //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -505,7 +535,24 @@
                     coin.setFrictionX(1);
                     coin.dir = 1;
                     coin.body.setImmovable = true;
+                    coin.setOrigin(0.5, 0.5);
                     
+                } 
+                if (type == 19) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 19;
+                    var coin = creams.create(x+16, y+16, 'cream');//.setScale(2);//.refreshBody();// this causes a bug i think?
+                    coin.setScale(0.5000001);
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    //coin.body.x = x;
+                    //coin.body.y = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
                 } 
             }
             function returnSprites() {
@@ -848,8 +895,11 @@
                     creative = true;
                     for (var i=0; i<entityList.length; i += 1) {
                         for (var e=0; e<entityList[0].length; e += 1) {
-                            
-                            newEntity(entityList[i][e], -16+(e*gridHeight)+gridHeight/2, -16+(i*gridWidth)+gridWidth/2);
+                            var platformOffset = 0;
+                            if (entityList[i][e] == 13 || entityList[i][e] == 16 || entityList[i][e] == 17 || entityList[i][e] == 18) {
+                                platformOffset = 64;
+                            }
+                            newEntity(entityList[i][e], -16+(e*gridHeight)+gridHeight/2, -16+(i*gridWidth)+gridWidth/2, platformOffset);
                         }
                     }
                     creative = false;
@@ -880,7 +930,6 @@
                 flag = map.filterTiles(function (tile) {
                     return (tile.index == 9);
                 });
-                
                 
                 //layer1.setFrictionX(5);
                 
@@ -1080,11 +1129,15 @@
                 this.restartGame = function() {
                     this.scene.restart();
                 }
+                //tutorial potato
+                potat = this.physics.add.sprite(400, 400, 'potat1').setScale(2.3).refreshBody();
+                potat.anims.play('potatAnim');
+                potat.depth = 2;
+                potat.summoned = false;//only used outside of tutorial.
                 if (tutorial == true) {
-                    //tutorial potato
-                    potat = this.physics.add.sprite(400, 400, 'potat1').setScale(2.3).refreshBody();
-                    potat.anims.play('potatAnim');
-                    potat.depth = 2;
+                    potat.visible = true;
+                } else {
+                    potat.visible = false;
                 }
                 
                 //player sprite
@@ -1093,12 +1146,14 @@
                 } else {
                     taco = this.physics.add.sprite(100, 300, 'still').setScale(1.75).refreshBody();
                 }
+                taco.disabled = false;//control whether they can move;
+                taco.cream = false;
                 taco.body.gravity.y = 1150;
                 taco.body.drag.x = 100;
                 taco.depth = 2;
                 taco.setFrictionX(1);
                 //collisions with player
-                layer1.setCollision([0, 2, 3, 8]);
+                layer1.setCollision([0, 2, 3, 8, 10]);
                 this.physics.add.collider(taco, layer1);
                 //entity groups etc
                 //creating the groups
@@ -1127,6 +1182,7 @@
                 });
                 limes = this.physics.add.group();
                 flags = this.physics.add.group();
+                creams = this.physics.add.group();
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -1152,6 +1208,7 @@
                 this.physics.add.overlap(burritos, limes, burritoHitLime, null, this);
                 this.physics.add.overlap(taco, limes, tacoHitLime, null, this);
                 this.physics.add.overlap(taco, flags, tacoHitFlag, null, this);
+                this.physics.add.overlap(taco, creams, tacoHitCream, null, this);
 
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
@@ -1250,13 +1307,23 @@
                 this.dirChange = 1;
                 function touchingRock(Taco, Rock) {
                     if (keySpace.isDown) {
+                        var anyHeld = false;
                         rocks.children.iterate(function(child) {
-                            if (child.held == true && child !== Rock) {
+                            if (child.held) {
+                                anyHeld = true;
+                            }
+                        })
+                        if (anyHeld == false) {
+                            Rock.held = true;
+                        } 
+                        /*
+                        rocks.children.iterate(function(child) {
+                            if (child.held == true && !(child == Rock)) {
                                 Rock.held = false;
                             } else {
                                 Rock.held = true;
                             }
-                        });
+                        });*/
                     }
 
                 }
@@ -1310,34 +1377,25 @@
                 }
                 function tacoHitLime(Taco, Lime) {
                     if (Math.abs(Lime.body.velocity.x) > 300) {
-                        death();
+                        if (Lime.x > Taco.x && Lime.body.velocity.x < 0) {
+                            death();
+                        } else if (Lime.x < Taco.x && Lime.body.velocity.x > 0) {
+                            death();
+                        }
+                        
                     }
                 }
                 function tacoHitFlag(Taco, Flag) {
                     nextLevel();
                     this.restartGame();
                 }
-                //burritoparticles
-                function ingredientParticleEmit(x, y, quantity, time, burrito) {
-                    var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
-                        //loop through emitters
-                        for (var i = 0; i < ingredientEmitters.length; i += 1) {
-                            if (ingredientEmitters[i].quantity.propertyValue == 0) {
-                                //when we find the right one give us it.
-                                ingredientSelect = i;
-                                break;
-                                
-                            }
-                        }
-                        ingredientEmitters[ingredientSelect].setPosition(x, y);
-                        ingredientEmitters[ingredientSelect].setQuantity(quantity);
-                        if (burrito) {//checks if it exists.
-                            setTimeout(function() {burrito.body.blocked.down = false;burrito.disableBody(true, true);ingredientEmitters[ingredientSelect].setQuantity(0)}, time);
-                        } else {
-                            setTimeout(function() {ingredientEmitters[ingredientSelect].setQuantity(0)}, time);
-                        }
-                        
+                function tacoHitCream(Taco, Cream) {
+                    taco.cream = true;
                 }
+                //burritoparticles
+                //this is where the ingredientParticle emit funciton was.
+                //accessing this elsewhere
+                this.ingredientParticleEmit = ingredientParticleEmit;
                 //create the entities
                 createEntities(entity1, 32, 32);
                 //text on top
@@ -1353,10 +1411,13 @@
                         //add.text(32, 32, 'Bad Bad Burritos', { fontFamily: 'mono', fontSize: 60, color: '#ffffff' });
                     }
                 });
+                textBox = this.add.image(400, /*115*/170, 'text').setScale(0.2);
+                textBox.scrollFactorX = 0;
+                textBox.scrollFactorY = 0;
                 if (tutorial == true) {
-                    textBox = this.add.image(400, /*115*/170, 'text').setScale(4);
-                    textBox.scrollFactorX = 0;
-                    textBox.scrollFactorY = 0;
+                    textBox.visible = true;
+                } else {
+                    textBox.visible = false;
                 }
                 
                 //tutorial vars at the top of create function, for earlier use.
@@ -1370,10 +1431,37 @@
                 }
 
             }
+            function ingredientParticleEmit(x, y, quantity, time, burrito) {
+                    var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
+                        //loop through emitters
+                        for (var i = 0; i < ingredientEmitters.length; i += 1) {
+                            if (ingredientEmitters[i].quantity.propertyValue == 0) {
+                                //when we find the right one give us it.
+                                ingredientSelect = i;
+                                break;
+                                
+                            }
+                        }
+                        ingredientEmitters[ingredientSelect].setPosition(x, y);
+                        ingredientEmitters[ingredientSelect].setQuantity(quantity);
+                        if (burrito) {//checks if it exists.
+                            burrito.dying = true;
+                            setTimeout(function() {
+                                if (burrito.dying) {//we have this here so that if we die before it does, the burrito stays alive.
+                                    burrito.body.blocked.down = false;
+                                    burrito.disableBody(true, true);
+                                }
+                                ingredientEmitters[ingredientSelect].setQuantity(0);
+                            }, time);
+                        } else {
+                            setTimeout(function() {ingredientEmitters[ingredientSelect].setQuantity(0)}, time);
+                        }
+                        
+                }
             //goes with text function as global var
             var currentDialog;
             function text(text, delay, action) {
-                var makeText = setInterval(drawCurrentText, 70);
+                var makeText = setInterval(drawCurrentText, 50);
                 if (currentDialog) {
                     currentDialog.destroy();
                 }
@@ -1413,8 +1501,66 @@
                 updateCurrentLevel();
                 
             }
+            //mr potat summoning
+            function summonPotat() {
+                taco.disabled = true;
+                textBox.visible = true;
+                if (textBox.scale < 4) {
+                    textBox.scale += 0.2;
+                } else {
+                    potat.x = taco.x - 350;
+                    potat.visible = true;
+                    potat.summoned = true;
+                }
+            }
+            function banishPotat() {
+                taco.disabled = false;
+                text('', 30, function(){});
+                textBox.visible = false;
+                textBox.scale = 0.2;
+                potat.visible = false;
+                potat.summoned = false;
+                //this.ingredientParticleEmit(potat.x, potat.y, 20, 300, false);
+            }
+            //all level sequences ith mr potat besides the tutorial
+            var textSequence = 0;
+            var checkpoint = 0;
+            function sequence() {
+                if (level == 1) {
+                    if (taco.x > 640 && checkpoint == 0) {
+                        if (potat.summoned == false) {
+                            summonPotat();
+                        }
+                        if (potat.summoned) {
+                            if (textSequence == 0) {
+                                textSequence += 1
+                                text('well what do we\nhave here?', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
+                            }
+                            if (textSequence == 2) {
+                                textSequence += 1
+                                text('it looks like \nanother tree?', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
+                            }
+                            if (textSequence == 4) {
+                                textSequence += 1
+                                text('i bet it works\nthe same way.', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
+                            }
+                            if (textSequence == 6) {
+                                textSequence += 1
+                                text('well, good luck!', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
+                            }
+                            if (textSequence == 8) {
+                                textSequence = 7;
+                                ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
+                                banishPotat();
+                                checkpoint += 1;
+                            }
+                        }
+                    }
+                }
+            }
             function update ()
             {
+                sequence();
                 //update clouds and background
                 if (random(1, 100) == 3) {
                     
@@ -1443,6 +1589,10 @@
                 keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
                 keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
                 keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+                keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+                keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+                keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+                keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
                 keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
                 keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
 
@@ -1455,7 +1605,7 @@
                     alert(String(Math.round(mousePointer.x)) + ' ' + String(Math.round(mousePointer.y)));
                     this.scene.restart();
                 }
-                if (keyS.isDown) {
+                if (keyF.isDown) {
                     var exMap = '[';
                     for (var i=0; i<map1.length; i += 1) {
                         exMap = String(exMap) + '[' + String(map1[i]) + ']' + ', ';
@@ -1504,9 +1654,9 @@
                         alert('creative mode off');
                     }
                 }
-                //tutorial code
+                //tutorial code and potat code.
                 access = this;
-                if (tutorial == true) {
+                if (potat) {
                     if (potat.body.x > taco.body.x+50) {
                         potat.body.velocity.x = -200;
                     }else if (potat.body.x < taco.body.x-50) {
@@ -1514,58 +1664,71 @@
                     } else {
                         potat.body.velocity.x *= 0.94;
                     }
-                    var intro = false
-                    if (tutorialSequence == 0) {
-                        tutorialSequence = 1;
-                        intro = text('Hi there. My name\nis Mr. Potat.\n\nPress Space to Cont.', 150, function(){tutorialSequence = 2;});
-                        
+                }
+                if (tutorial == true) {
+                    if (textBox.scale < 4) {
+                        textBox.scale += 0.2;
+                    } else {
+                        var intro = false
+                        if (tutorialSequence == 0) {
+                            tutorialSequence = 1;
+                            taco.disabled = true;
+                            intro = text('Hi there. My name\nis Mr. Potat.\n\nPress Space to Cont.', 150, function(){tutorialSequence = 2;});
+                            
+                        }
+                        if (keySpace.isDown && tutorialSequence == 2) {
+                            taco.disabled = false;
+                            tutorialSequence = 3;
+                            text('Try pressing the \narrow keys to \nmove/jump.', 150, function(){tutorialSequence = 4;})
+                        }
+                        if ((cursors.up.isDown || keyW.isDown) && tutorialSequence == 4) {
+                            tutorialSequence = 5;
+                            text('See that wall over\nthere?\nlets see if we can\njump over it.', 150, function(){tutorialSequence = 6;})
+                        }
+                        if (taco.x > 810 && tutorialSequence == 6) {
+                            tutorialSequence = 7;
+                            taco.disabled = true;
+                            text('Great Job!\nNow try jumping \nover those spikes.', 150, function(){tutorialSequence = 8;taco.disabled = false;})
+                        }
+                        if (taco.x > 1370 && tutorialSequence == 8) {
+                            tutorialSequence = 9;
+                            text('If you look forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
+                        }
+                        if (taco.x > 1680 && tutorialSequence == 10) {
+                            tutorialSequence = 11;
+                            taco.disabled = true;
+                            text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500)})
+                        }
+                        if (tutorialSequence == 12) {
+                            tutorialSequence = 13;
+                            text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1500)})
+                        }
+                        if (tutorialSequence == 14) {
+                            tutorialSequence = 15;
+                            taco.disabled = false;
+                            text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
+                        }
+                        if (keySpace.isDown && tutorialSequence == 16) {
+                            taco.disabled = true;
+                            tutorialSequence = 17;
+                            text('hmm... \nsatisfying...\nwell good luck!', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
+                            
+                        }
+                        if (tutorialSequence == 18) {
+                            tutorialSequence = 19;
+                            text('Press space to cont.', 150, function(){tutorialSequence = 20;})
+                        }
+                        if (keySpace.isDown && tutorialSequence == 20) {
+                            tutorialSequence = 21;
+                            text('', 10, function(){console.log('good luck')});
+                            textBox.visible = false;
+                            this.game.sound.stopAll();
+                            tutorial = false;
+                            nextLevel();
+                            this.restartGame();
+                        }
                     }
-                    if (keySpace.isDown && tutorialSequence == 2) {
-                        tutorialSequence = 3;
-                        text('Try pressing the \narrow keys to \nmove/jump.', 150, function(){tutorialSequence = 4;})
-                    }
-                    if (cursors.up.isDown && tutorialSequence == 4) {
-                        tutorialSequence = 5;
-                        text('See that wall over\nthere?\nlets see if we can\njump over it.', 150, function(){tutorialSequence = 6;})
-                    }
-                    if (taco.x > 810 && tutorialSequence == 6) {
-                        tutorialSequence = 7;
-                        text('Great Job!\nNow try jumping \nover those spikes.', 150, function(){tutorialSequence = 8;})
-                    }
-                    if (taco.x > 1370 && tutorialSequence == 8) {
-                        tutorialSequence = 9;
-                        text('If you look forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
-                    }
-                    if (taco.x > 1680 && tutorialSequence == 10) {
-                        tutorialSequence = 11;
-                        text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1000)})
-                    }
-                    if (tutorialSequence == 12) {
-                        tutorialSequence = 13;
-                        text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1000)})
-                    }
-                    if (tutorialSequence == 14) {
-                        tutorialSequence = 15;
-                        text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
-                    }
-                    if (keySpace.isDown && tutorialSequence == 16) {
-                        tutorialSequence = 17;
-                        text('hmm... \nsatisfying...\nlets move on...', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1000)})
-                        
-                    }
-                    if (tutorialSequence == 18) {
-                        tutorialSequence = 19;
-                        text('Thats all you need\nto know.\nGood luck.\n\nPress space to cont.', 150, function(){tutorialSequence = 20;})
-                    }
-                    if (keySpace.isDown && tutorialSequence == 20) {
-                        tutorialSequence = 21;
-                        text('', 10, function(){console.log('good luck')});
-                        textBox.visible = false;
-                        this.game.sound.stopAll();
-                        tutorial = false;
-                        nextLevel();
-                        this.restartGame();
-                    }
+                    
                 }
                 //the map editing
                 
@@ -1584,7 +1747,7 @@
                 }
                 
 ;                if (this.input.manager.activePointer.isDown && typeEdit == 1 && hold == false && creative == true) {
-                    newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32);
+                    newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0);
 
                 }
                 if (this.input.manager.activePointer.isDown) {
@@ -1761,7 +1924,17 @@
                         }
                     }
                 });
-                if (cursors.left.isDown)
+                if (taco.disabled) {
+                    cursors.left.isDown = false;
+                    cursors.right.isDown = false;
+                    cursors.up.isDown = false;
+                    cursors.down.isDown = false;
+                    keyW.isDown = false;
+                    keyA.isDown = false;
+                    keyS.isDown = false;
+                    keyD.isDown = false;
+                }
+                if (cursors.left.isDown || keyA.isDown)
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
                     tacoVelocityX -= 27;//47
@@ -1769,7 +1942,7 @@
                         tacoVelocityX -= 90;
                     }
                     taco.anims.play('left', true);
-                } else if (cursors.right.isDown)
+                } else if (cursors.right.isDown || keyD.isDown)
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
                     tacoVelocityX += 27;
@@ -1783,33 +1956,38 @@
                 }
 
                 taco.body.velocity.x = tacoVelocityX;
+                if (taco.cream) {
+                    tacoVelocityX = tacoVelocityX * 0.95;//0.8
+                } else {
+                    tacoVelocityX = tacoVelocityX * 0.88;//0.8
+                }
+                taco.cream = false;
                 
-                tacoVelocityX = tacoVelocityX * 0.88;//0.8
 
-                if (cursors.up.isDown && taco.body.blocked.down)
+                if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down)
                 {
                     taco.body.velocity.y = -640;
                     
                 }
                 //walking sound effects
-                if ((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down) {
+                if ((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down) {
                     if (this.walkingSound.isPlaying == false) {
                         this.walkingSound.play();
                         
                         dirtEmitter.setQuantity(3);
                     }
                 }
-                if (!((cursors.right.isDown || cursors.left.isDown) && taco.body.blocked.down)) {
+                if (!((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down)) {
                     this.walkingSound.stop();
                     dirtEmitter.setQuantity(0);
                 }
 
                 //we need to be able to move up and down in creative too
                 if (creative == true) {
-                    if (cursors.up.isDown) {
+                    if (cursors.up.isDown || keyW.isDown) {
                         taco.body.y -= 8;
                     }
-                    if (cursors.down.isDown) {
+                    if (cursors.down.isDown || keyS.isDown) {
                         taco.body.y += 8;
                     }
                 }
