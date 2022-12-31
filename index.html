@@ -835,6 +835,7 @@
                 
                 mainMusic.loop = true;
                 mainMusic.play();
+                console.log(mainMusic);
                 this.graphics = this.add.graphics();
                 //the variables of the game.
                 tacoVelocityX = 0;
@@ -1385,9 +1386,25 @@
                         
                     }
                 }
+                var transportThis = this;//allow us to restart the game in a callback.
                 function tacoHitFlag(Taco, Flag) {
-                    nextLevel();
-                    this.restartGame();
+                    if (taco.disabled == false) {
+                        transportThis = this;
+                        taco.disabled = true;
+                        //camera.fadeOut(1000);
+                        //stopmusic = setInterval(function(){if (this.mainMusic.volume > 0){this.mainMusic.volume -= 0.02;}}, 20);
+                        /*
+                        camera.once('camerafadeoutcomplete', function (camera) {
+                            clearInterval(stopmusic);
+                            nextLevel();
+                            transportThis.scene.restart();
+                        });*/
+                        setTimeout(function() {
+                            //clearInterval(stopmusic);
+                            nextLevel();
+                            transportThis.scene.restart();
+                        }, 4000);
+                    }
                 }
                 function tacoHitCream(Taco, Cream) {
                     taco.cream = true;
@@ -1562,7 +1579,7 @@
             {
                 sequence();
                 //update clouds and background
-                if (random(1, 100) == 3) {
+                if (random(1, 150) == 3) {
                     
                     if (random(1, 2) == 1) {
                         cloud = clouds.create(-200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
@@ -1657,9 +1674,9 @@
                 //tutorial code and potat code.
                 access = this;
                 if (potat) {
-                    if (potat.body.x > taco.body.x+50) {
+                    if (potat.x > taco.x+100) {
                         potat.body.velocity.x = -200;
-                    }else if (potat.body.x < taco.body.x-50) {
+                    }else if (potat.x < taco.x-100) {
                         potat.body.velocity.x = 200;
                     } else {
                         potat.body.velocity.x *= 0.94;
@@ -1694,7 +1711,7 @@
                             tutorialSequence = 9;
                             text('If you look forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
                         }
-                        if (taco.x > 1680 && tutorialSequence == 10) {
+                        if (taco.x > 1770 && tutorialSequence == 10) {
                             tutorialSequence = 11;
                             taco.disabled = true;
                             text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500)})
@@ -2256,10 +2273,13 @@
                 game.scene.start('game');
             }
             function restartGame() {
-                game.scene.restart('game');
+                //game.scene.restart('game');
+                this.scene.restart();
             }
-
+            var titleMusic;
             titleScene.preload = function () {
+                this.load.image('tv', 'assets/tv.png');
+                this.load.image('lines', 'assets/scanLines.png');
                 this.load.image('background', 'assets/title.png');
                 this.load.image('play', 'assets/playButton.png');
                 this.load.image('cloud1', 'assets/cloud-c.png');
@@ -2274,13 +2294,29 @@
             }
             //vars?
             var menuOpen = false;
-
+            var graphics = true;;
+            var graphics2;
             titleScene.create = function () {
+                graphics = this.add.graphics();
+
+                graphics.fillStyle(0x2f2f2f, 1);
+                graphics.fillRect(0, 0, 800, 600);
+                graphics.depth = 4;
+
+                tv = this.add.image(480, 300, 'tv');
+                tv.depth = 6;
+                tv.scale = 0.05;
+                lines = this.add.image(400, 300, 'lines');
+                lines.depth = 5;
+                lines.scale = 0.6;
+                lines.visible = false;
+                lines.alpha = 0;
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
-                var titleMusic = this.sound.add('titleMusic');
-                
+                titleMusic = this.sound.add('titleMusic');
+                console.log(titleMusic);
                 titleMusic.loop = true;
-                titleMusic.play();
+                //titleMusic.play();
+                titleMusic.pause();
                 //clouds
                 clouds = this.physics.add.group();
                 for (var i=0; i<15; i += 1) {
@@ -2319,7 +2355,39 @@
                 buttons.count = 6;
                 buttons.spacing = 88;
             }
+            var delay = 0;//non interval delay.
             titleScene.update = function () {
+                //intro animation
+                if (tv.scale < 1.2) {
+                    tv.scale += 0.01;
+                } else if (lines.alpha < 1 && tv.alpha > 0) {
+                    lines.alpha += 0.02;
+                    lines.visible = true;
+                } else if (graphics) {
+                    graphics2 = this.add.graphics();
+                    this.graphics2 = graphics2;
+                    graphics2.fillStyle(0xffffff, 1);
+                    graphics2.fillRect(0, 0, 800, 600);
+                    graphics2.depth = 4;
+                    graphics.destroy();
+                    graphics = false;
+
+                } else if (delay < 250) {
+                    delay += 1;
+                    titleMusic.volume = 0;
+                } else if (tv.alpha > 0 || this.graphics2.alpha > 0) {
+                    tv.alpha -= 0.0035;
+                    this.graphics2.alpha -= 0.01;
+                    if (titleMusic.isPlaying == false) {
+                        titleMusic.play();
+                    }
+                    titleMusic.resume();
+                    if (titleMusic.volume < 1) {
+                        titleMusic.volume += 0.006;
+                    }
+                } else if (lines.alpha > 0) {
+                    lines.alpha -= 0.02;
+                }
                 if (random(1, 50) == 3) {
                     if (random(1, 2) == 1) {
                         cloudX = -150;
@@ -2378,6 +2446,25 @@
 
             game.scene.start('title');
         </script>
+        <h5>
+            press m for creative mode. press b to select block. press e to delete block after it is selected<br>
+            entities - 1<br>
+            4:coin, 5:burrito, 6:burritoBoss, 7:treeTop, 8:stlagmite, 9:gumballForStlagmite, 10:burritoBarrier, 11:iceBottle, 12:lava, 13:rightPlatform, 14:lime <br>
+            15:flag, 16:leftPlatform, 17:upPlatform, 18:downPlatform, 19: sourCreamForGrass.<br>
+            blocks - 2<br>
+            0:grass, 1:spikes, 2:dirt, 3:stone, 4:backgroundStone, 5:leftStump, 6:middleStump, 7:rightStump.<br>
+            <br>
+            press S to save. Copy both of the numbers and email them to owen4.greenhalgh@gmail.com to be loaded into the game.
+            <br><br>
+            WASD movement now available.<br>
+            <br>
+            Notes to level designers:<br>
+            Keep in mind, if your mom or dad couldn't pass the level within ten minutes of trying, it is way too hard.<br>
+            trees should be placed a block above the ground and block types 5, 6, and 7, should go underneath.<br>
+            use plenty of burrito barriers as they can often by broken out of by burritos.<br>
+            All entities are deleted from the top left corner, and aren't always perfectly accurate.
+
+        </h5>
         
     </body>
     </html>
