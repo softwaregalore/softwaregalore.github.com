@@ -55,6 +55,12 @@
             }
             var config = {
                 type: Phaser.WEBGL,
+                scale: {
+                    mode: Phaser.Scale.FIT,
+                    autoCenter: Phaser.Scale.CENTER_BOTH,
+                    width: 800,
+                    height: 600
+                },
                 width: width,
                 height: height,//for the odd grid size
                 backgroundColor: '#ADD8E6',
@@ -1222,6 +1228,7 @@
                 taco.immortale = false;
                 taco.lives = 1;
                 taco.setFrictionX(1);
+                taco.jumpHold = 0;
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8, 10]);
                 this.physics.add.collider(taco, layer1);
@@ -1467,24 +1474,49 @@
                     }
                 }
                 var transportThis = this;//allow us to restart the game in a callback.
+                var sequenceEnd = 0;
                 function tacoHitFlag(Taco, Flag) {
+                    /*
                     if (taco.disabled == false) {
                         transportThis = this;
                         taco.disabled = true;
-                        //camera.fadeOut(1000);
-                        //stopmusic = setInterval(function(){if (this.mainMusic.volume > 0){this.mainMusic.volume -= 0.02;}}, 20);
-                        /*
-                        camera.once('camerafadeoutcomplete', function (camera) {
-                            clearInterval(stopmusic);
-                            nextLevel();
-                            transportThis.scene.restart();
-                        });*/
                         setTimeout(function() {
                             //clearInterval(stopmusic);
                             nextLevel();
                             transportThis.scene.restart();
                         }, 4000);
+                    }*/
+                    taco.disabled = true;
+                    
+                    if (potat.summoned == false) {
+                        summonPotat();
+                    } else if (potat.summoned == true) {
+                        if (sequenceEnd == 0) {
+                            sequenceEnd = 1;
+                            text('Level Complete!\nGreat Job.', 150, function(){setTimeout(function(){sequenceEnd = 2;}, 1500)});
+                        }
+                        if (sequenceEnd == 2) {
+                            sequenceEnd = 3;
+                            
+                            text('Would you like to\nplay a mini game?\n\nPress Y/N', 150, function(){sequenceEnd = 4});
+                        }
+                        if (sequenceEnd == 4 && keyY.isDown == true) {
+                            sequenceEnd = 5;
+                            taco.disabled = true;
+                            text("Good choice.\nIf you win, i'll \ngive you some \ncoins.", 150, function(){setTimeout(function(){sequenceEnd = 6;}, 1500)});
+                        }
+                        if (sequenceEnd == 6) {
+                            sequenceEnd = 7;
+                            text("If you lose, then\nas punishment you'll \nwatch an ad.", 150, function(){setTimeout(function(){sequenceEnd = 8;}, 1500)})
+                        }
+                        if (sequenceEnd == 8) {
+                            
+                        }
                     }
+                    
+                    
+
+                    
                 }
                 function tacoHitCream(Taco, Cream) {
                     taco.cream = true;
@@ -1679,7 +1711,7 @@
             {
                 sequence();
                 //update clouds and background
-                if (random(1, 150) == 3) {
+                if (random(1, 250) == 3) {
                     
                     if (random(1, 2) == 1) {
                         cloud = clouds.create(-200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
@@ -1712,15 +1744,25 @@
                 keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
                 keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
                 keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                keyY = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
+                keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
 
                 //make sure the camera zoom is right
                 if (camera.zoom <= 1.3 && keySpace.isDown == false) {
                     camera.zoom += 0.015;
                 }
                 //debugging cursor position
-                if (keyC.isDown) {
-                    alert(String(Math.round(mousePointer.x)) + ' ' + String(Math.round(mousePointer.y)));
-                    this.scene.restart();
+                if (Phaser.Input.Keyboard.JustDown(keyC)) {
+                    if (this.scale.isFullscreen)
+                    {
+
+                        this.scale.stopFullscreen();
+                    }
+                    else
+                    {
+
+                        this.scale.startFullscreen();
+                    }
                 }
                 if (keyF.isDown) {
                     var exMap = '[';
@@ -1825,7 +1867,7 @@
                             taco.disabled = false;
                             text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
                         }
-                        if (keySpace.isDown && tutorialSequence == 16 && taco.touchingTree) {
+                        if (trees.children.entries[0].triggered == true && tutorialSequence == 16 && taco.touchingTree) {
                             taco.disabled = true;
                             tutorialSequence = 17;
                             text('hmm... \nsatisfying...\nwell good luck!', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
@@ -2009,8 +2051,6 @@
                         if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
                             entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
                             child.destroy();
-                            
-                            
                         }
                     });
                 }
@@ -2097,7 +2137,7 @@
                     tacoVelocityX = tacoVelocityX * 0.88;//0.8
                 }
                 taco.cream = false;
-                
+                /*
                 var timeout1;
                 var timeout2;
                 var timeout3;
@@ -2111,6 +2151,16 @@
                     timeout2 = setTimeout(function(){if(cursors.up.isDown || keyW.isDown){taco.body.velocity.y -= 60}}, 80);
                     timeout3 = setTimeout(function(){if(cursors.up.isDown || keyW.isDown){taco.body.velocity.y -= 20}}, 100);
                     
+                }*/
+                
+                if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
+                    taco.body.velocity.y = -320;//base jump;
+                    taco.jumpHold = 110;
+                }
+                if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
+                {
+                    taco.jumpHold -= 16;
+                    taco.body.velocity.y -= taco.jumpHold;
                 }
                 //walking sound effects
                 if ((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down) {
@@ -2429,6 +2479,8 @@
             var graphics = true;;
             var graphics2;
             titleScene.create = function () {
+
+                keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
                 graphics = this.add.graphics();
 
                 graphics.fillStyle(0x000000, 1);
@@ -2478,7 +2530,9 @@
                 playButton.setInteractive({ useHandCursor: true });
                 playButton.on('pointerover', () => { playButton.setScale(2); });
                 playButton.on('pointerout', () => { playButton.setScale(1.5); });
-                playButton.on('pointerdown', () => {/*startGame(); titleMusic.stop()*/ menuOpen = true;});
+                playButton.on('pointerdown', () => {
+                    /*startGame(); titleMusic.stop()*/ menuOpen = true;
+                });
                 
                 menu = this.physics.add.sprite(400, 300, 'menu').setScale(0.2).refreshBody();
                 menu.depth = 2;
@@ -2492,6 +2546,19 @@
             }
             var delay = 0;//non interval delay.
             titleScene.update = function () {
+                //fullscreen
+                if (Phaser.Input.Keyboard.JustDown(keyC)) {
+                    if (this.scale.isFullscreen)
+                    {
+
+                        this.scale.stopFullscreen();
+                    }
+                    else
+                    {
+
+                        this.scale.startFullscreen();
+                    }
+                }
                 //intro animation
                 if (tv.scale < 1.2*12.5) {
                     tv.scale += 0.16;
@@ -2589,7 +2656,22 @@
             game.scene.add('game', gameScene);
 
             game.scene.start('title');
+            
+            function fullscreen() {
+                if (this.scale.isFullscreen)
+                {
+
+                    this.scale.stopFullscreen();
+                }
+                else
+                {
+
+                    this.scale.startFullscreen();
+                }
+            }
         </script>
+        <p>Press C to enter fullscreen once you</p>
+
         <h5>
             press m for creative mode. press b to select block. press e to delete block after it is selected<br>
             entities - 1<br>
