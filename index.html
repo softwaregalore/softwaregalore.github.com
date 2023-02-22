@@ -491,7 +491,7 @@
                 if (type == 13) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 13;
-                    var coin = platforms.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    var coin = platforms.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
                     
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
@@ -499,7 +499,7 @@
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
                     coin.initY = y;
-                    coin.initXV = 250;
+                    coin.initXV = 130;
                     coin.initYV = 0;
                     coin.distance = 300;//how far it goes.
                     coin.setFrictionX(1);
@@ -540,7 +540,7 @@
                 if (type == 16) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 16;
-                    var coin = platformsLeft.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    var coin = platformsLeft.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
@@ -548,7 +548,7 @@
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
                     coin.initY = y;
-                    coin.initXV = -250;
+                    coin.initXV = -130;
                     coin.initYV = 0;
                     coin.distance = 300;//how far it goes.
                     coin.setFrictionX(1);
@@ -560,7 +560,7 @@
                 if (type == 17) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 17;
-                    var coin = platformsUp.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody(); //this causes a bug i think?
+                    var coin = platformsUp.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
@@ -568,7 +568,7 @@
                     coin.initX = x;
                     coin.initY = y;
                     coin.initXV = 0;
-                    coin.initYV = -250;
+                    coin.initYV = -130;
                     coin.distance = 300;//how far it goes.
                     coin.dir = -1;
                     coin.body.setImmovable = true;
@@ -577,7 +577,7 @@
                 if (type == 18) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 18;
-                    var coin = platformsDown.create(x+offsetX, y, 'platform').setScale(0.5).refreshBody();// this causes a bug i think?
+                    var coin = platformsDown.create(x+offsetX, y, 'platform').setScale(1).refreshBody();// this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
@@ -586,7 +586,7 @@
                     coin.initX = x;
                     coin.initY = y;
                     coin.initXV = 0;
-                    coin.initYV = 250;
+                    coin.initYV = 130;
                     coin.distance = 300;//how far it goes.
                     coin.setFrictionX(1);
                     coin.dir = 1;
@@ -860,10 +860,14 @@
                 platforms.children.iterate(function(child) {
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
+                    child.dir = 1;
+                    child.angle = 0;
                 });
                 platformsLeft.children.iterate(function(child) {
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
+                    child.dir = -1;
+                    child.angle = 0;
                 });
                 platformsUp.children.iterate(function(child) {
                     child.body.velocity.x = child.initXV;
@@ -1336,6 +1340,10 @@
                 this.physics.add.overlap(ship, enemies, shipHitEnemy, null, this);
                 this.physics.add.overlap(bullets, enemies, bulletHitEnemy, null, this);
                 this.physics.add.overlap(taco, checkpoints, tacoHitCheckpoint, null, this);
+                this.physics.add.overlap(burritoBarriers, platforms, barrierHitPlatform, null, this);
+                this.physics.add.overlap(burritoBarriers, platformsLeft, barrierHitPlatform, null, this);
+                this.physics.add.overlap(burritoBarriers, platformsDown, barrierHitPlatform, null, this);
+                this.physics.add.overlap(burritoBarriers, platformsUp, barrierHitPlatform, null, this);
 
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
@@ -1526,6 +1534,9 @@
                         }
                         
                     }
+                }
+                function barrierHitPlatform(barrier, platform) {
+                    platform.turn = true;
                 }
                 var transportThis = this;//allow us to restart the game in a callback.
                 var sequenceEnd = 8;
@@ -2001,18 +2012,23 @@
                             taco.disabled = false;
                             text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
                         }
-                        if (trees.children.entries[0].triggered == true && tutorialSequence == 16 && taco.touchingTree) {
+                        if (trees.children.entries[0].angle > 0 && tutorialSequence == 16) {
                             taco.disabled = true;
                             tutorialSequence = 17;
-                            text('hmm... \nsatisfying...\nwell good luck!', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
+                            text('hmm... \nsatisfying...', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
                             
                         }
                         if (tutorialSequence == 18) {
                             tutorialSequence = 19;
-                            text('Press space to cont.', 150, function(){tutorialSequence = 20;})
+                            taco.disabled = false;
+                            text("Throughout the game\nyou'll find more\nexciting ways to\nkill burritos.", 150, function(){setTimeout(function(){tutorialSequence = 20}, 1500)})
                         }
-                        if (keySpace.isDown && tutorialSequence == 20) {
+                        if (tutorialSequence == 20) {
                             tutorialSequence = 21;
+                            text('Press space to begin\nlevel 1 on your\njourney to defeat\nthe dreaded \n"Auger".', 150, function(){tutorialSequence = 22;})
+                        }
+                        if (keySpace.isDown && tutorialSequence == 22) {
+                            tutorialSequence = 23;
                             text('', 10, function(){console.log('good luck')});
                             textBox.visible = false;
                             this.game.sound.stopAll();
@@ -2430,7 +2446,29 @@
                         if (child.body.x < child.initX) {
                             child.dir = 1;
                         }
-                        child.body.velocity.x = child.dir*130;
+                        /*
+                        if (child.turn == true && child.waiting == false) {
+                            child.dir *= -1;
+                            child.waiting = true;
+                        }
+                        if (child.turn == false) {
+                            child.waiting = false;
+                        }*/
+                        if ((child.dir * child.body.velocity.x) < 130) {
+                            child.body.velocity.x += child.dir*7;
+                            child.angle += (child.body.velocity.x * -1)/80;
+                        } else {
+                            if (child.angle > 0) {
+                                child.angle -= 1;
+                            } 
+                            if (child.angle < 0) {
+                                child.angle += 1;
+                            }
+                            if (Math.round(child.angle) == 0) {
+                                child.angle = 0;
+                            }
+                        }
+                        //child.turn = false;//reset
                     }
                 });
                 platformsLeft.children.iterate(function(child) {
@@ -2441,7 +2479,21 @@
                         if (child.body.x > child.initX) {
                             child.dir = -1;
                         }
-                        child.body.velocity.x = child.dir*130;
+                        if ((child.dir * child.body.velocity.x) < 130) {
+                            child.body.velocity.x += child.dir*7;
+                            child.angle += (child.body.velocity.x * -1)/80;
+
+                        } else {
+                            if (child.angle > 0) {
+                                child.angle -= 1;
+                            } 
+                            if (child.angle < 0) {
+                                child.angle += 1;
+                            }
+                            if (Math.round(child.angle) == 0) {
+                                child.angle = 0;
+                            }
+                        }
                     }
                 });
                 platformsDown.children.iterate(function(child) {
@@ -2452,7 +2504,9 @@
                         if (child.body.y < child.initY) {
                             child.dir = 1;
                         }
-                        child.body.velocity.y = child.dir*130;
+                        if ((child.dir * child.body.velocity.y) < 130) {
+                            child.body.velocity.y += child.dir*7;
+                        }
                     }
                 });
                 platformsUp.children.iterate(function(child) {
@@ -2463,7 +2517,9 @@
                         if (child.body.y > child.initY) {
                             child.dir = -1;
                         }
-                        child.body.velocity.y = child.dir*130;
+                        if ((child.dir * child.body.velocity.y) < 130) {
+                            child.body.velocity.y += child.dir*7;
+                        }
                     }
                 });
                 //sound effects for burritos and ice effect
