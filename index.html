@@ -231,6 +231,8 @@
 
                 this.load.image('landscape', 'assets/newLand.png');
                 this.load.image('platform', 'assets/platform.png');
+                this.load.image('platform1', 'assets/platform1.png');
+                this.load.image('platform2', 'assets/platform2.png');
 
                 this.load.image('flag', 'assets/flag.png');
 
@@ -516,7 +518,7 @@
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 13;
                     var coin = platforms.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
-                    
+                    coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -566,6 +568,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = 16;
                     var coin = platformsLeft.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
+                    coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -586,6 +589,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = 17;
                     var coin = platformsUp.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
+                    coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     //we need to keep track of initial positions for later.
@@ -603,6 +607,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = 18;
                     var coin = platformsDown.create(x+offsetX, y, 'platform').setScale(1).refreshBody();// this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
+                    coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
                     
@@ -1214,6 +1219,12 @@
                 {key: 'lava8'},],
                 frameRate:10,
                 repeat:-1});
+                //platform
+                this.anims.create({key: 'platformAnimation',
+                 frames: [{key: 'platform1'},
+                {key: 'platform2'},],
+                frameRate:10,
+                repeat:-1});
 
                 //end of animations :)
                 //but start of particle emitters
@@ -1382,6 +1393,10 @@
                 this.physics.add.collider(taco, platformsLeft);
                 this.physics.add.collider(taco, platformsUp);
                 this.physics.add.collider(taco, platformsDown);
+                this.physics.add.collider(limes, platforms);
+                this.physics.add.collider(limes, platformsLeft);
+                this.physics.add.collider(limes, platformsUp);
+                this.physics.add.collider(limes, platformsDown);
                 this.physics.add.collider(limes, layer1);
                 this.physics.add.collider(taco, limes);
                 this.physics.add.collider(limes, limes);
@@ -2262,7 +2277,7 @@
                         map1[tileSelectY][tileSelectX] = select;
                     //we need to make sure that block groups get updated when we change the map
                     spikes = map.filterTiles(function (tile) {
-                        return (tile.index == 1);
+                        return (tile.index == 1 || tile.index == 12);
                     });
                     flag = map.filterTiles(function (tile) {
                         return (tile.index == 9);
@@ -2369,12 +2384,12 @@
                 }*/
                 
                 if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
-                    taco.body.velocity.y = -220;//base jump;
-                    taco.jumpHold = 100;
+                    taco.body.velocity.y = -100;//base jump;
+                    taco.jumpHold = 105;
                 }
                 if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
                 {
-                    taco.jumpHold -= 10;
+                    taco.jumpHold -= 8;
                     taco.body.velocity.y -= taco.jumpHold;
                 }
                 //walking sound effects
