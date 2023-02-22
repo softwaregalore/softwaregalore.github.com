@@ -7,10 +7,34 @@
     <body>
         <script src="data.js"></script>
         <script>
+            var lmap1 = prompt("code1? this will replace level 4.");
+            var lentity1 = prompt("code2? this will replace level 4.");
+            lmap1 = lmap1.split('+');
+            for (var i = 0; i < lmap1.length; i += 1) {
+                lmap1[i] = lmap1[i].split(',');
+                
+                for (var e = 0; e < lmap1[i].length; e += 1) {
+                    lmap1[i][e] = parseInt(lmap1[i][e]);
+                }
+                lmap1[i].pop();
+            }
+            lmap1.shift();
+
+            lentity1 = lentity1.split('+');
+            for (var i = 0; i < lentity1.length; i += 1) {
+                lentity1[i] = lentity1[i].split(',');
+                
+                for (var e = 0; e < lentity1[i].length; e += 1) {
+                    lentity1[i][e] = parseInt(lentity1[i][e]);
+                }
+                lentity1[i].pop();
+            }
+            lentity1.shift();
+
             var fullScreen = false;
             var loaded = false;
-            var levelMaps = [tutorialMap1, levelMap1, levelMap2, mmap1, demoMap1, bossMap1];
-            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, eentity1, entity1, bossEntity1];
+            var levelMaps = [tutorialMap1, levelMap1, levelMap2, mmap1, lmap1, bossMap1];
+            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, eentity1, lentity1, bossEntity1];
             var level = 0;
             var tutorial;
             
@@ -872,10 +896,12 @@
                 platformsUp.children.iterate(function(child) {
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
+                    child.dir = -1;
                 });
                 platformsDown.children.iterate(function(child) {
                     child.body.velocity.x = /*child.initXV*/0;
                     child.body.velocity.y = child.initYV;
+                    child.dir = 1;
                 });
                 limes.children.iterate(function(child) {
                     child.body.x = child.initX;
@@ -1910,6 +1936,7 @@
                     }
                 }
                 if (keyF.isDown) {
+                    /*
                     var exMap = '[';
                     for (var i=0; i<map1.length; i += 1) {
                         exMap = String(exMap) + '[' + String(map1[i]) + ']' + ', ';
@@ -1921,6 +1948,24 @@
                     var exEntity = '[';
                     for (var i=0; i<entity1.length; i += 1) {
                         exEntity = String(exEntity) + '[' + String(entity1[i]) + ']' + ', ';
+                    }
+                    
+                    //exEntity.charAt(exEntity.length-1) = ']';
+                    console.log(exEntity);
+                    
+                    document.getElementById('outputEntity').innerHTML = exEntity;
+                    */
+                    var exMap = '';
+                    for (var i=0; i<map1.length; i += 1) {
+                        exMap = String(exMap) + '+' + String(map1[i]) + ', ';
+                    }
+                    //exMap.charAt(exMap.length-1) = ']';
+                    console.log(exMap);
+                    
+                    document.getElementById('outputMap').innerHTML = exMap;
+                    var exEntity = '';
+                    for (var i=0; i<entity1.length; i += 1) {
+                        exEntity = String(exEntity) + '+' + String(entity1[i]) + ', ';
                     }
                     
                     //exEntity.charAt(exEntity.length-1) = ']';
@@ -2455,14 +2500,14 @@
                             child.waiting = false;
                         }*/
                         if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*7;
-                            child.angle += (child.body.velocity.x * -1)/80;
+                            child.body.velocity.x += child.dir*3;
+                            child.angle += (child.body.velocity.x * -1)/160;
                         } else {
                             if (child.angle > 0) {
-                                child.angle -= 1;
+                                child.angle -= 0.5;
                             } 
                             if (child.angle < 0) {
-                                child.angle += 1;
+                                child.angle += 0.5;
                             }
                             if (Math.round(child.angle) == 0) {
                                 child.angle = 0;
@@ -2480,15 +2525,15 @@
                             child.dir = -1;
                         }
                         if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*7;
-                            child.angle += (child.body.velocity.x * -1)/80;
+                            child.body.velocity.x += child.dir*3;
+                            child.angle += (child.body.velocity.x * -1)/160;
 
                         } else {
                             if (child.angle > 0) {
-                                child.angle -= 1;
+                                child.angle -= 0.5;
                             } 
                             if (child.angle < 0) {
-                                child.angle += 1;
+                                child.angle += 0.5;
                             }
                             if (Math.round(child.angle) == 0) {
                                 child.angle = 0;
@@ -2505,7 +2550,7 @@
                             child.dir = 1;
                         }
                         if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*7;
+                            child.body.velocity.y += child.dir*3;
                         }
                     }
                 });
@@ -2518,7 +2563,7 @@
                             child.dir = -1;
                         }
                         if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*7;
+                            child.body.velocity.y += child.dir*3;
                         }
                     }
                 });
