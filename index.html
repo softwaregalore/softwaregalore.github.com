@@ -87,7 +87,7 @@
                 },
                 width: width,
                 height: height,//for the odd grid size
-                backgroundColor: '#ADD8E6',
+                backgroundColor: '#ADD8E6',//#ADD8E6
                 pixelArt: true,
                 canvas: document.getElementById('cnvs'),
                 physics: {
@@ -295,6 +295,8 @@
 
                 //minigame
                 this.load.image('spaceBox', 'assets/spaceInvadersBox.png');
+                //end
+                this.load.image('levelComplete', 'assets/levelComplete.png');
 
 
             }
@@ -392,7 +394,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = 5;
                     var burrito = burritos.create(x+16, y+32, 'burrito1').setGravity(0, 1500);//32 because it is two "blocks" tall.
                     burrito.anims.play('burritoAnimation');
-                    burrito.setScale(2)//.refreshBody(); apparently this causes bugs???
+                    burrito.setScale(2);
                     //burrito.body.bounce.y = 1; we don't want it to stop when it is in tight spaces.
                     burrito.body.bounce.x = 1;
                     burrito.body.velocity.x = 0;//normally 200 but doesn't need to move yet.
@@ -1021,6 +1023,7 @@
                 }
                 //the background
                 clouds = this.physics.add.group();
+                clouds.depth = -1;
                 for (var i = 0; i < ((layer1.width/7000) * 30); i += 1) {
                     cloud = clouds.create(random(1, layer1.width), random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
                     if (random(1, 2) == 1) {
@@ -1306,6 +1309,12 @@
                 ship.visible = false;
                 bullets = this.physics.add.group();
                 enemies = this.physics.add.group();
+                //also associated with minigame, is the level complete sign.
+                levelComplete = this.physics.add.sprite(400, 300, 'levelComplete').setScale(0.05);
+                levelComplete.visible = false;
+                levelComplete.scrollFactorX = 0;
+                levelComplete.scrollFactorY = 0;
+
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8, 10]);
                 this.physics.add.collider(taco, layer1);
@@ -1582,7 +1591,10 @@
                 var transportThis = this;//allow us to restart the game in a callback.
                 var sequenceEnd = 8;
                 function tacoHitFlag(Taco, Flag) {
-                    /*
+                    levelComplete.visible = true;
+                    if (levelComplete.scale < 0.2) {
+                        levelComplete.scale += 0.008;
+                    }
                     if (taco.disabled == false) {
                         transportThis = this;
                         taco.disabled = true;
@@ -1590,10 +1602,10 @@
                             //clearInterval(stopmusic);
                             nextLevel();
                             transportThis.scene.restart();
-                        }, 4000);
-                    }*/
+                        }, 3000);
+                    }
                     taco.disabled = true;
-                    
+                    /*
                     if (potat.summoned == false) {
                         summonPotat();
                     } else if (potat.summoned == true) {
@@ -1666,10 +1678,7 @@
                             sequenceEnd = 14;
                         }
                     }
-                    
-                    
-
-                    
+                    */
                 }
                 function tacoHitCream(Taco, Cream) {
                     taco.cream = true;
@@ -2729,6 +2738,7 @@
             
             //the titlescreen functions 
             function startGame() {
+                introMusic.destroy();
                 game.scene.stop('title');
                 game.scene.start('game');
             }
@@ -2736,6 +2746,7 @@
                 //game.scene.restart('game');
                 this.scene.restart();
             }
+            var introMusic;
             var titleMusic;
             titleScene.preload = function () {
                 this.load.image('madeBy', 'assets/madeBy.png');
@@ -2748,17 +2759,88 @@
                 this.load.image('cloud2', 'assets/cloud-b.png');
                 this.load.image('button1', 'assets/Dirt.png');
                 this.load.image('menu', 'assets/menu2.png');
-                this.load.audio('titleMusic', ['assets/Good\ Gummy\ Bears.mp3']);
+                this.load.audio('titleMusic', ['assets/Silent\ steak.mp3']);
+                this.load.audio('introMusic', ['assets/Silent\ steak.mp3']);
                 for (var i = 0; i <= 5; i += 1) {
                     this.load.image('level' + String(i), 'assets/level' + String(i) + '.png');
                 }
-                
+                this.load.image('bird1', 'assets/bird1.png');
+                this.load.image('bird2', 'assets/bird2.png');
+                for (var i = 1; i <= 7; i += 1) {
+                    this.load.image('mountain' + String(i), 'assets/mountain' + String(i) + '.png');
+                }
+                //more on the intro
+                for (var i = 1; i <= 7; i += 1) {
+                    this.load.image('intro' + String(i), 'assets/intro' + String(i) + '.png');
+                }
+                //text box
+                this.load.image('text', 'assets/textBox.png');
+                //burrito
+                this.load.image('burrito', 'assets/burrito__2.png');
+                //fire
+                this.load.image('fire1', 'assets/fire1.png');
+                this.load.image('fire2', 'assets/fire2.png');
+                //font
+                var element = document.createElement('style');
+
+                document.head.appendChild(element);
+
+                var sheet = element.sheet;
+
+                var styles = '@font-face { font-family: "mono"; src: url("assets/VCR_OSD_MONO_1.001.ttf") format("opentype"); }\n';
+
+                sheet.insertRule(styles, 0);
+
+                this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
             }
+
+            
             //vars?
             var menuOpen = false;
             var graphics = true;;
             var graphics2;
             titleScene.create = function () {
+                camera = this.cameras.main;
+                textCamera = this.cameras.add(0, 0, 800, 600);
+                
+                this.anims.create({key: 'birdAnimation',
+                 frames: [{key: 'bird1'},
+                {key: 'bird2'}],
+                frameRate:2,
+                repeat:-1});
+                this.anims.create({key: 'mountainAnimation1',
+                 frames: [{key: 'mountain1'},
+                {key: 'mountain2'},
+                {key: 'mountain3'},
+                {key: 'mountain4'},
+                {key: 'mountain5'},],
+                frameRate:1,
+                repeat:0});
+                this.anims.create({key: 'mountainAnimation2',
+                 frames: [{key: 'mountain6'},
+                {key: 'mountain7'},],
+                frameRate:1,
+                repeat:-1});
+                this.anims.create({key: 'mountainAnimationStill',
+                 frames: [{key: 'mountain1'},],
+                frameRate:1,
+                repeat:-1});
+                this.anims.create({key: 'fireAnimation',
+                 frames: [{key: 'fire1'},
+                {key: 'fire2'}],
+                frameRate:10,
+                repeat:-1});
+                this.anims.create({key: 'introAnimation',
+                 frames: [{key: 'intro1'},
+                {key: 'intro7'},
+                {key: 'intro2'},
+                {key: 'intro3'},
+                {key: 'intro4'},
+                {key: 'intro5'},
+                {key: 'intro6'},
+                {key: 'mountain1'},],
+                frameRate:0.375,
+                repeat:-1});
 
                 keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
                 graphics = this.add.graphics();
@@ -2773,20 +2855,44 @@
                 tv = this.add.image(400, 300, 'tv1');
                 tv.depth = 6;
                 tv.scale = 0.05;
-                lines = this.add.image(400, 300, 'lines');
-                lines.depth = 5;
-                lines.scale = 0.6;
-                lines.visible = false;
-                lines.alpha = 0;
+                tv.fadeIn = -1;//false
+                /*
+                //opening cutscene
+                bird = this.physics.add.sprite(-50, 500, 'bird1');
+                bird.anims.play('birdAnimation');
+                bird.depth = 1;
+                */
+                mountain = this.physics.add.sprite(400, 600, 'mountain1').setScale(8.5).refreshBody();
+                mountain.setOrigin(0.5, 1);
+                mountain.started = false;
+                mountain.visible = false;
+                mountain.depth = -3;
+                /*
+                burrito = this.physics.add.sprite(400, -100, 'burrito').setScale(4).refreshBody();
+                burrito.depth = 22;
+
+                fireballs = this.physics.add.group();
+                */
+                //attempt two at cutscene
+                intro = this.physics.add.sprite(400, 300, 'intro1');
+                intro.started = false;
+                intro.Data = {
+                    scale: [1, 1, 1.1, 1, 1.1, 1, 1, 8.5],
+                    angle: [5, -5, 5, -5, 5, -7, 5, 0],
+                    offsetX: [50, 50, 25, 0, -60, 0, 40, 0],
+                    offsetY: [0, 0, 0, 0, 30, 0, 0, 200, 0],
+                    frame: 0
+                }
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
                 titleMusic = this.sound.add('titleMusic');
-                console.log(titleMusic);
+                introMusic = this.sound.add('introMusic');
                 titleMusic.loop = true;
                 //titleMusic.play();
                 titleMusic.pause();
                 //clouds
+                
                 clouds = this.physics.add.group();
-                for (var i=0; i<15; i += 1) {
+                for (var i=0; i<12; i += 1) {
                     if (random(1, 2) == 1) {
                         cloudV = random(50, 100);
                     } else {
@@ -2800,19 +2906,31 @@
                     
                     var cloud = clouds.create(random(10, 790), random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
+                    cloud.depth = -2;
                 }
                 //the non moving parts (except for button kindof)
                 logo = this.add.image(400, 200, 'background').setScale(2.5);
-                
-                var playButton = this.add.image(400, 500, 'play').setScale(1.5);
+                logo.visible = false;
                 logo.depth = 1;
+                
+                playButton = this.add.image(400, 545, 'play').setScale(1);
+                playButton.visible = false;
                 playButton.depth = 1;
-                playButton.setInteractive({ useHandCursor: true });
-                playButton.on('pointerover', () => { playButton.setScale(2); });
-                playButton.on('pointerout', () => { playButton.setScale(1.5); });
-                playButton.on('pointerdown', () => {
-                    /*startGame(); titleMusic.stop()*/ menuOpen = true;
-                });
+                playButton.start = function() {
+                    playButton.setInteractive({ useHandCursor: true });
+                    playButton.on('pointerover', () => { playButton.setScale(1.2); });
+                    playButton.on('pointerout', () => { playButton.setScale(1); });
+                    playButton.on('pointerdown', () => {
+                        menuOpen = true;
+                    });
+                }
+                playButton.start();
+                
+                textBox = this.add.image(400, /*115*/170, 'text').setScale(5);
+                textBox.scrollFactorX = 0;
+                textBox.scrollFactorY = 0;
+                textBox.depth = -1;
+                textBox.visible = false;
                 
                 menu = this.physics.add.sprite(400, 300, 'menu').setScale(0.2).refreshBody();
                 menu.depth = 2;
@@ -2823,6 +2941,55 @@
                 buttons.opened = false;
                 buttons.count = 6;
                 buttons.spacing = 88;
+                //font
+                WebFont.load({
+                    custom: {
+                        families: [ 'mono' ]
+                    },
+                    active: function ()
+                    {
+                        //add.text(32, 32, 'Bad Bad Burritos', { fontFamily: 'mono', fontSize: 60, color: '#ffffff' });
+                    }
+                });
+                //dialog
+                //goes with text function as global var
+                var currentDialog;
+                this.dialogText = function (text, delay, action) {
+                    var makeText = setInterval(drawCurrentText, 70);
+                    if (currentDialog) {
+                        currentDialog.destroy();
+                    }
+                    add = this.add;
+                    WebFont.load({
+                        custom: {
+                            families: [ 'mono' ]
+                        },
+                        active: function ()
+                        {
+                            currentDialog = add.text(220, 30 + 68, text.charAt(0), { fontFamily: 'mono', fontSize: 17, color: '#FFFFFF' });
+                            currentDialog.scrollFactorX = 0;
+                            currentDialog.scrollFactorY = 0;
+                            currentDialog.depth = 20;
+                            camera.ignore([currentDialog, textBox]);
+                        }
+
+                    });
+                    function drawCurrentText() {
+                        if (text.charAt(currentDialog._text.length) == ' ') {
+                            if (currentDialog.setText) {
+                                currentDialog.setText(currentDialog._text + text.charAt(currentDialog._text.length));
+                            }
+                            
+                        }
+                        if (currentDialog.setText) {
+                                currentDialog.setText(currentDialog._text + text.charAt(currentDialog._text.length));
+                            }
+                        if (currentDialog._text == text) {
+                            clearInterval(makeText);
+                            action();
+                        }
+                    }
+                }
             }
             var delay = 0;//non interval delay.
             titleScene.update = function () {
@@ -2830,18 +2997,33 @@
                 if (Phaser.Input.Keyboard.JustDown(keyC)) {
                     if (this.scale.isFullscreen)
                     {
-
                         this.scale.stopFullscreen();
                     }
                     else
                     {
-
                         this.scale.startFullscreen();
                     }
                 }
                 //intro animation
-                if (tv.scale < 1.2*12.5) {
-                    tv.scale += 0.16;
+                if (tv.scale < 15) {
+                    if (tv.fadeIn === 1) {
+                        tv.alpha += 0.02;
+                    } else if (tv.fadeIn === 0) {
+                        tv.fadeIn = 0.1;//prevent from running again.
+                        tv.alpha = 1 - 0.02;
+                        setTimeout(function(){tv.fadeIn = -1;}, 1000);
+                    } else if (tv.fadeIn === -1) {
+                        tv.alpha -= 0.02;
+                    } else {
+                    }
+                    if (tv.alpha == 1) {
+                        tv.fadeIn = 0;
+                    }
+                    if (tv.alpha == 0) {
+                        tv.fadeIn = 1;
+                        tv.scale += 3;
+                        tv.alpha = 0.02;
+                    }
                 }/* else if (lines.alpha < 1 && tv.alpha > 0) {
                     lines.alpha += 0.02;
                     lines.visible = true;
@@ -2850,36 +3032,129 @@
                     this.graphics2 = graphics2;
                     graphics2.fillStyle(0x000000, 1);
                     graphics2.fillRect(0, 0, 800, 600);
-                    graphics2.depth = 4;
+                    graphics2.depth = 20;
                     graphics.destroy();
                     graphics = false;
                     
 
                 } else if (delay < 250) {
-                    delay += 1;
+                    delay += 1;//note to fix this later. Not good practice.
                     if (delay == 50) {
                         madeBy.visible = true;
                     }
                     if (delay == 200) {
                         madeBy.visible = false;
                     }
-                    titleMusic.volume = 0;
-                } else if (tv.alpha > 0 || this.graphics2.alpha > 0) {
+                    introMusic.volume = 0;
+                } else if (this.graphics2.alpha > 0) {
+                    //textBox.depth = 19;
                     madeBy.visible = false;
-                    tv.alpha -= 0.0035;
-                    tv.scale += 0.1;
-                    this.graphics2.alpha -= 0.01;
-                    if (titleMusic.isPlaying == false) {
-                        titleMusic.play();
+                    intro.visible = true;
+                    tv.destroy();
+                    this.graphics2.alpha -= 0.02;
+                    if (introMusic.isPlaying == false) {
+                        introMusic.play();
+                        intro.anims.play('introAnimation');
+                        intro.scale = intro.Data.scale[intro.Data.frame];
+                        intro.angle = intro.Data.angle[intro.Data.frame];
+                        intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
+                        intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
+                        
+                        intro.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
+                            intro.Data.frame += 1;
+                            intro.scale = intro.Data.scale[intro.Data.frame];
+                            intro.angle = intro.Data.angle[intro.Data.frame];
+                            intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
+                            intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
+                            if (intro.Data.frame == 7) {
+                                logo.visible = true;
+                                intro.visible = false;
+                                mountain.visible = true;
+                                playButton.visible = true;
+                                playButton.start();
+                            }
+                        }, this);
+
+
                     }
-                    titleMusic.resume();
-                    if (titleMusic.volume < 1) {
-                        titleMusic.volume += 0.006;
+                    introMusic.resume();
+                    if (introMusic.volume < 1) {
+                        introMusic.volume += 0.01;
                     }
-                }/* else if (lines.alpha > 0) {
-                    lines.alpha -= 0.02;
+                } else if (intro.started == false) {
+                    intro.started = true;
+                    
+                    
+                } else if (intro.started == true) {
+
+                }
+                /* else if(bird.body.velocity.x == 0) {
+                    bird.body.velocity.x = 50;
+                } else if (mountain.dialog == null) {
+                    mountain.dialog = 1;
+                    this.dialogText('Long ago, there was\npeace in the land...', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 2000)});
+                } else if (bird.x < 200) {
+                    bird.body.velocity.x = 50;
+                } else if (bird.y < 600) {
+                    bird.body.velocity.x *= 0.99;
+                    bird.body.velocity.y = 50;
+                } else if (mountain.started == false) {
+                    mountain.anims.play('mountainAnimation1').once('animationcomplete', () => {
+                        mountain.anims.play('mountainAnimation2');
+                    });
+                    mountain.started = true;
+                }
+                if (mountain.dialog == 2) {
+                    mountain.dialog += 1;
+                    this.dialogText('When suddenly, fell from\nthe sky...', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 1000)});
+                    camera.shake(35000, 0.01);
+                } else if (mountain.dialog == 4) {
+                    mountain.dialog += 1;
+                    this.dialogText('The Bad Burrito!!!', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 1000)});
+                    burrito.body.velocity.y = 100;
+                } else if (burrito.y > 430) {
+                    burrito.depth = -1;
+                    burrito.body.velocity.y = 0;
+                    burrito.y = 430;
+                } else if (mountain.dialog == 6) {
+                    mountain.dialog += 1;
+                    this.dialogText('He and his 3 minions\nterrorized the native \ntacos...', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 2000)});
+                } else if (mountain.dialog == 8) {
+                    mountain.dialog += 1;
+                    this.dialogText('Amidst the chaos only\nyou are left to\ndefeat him.', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 2000)});
+                } else if (mountain.dialog == 10) {
+                    mountain.dialog += 1;
+                    this.dialogText('The first enemy along\nthe path is the\ndespised drilling "Auger".', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 2000)});
+                } else if (mountain.dialog == 12) {
+                    mountain.dialog += 1;
+                    this.dialogText('Many more enemys you\nwill find along the\npath to victory.', 50, function(){setTimeout(function(){mountain.dialog += 1;}, 2000)});
+                } else if (mountain.dialog == 14) {
+                    mountain.dialog += 1;
+                    camera.fadeOut(3000);
+                    this.dialogText('', 50, null);
+                    camera.once('camerafadeoutcomplete', function (camera) {
+                        playButton.visible = true;
+                        logo.visible = true;
+                        fireballs.visible = false;
+                        mountain.anims.play('mountainAnimationStill');
+                        camera.shake(1000, 0);
+                        textBox.visible = false;
+                        playButton.start();
+                        burrito.destroy();
+                        camera.fadeIn(2000);
+                    });
                 }*/
-                if (random(1, 50) == 3) {
+
+                /*
+                if (random(1, 50) == 3 && mountain.dialog > 5 && logo.visible == false) {
+                    fire = fireballs.create(random(1, 800), -100, 'fire1');
+                    fire.body.velocity.y = 150;
+                    fire.anims.play('fireAnimation');
+                    fire.angle = 90;
+                    fire.scale = 0.1;
+                }
+                */
+                if (random(1, 100) == 3) {
                     if (random(1, 2) == 1) {
                         cloudX = -150;
                         cloudV = random(50, 100);
@@ -2895,6 +3170,7 @@
                     
                     var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
+                    cloud.depth = -2;
                 }
                 if (menuOpen) {
                     menu.visible = true;
@@ -2916,7 +3192,6 @@
                         }
                         //set the interactiveness afterwards
                         buttons.children.iterate(function(child){
-                            console.log(child);
                             child.setInteractive({ useHandCursor: true });
                             child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
                             child.on('pointerout', () => { child.setScale(1).refreshBody(); });
