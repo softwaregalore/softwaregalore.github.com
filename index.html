@@ -2770,7 +2770,7 @@
                     this.load.image('mountain' + String(i), 'assets/mountain' + String(i) + '.png');
                 }
                 //more on the intro
-                for (var i = 1; i <= 7; i += 1) {
+                for (var i = 1; i <= 8; i += 1) {
                     this.load.image('intro' + String(i), 'assets/intro' + String(i) + '.png');
                 }
                 //text box
@@ -2780,6 +2780,18 @@
                 //fire
                 this.load.image('fire1', 'assets/fire1.png');
                 this.load.image('fire2', 'assets/fire2.png');
+                //shooters
+                this.load.image('shooter1', 'assets/Shooter1.png');
+                this.load.image('shooter2', 'assets/Shooter2.png');
+                this.load.image('shooter3', 'assets/Shooter3.png');
+                //Beginning credits
+                this.load.image('credit1', 'assets/Creator.png');
+                this.load.image('credit2', 'assets/Programming.png');
+                this.load.image('credit3', 'assets/Art.png');
+                this.load.image('credit4', 'assets/Blank.png');
+
+                this.load.image('pre1', 'assets/preTitle1.png');
+                this.load.image('pre2', 'assets/preTitle2.png');
                 //font
                 var element = document.createElement('style');
 
@@ -2801,8 +2813,7 @@
             var graphics2;
             titleScene.create = function () {
                 camera = this.cameras.main;
-                textCamera = this.cameras.add(0, 0, 800, 600);
-                
+
                 this.anims.create({key: 'birdAnimation',
                  frames: [{key: 'bird1'},
                 {key: 'bird2'}],
@@ -2837,10 +2848,38 @@
                 {key: 'intro3'},
                 {key: 'intro4'},
                 {key: 'intro5'},
+                {key: 'intro8'},
                 {key: 'intro6'},
-                {key: 'mountain1'},],
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},
+                {key: 'intro6'},],
                 frameRate:0.375,
+                repeat:0});
+                this.anims.create({key: 'shooterAnimation',
+                 frames: [{key: 'shooter1'},
+                {key: 'shooter2'},
+                {key: 'shooter3'},
+                {key: 'shooter2'}],
+                frameRate:1.5,
                 repeat:-1});
+                this.anims.create({key: 'creditAnimation',
+                 frames: [{key: 'credit1'},
+                {key: 'credit2'},
+                {key: 'credit3'},
+                {key: 'credit4'},],
+                frameRate:0.1875,
+                repeat:0});
+                this.anims.create({key: 'preAnimation',
+                 frames: [{key: 'pre1'},
+                {key: 'pre2'}],
+                frameRate:0.5,
+                repeat:0});
 
                 keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
                 graphics = this.add.graphics();
@@ -2877,20 +2916,24 @@
                 intro = this.physics.add.sprite(400, 300, 'intro1');
                 intro.started = false;
                 intro.Data = {
-                    scale: [1, 1, 1.1, 1, 1.1, 1, 1, 8.5],
-                    angle: [5, -5, 5, -5, 5, -7, 5, 0],
-                    offsetX: [50, 50, 25, 0, -60, 0, 40, 0],
-                    offsetY: [0, 0, 0, 0, 30, 0, 0, 200, 0],
+                    scale: [1, 1, 1.1, 1, 1.1, 1, 2, 1],
+                    angle: [-5, 5, -5, 5, -5, 7, -5, 5],
+                    offsetX: [50, 50, 25, 0, -60, 0, 0, 40],
+                    offsetY: [0, 0, 0, 0, 30, 0, 0, 0, 200],
                     frame: 0
                 }
+                credit = this.physics.add.sprite(400, 200, 'credit1').setScale(0.75);
+                credit.angle = 5;
+                credit.visible = false;
+                //here we have our shooters
+                shooters = this.physics.add.group();
+
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
                 titleMusic = this.sound.add('titleMusic');
                 introMusic = this.sound.add('introMusic');
                 titleMusic.loop = true;
-                //titleMusic.play();
                 titleMusic.pause();
                 //clouds
-                
                 clouds = this.physics.add.group();
                 for (var i=0; i<12; i += 1) {
                     if (random(1, 2) == 1) {
@@ -3021,7 +3064,7 @@
                     }
                     if (tv.alpha == 0) {
                         tv.fadeIn = 1;
-                        tv.scale += 3;
+                        tv.scale += 5;
                         tv.alpha = 0.02;
                     }
                 }/* else if (lines.alpha < 1 && tv.alpha > 0) {
@@ -3052,8 +3095,11 @@
                     intro.visible = true;
                     tv.destroy();
                     this.graphics2.alpha -= 0.02;
+                    intro.scale += 0.001;//account for the delay caused by the graphics 2 fading out.
+
                     if (introMusic.isPlaying == false) {
                         introMusic.play();
+                        intro.started = true;
                         intro.anims.play('introAnimation');
                         intro.scale = intro.Data.scale[intro.Data.frame];
                         intro.angle = intro.Data.angle[intro.Data.frame];
@@ -3062,17 +3108,58 @@
                         
                         intro.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
                             intro.Data.frame += 1;
-                            intro.scale = intro.Data.scale[intro.Data.frame];
-                            intro.angle = intro.Data.angle[intro.Data.frame];
-                            intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
-                            intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
-                            if (intro.Data.frame == 7) {
+                            if (intro.Data.frame < 8) {
+                                intro.scale = intro.Data.scale[intro.Data.frame];
+                                intro.angle = intro.Data.angle[intro.Data.frame];
+                                intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
+                                intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
+                            } else {
+                                shooter = shooters.create(907.3, 473, 'shooter1').setScale(2);
+                                shooter.angle = 5;
+                                shooter.anims.play('shooterAnimation');
+                                shooter.body.velocity.y = -100 * 0.087;
+                                shooter.body.velocity.x = -100 * 0.99;
+                            }
+                            if (intro.Data.frame == 8) {
+                                credit.visible = true;
+                                credit.anims.play('creditAnimation');
+
+                            }
+                            if (intro.Data.frame == 15) {
+                                camera.fadeOut(2500).once('camerafadeoutcomplete', () => {
+                                    shooters.children.iterate(function(child) {
+                                        if (child) {
+                                            child.destroy();
+                                        }
+                                    });
+                                    shooters.destroy();
+                                    setTimeout(function(){
+                                        intro.anims.play('preAnimation').once('animationcomplete', () => {
+                                            camera.fadeIn(2500);
+                                            logo.visible = true;
+                                            intro.visible = false;
+                                            mountain.visible = true;
+                                            playButton.visible = true;
+                                            playButton.start();
+                                            
+                                            credit.visible = false;
+                                        });
+                                        intro.x = 400;
+                                        intro.y = 300;
+                                        intro.angle = 0;
+                                        intro.scale = 1;
+                                        camera.fadeIn(1000);
+                                    }, 1000);
+                                    
+                                });
+                            }
+                            /*if (intro.Data.frame == 8) {
                                 logo.visible = true;
                                 intro.visible = false;
                                 mountain.visible = true;
                                 playButton.visible = true;
                                 playButton.start();
-                            }
+                            }*/
                         }, this);
 
 
@@ -3081,12 +3168,9 @@
                     if (introMusic.volume < 1) {
                         introMusic.volume += 0.01;
                     }
-                } else if (intro.started == false) {
-                    intro.started = true;
-                    
-                    
+                }else if (intro.Data.frame < 8) {
+                    intro.scale += 0.001;
                 } else if (intro.started == true) {
-
                 }
                 /* else if(bird.body.velocity.x == 0) {
                     bird.body.velocity.x = 50;
