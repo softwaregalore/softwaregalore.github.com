@@ -297,6 +297,10 @@
                 this.load.image('spaceBox', 'assets/spaceInvadersBox.png');
                 //end
                 this.load.image('levelComplete', 'assets/levelComplete.png');
+                this.load.image('menu', 'assets/menu2.png');
+                for (var i = 0; i <= 5; i += 1) {
+                    this.load.image('level' + String(i), 'assets/level' + String(i) + '.png');
+                }
 
 
             }
@@ -370,7 +374,7 @@
                 
             }
             //creating entities
-            function newEntity(type, x, y, offsetX) {
+            function newEntity(type, x, y, offsetX, offsetY) {
                 
                 if (type == 4) {
                     
@@ -519,7 +523,7 @@
                 if (type == 13) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 13;
-                    var coin = platforms.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
+                    var coin = platforms.create(x+offsetX, y+offsetY, 'platform').setScale(1);
                     coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
                     coin.body.setAllowGravity(false);
@@ -534,11 +538,10 @@
                     coin.dir = 1;
                     coin.body.setImmovable = true;
                     coin.setOrigin(0.5, 0.5);
-                    
                 } 
                 if (type == 14) {
                     
-                    entity1[Math.round(y/32)][Math.round(x/32)] = 4;
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 14;
                     var coin = limes.create(x, y, 'lime').setScale(3)//.refreshBody(); this causes a bug i think?
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 500;
@@ -554,7 +557,7 @@
                 } 
                 if (type == 15) {
                     
-                    entity1[Math.round(y/32)][Math.round(x/32)] = 4;
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 15;
                     var coin = flags.create(x+16, y+8, 'flag').setScale(0.15)//.refreshBody(); this causes a bug i think?
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
@@ -568,7 +571,7 @@
                 if (type == 16) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 16;
-                    var coin = platformsLeft.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
+                    var coin = platformsLeft.create(x+offsetX, y+offsetY, 'platform').setScale(1); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
@@ -589,7 +592,7 @@
                 if (type == 17) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 17;
-                    var coin = platformsUp.create(x+offsetX, y, 'platform').setScale(1).refreshBody(); //this causes a bug i think?
+                    var coin = platformsUp.create(x+offsetX, y+offsetY, 'platform').setScale(1); //this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
@@ -607,7 +610,7 @@
                 if (type == 18) {
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 18;
-                    var coin = platformsDown.create(x+offsetX, y, 'platform').setScale(1).refreshBody();// this causes a bug i think?
+                    var coin = platformsDown.create(x+offsetX, y+offsetY, 'platform').setScale(1);// this causes a bug i think?
                     //coin.setOrigin(0.5, 0.5);
                     coin.anims.play('platformAnimation');
                     coin.body.gravity.y = 0;
@@ -803,8 +806,8 @@
                 
                 });
                 limes.children.iterate(function(child) {
-                    child.body.x = child.initX;
-                    child.body.y = child.initY;
+                    child.x = child.initX;
+                    child.y = child.initY;
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
@@ -971,6 +974,7 @@
             var mainMusic;
             function create ()
             {
+                menuOpen = false;
                 //text and menu type stuff.
                 //levelDisplay = this.add.text(400, 300, 'Level ' + level, {fontFamily: 'Arial', fontSize: '32px', fill: 'white' });//.setOrigin(0.5);
                 //vars for tutorial
@@ -1015,7 +1019,7 @@
                             if (entityList[i][e] == 13 || entityList[i][e] == 16 || entityList[i][e] == 17 || entityList[i][e] == 18) {
                                 platformOffset = 64;
                             }
-                            newEntity(entityList[i][e], -16+(e*gridHeight)+gridHeight/2, -16+(i*gridWidth)+gridWidth/2, platformOffset);
+                            newEntity(entityList[i][e], -16+(e*gridHeight)+gridHeight/2, -16+(i*gridWidth)+gridWidth/2, platformOffset, 32);
                         }
                     }
                     creative = false;
@@ -1284,6 +1288,7 @@
                 } else {
                     potat.visible = false;
                 }
+                potat.goto = false;
                 
                 //player sprite
                 if (tutorial == true) {
@@ -1310,10 +1315,32 @@
                 bullets = this.physics.add.group();
                 enemies = this.physics.add.group();
                 //also associated with minigame, is the level complete sign.
-                levelComplete = this.physics.add.sprite(400, 300, 'levelComplete').setScale(0.05);
+                levelComplete = this.physics.add.sprite(400, 270, 'levelComplete').setScale(0.05);
                 levelComplete.visible = false;
                 levelComplete.scrollFactorX = 0;
                 levelComplete.scrollFactorY = 0;
+                levelComplete.depth = 6;
+
+                
+
+                menu = this.physics.add.sprite(400, 350, 'menu').setScale(0.2).refreshBody();
+                menu.scrollFactorX = 0;
+                menu.scrollFactorY = 0;
+                menu.depth = 2;
+                menu.targetScale = 3.5;
+                menu.visible = false;
+
+                menu.clickHere2 = this.physics.add.sprite(400, 300, 'clickHere2').setScale(0.35);
+                menu.clickHere2.visible = false;
+                menu.clickHere2.depth = 5;
+
+                buttons = this.physics.add.group();
+                buttons.scrollFactorX = 0;
+                buttons.scrollFactorY = 0;
+                // here we have some config type things for the button layout.
+                buttons.opened = false;
+                buttons.count = 6;
+                buttons.spacing = 88;
 
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8, 10]);
@@ -1323,6 +1350,15 @@
                 heart = hearts.create(125, 100, 'heart1').setScale(2).refreshBody();
                 heart.scrollFactorX = 0;
                 heart.scrollFactorY = 0;
+
+                score = this.add.text(105, 117, 'Coins: 0', {fontSize: 20, color: '#ffffff' });
+                score.scrollFactorX = 0;
+                score.scrollFactorY = 0;
+                score.value = 0;
+                score.add = function(value) {
+                    score.value += value;
+                    score.setText('Coins: ' + score.value);
+                }
                 //entity groups etc
                 //creating the groups
                 coins = this.physics.add.group();
@@ -1430,11 +1466,11 @@
                 }
                 function collectCoin(Taco, coin) {//taco capitalized so that we don't confuse it with regular "taco"
                     coin.disableBody(true, true);
-                    
+                    score.add(1);
                 }
                 function hitBurrito(Taco, burrito) {
                     if (burrito.frozen == false) {
-                        Phaser.tacoHarmony.active = false;
+                        //Phaser.tacoHarmony.active = false;
                         death();
                     }
                 }
@@ -1592,17 +1628,20 @@
                 var sequenceEnd = 8;
                 function tacoHitFlag(Taco, Flag) {
                     levelComplete.visible = true;
+                    //menu comes up again.
+                    setTimeout(function(){menuOpen = true;}, 1);
+                    
                     if (levelComplete.scale < 0.2) {
                         levelComplete.scale += 0.008;
                     }
                     if (taco.disabled == false) {
                         transportThis = this;
                         taco.disabled = true;
-                        setTimeout(function() {
+                        /*setTimeout(function() {
                             //clearInterval(stopmusic);
                             nextLevel();
                             transportThis.scene.restart();
-                        }, 3000);
+                        }, 3000);*/
                     }
                     taco.disabled = true;
                     /*
@@ -1775,7 +1814,7 @@
             //goes with text function as global var
             var currentDialog;
             function text(text, delay, action) {
-                var makeText = setInterval(drawCurrentText, 50);
+                var makeText = setInterval(drawCurrentText, 65);
                 if (currentDialog) {
                     currentDialog.destroy();
                 }
@@ -1872,9 +1911,53 @@
                     }
                 }
             }
+            menuOpen = false;
             function update ()
             {
-                
+                //menu
+                if (menuOpen == true) {
+                    menu.visible = true;
+                    if (menu.scaleX <= menu.targetScale) {
+                        menu.scaleX += 0.1;
+                        menu.scaleY += 0.1;
+                    } else if (buttons.opened == false) {//once the opening is done.
+                        buttons.opened = true;
+
+                        for (var i = 0; i < buttons.count; i += 1) {
+                            
+                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 350, 'level' + String(i));
+                            if (i == 1 && level == 0) {
+                                menu.clickHere2.x = button.x;
+                                menu.clickHere2.y = button.y - 60;
+                                //menu.clickHere2.visible = true;
+                            }
+                            button.scrollFactorX = 0;
+                            button.scrollFactorY = 0;
+                            button.depth = 3;
+                            button.body.x += button.width;
+                            button.setOrigin(0.5, 0.5).refreshBody();
+                            button.order = i;//determine which level it is later.
+                            //button.setScale(1).refreshBody();
+                            
+                        }
+                        menuOpen = false;
+                        //set the interactiveness afterwards
+                        var transportThis = this;
+                        buttons.children.iterate(function(child){
+                            child.setInteractive({ useHandCursor: true });
+                            child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
+                            child.on('pointerout', () => { child.setScale(1).refreshBody(); });
+                            child.on('pointerdown', () => {level = child.order;updateCurrentLevel();transportThis.scene.restart();menuOpen = false;});
+                            child.refreshBody();
+                            child.setOrigin(0.5, 0.5);
+                            child.setScale(1);
+                        });
+                        
+                        
+                    } else {
+                        menuOpen = false;
+                    }
+                }
                 if (taco.minigame == true) {
                    
                     if (cursors.right.isDown || keyD.isDown) {
@@ -2029,11 +2112,20 @@
                 }
                 //tutorial code and potat code.
                 access = this;
-                if (potat) {
+                if (potat && potat.goto == false) {
                     if (potat.x > taco.x+100) {
-                        potat.body.velocity.x = -200;
+                        potat.body.velocity.x = -180;
                     }else if (potat.x < taco.x-100) {
-                        potat.body.velocity.x = 200;
+                        potat.body.velocity.x = 180;
+                    } else {
+                        potat.body.velocity.x *= 0.94;
+                    }
+                }
+                if (potat && potat.goto !== false) {
+                    if (potat.x > potat.goto+100) {
+                        potat.body.velocity.x = -140;
+                    }else if (potat.x < potat.goto-100) {
+                        potat.body.velocity.x = 140;
                     } else {
                         potat.body.velocity.x *= 0.94;
                     }
@@ -2056,54 +2148,73 @@
                         }
                         if ((cursors.up.isDown || keyW.isDown) && tutorialSequence == 4) {
                             tutorialSequence = 5;
-                            text('See that wall over\nthere?\nlets see if we can\njump over it.', 150, function(){tutorialSequence = 6;})
+                            text('See that wall to\nyour right?\nlets see if we can\njump over it.', 150, function(){tutorialSequence = 6;})
                         }
                         if (taco.x > 810 && tutorialSequence == 6) {
                             tutorialSequence = 7;
                             taco.disabled = true;
-                            text('Great Job!\nNow try jumping \nover those spikes.', 150, function(){tutorialSequence = 8;taco.disabled = false;})
+                            text('Great Job!\nBefore we jump\nover those spikes,\nlook at the top\nleft of the screen.', 150, function(){setTimeout(function(){tutorialSequence = 8}, 1500)})
                         }
-                        if (taco.x > 1370 && tutorialSequence == 8) {
+                        if (taco.x > 810 && tutorialSequence == 8) {
                             tutorialSequence = 9;
-                            text('If you look forward\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 10;})
+                            taco.disabled = true;
+                            potat.goto = potat.x - 230;
+                            text('This is your heart.\nIt\'ll protect you\nonce, but not twice.', 150, function(){setTimeout(function(){tutorialSequence = 10}, 1500)})
                         }
-                        if (taco.x > 1770 && tutorialSequence == 10) {
+                        if (taco.x > 810 && tutorialSequence == 10) {
                             tutorialSequence = 11;
                             taco.disabled = true;
-                            text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500)})
+                            text('when you get\nhurt, you\'ll turn\ntransparent for 3\nseconds.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500);})
                         }
-                        if (tutorialSequence == 12) {
+                        if (taco.x > 810 && tutorialSequence == 12) {
                             tutorialSequence = 13;
-                            text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1500)})
-                        }
-                        if (tutorialSequence == 14) {
-                            tutorialSequence = 15;
-                            taco.disabled = false;
-                            text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 16;})
-                        }
-                        if (trees.children.entries[0].angle > 0 && tutorialSequence == 16) {
                             taco.disabled = true;
+                            potat.goto = false;
+                            text('Now go and try\nthose spikes to your\nright.', 150, function(){setTimeout(function(){tutorialSequence = 14}, 1500);taco.disabled = false;})
+                        }
+                        if (taco.x > 1370 && tutorialSequence == 14) {
+                            tutorialSequence = 15;
+                            text('If you look right\nyou\'ll see a burrito.', 150, function(){tutorialSequence = 16;})
+                        }
+                        if (taco.x > 1770 && tutorialSequence == 16) {
                             tutorialSequence = 17;
-                            text('hmm... \nsatisfying...', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
-                            
+                            taco.disabled = true;
+                            text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence = 18}, 1500)})
                         }
                         if (tutorialSequence == 18) {
                             tutorialSequence = 19;
-                            taco.disabled = false;
-                            text("Throughout the game\nyou'll find more\nexciting ways to\nkill burritos.", 150, function(){setTimeout(function(){tutorialSequence = 20}, 1500)})
+                            text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence = 20}, 1500)})
                         }
                         if (tutorialSequence == 20) {
                             tutorialSequence = 21;
-                            text('Press space to begin\nlevel 1 on your\njourney to defeat\nthe dreaded \n"Auger".', 150, function(){tutorialSequence = 22;})
+                            taco.disabled = false;
+                            text('Go up to the\ntree and press space\nto trigger it.', 150, function(){tutorialSequence = 22;})
                         }
-                        if (keySpace.isDown && tutorialSequence == 22) {
+                        if (trees.children.entries[0].angle > 0 && tutorialSequence == 22) {
+                            taco.disabled = true;
                             tutorialSequence = 23;
+                            text('hmm... \nsatisfying...', 150, function(){setTimeout(function(){tutorialSequence = 24}, 1500)})
+                            
+                        }
+                        if (tutorialSequence == 24) {
+                            tutorialSequence = 25;
+                            text("Throughout the game\nyou'll find more\nexciting ways to\nkill burritos.", 150, function(){setTimeout(function(){tutorialSequence = 26;taco.disabled = false;}, 1500)})
+                        }
+                        if (tutorialSequence == 26) {
+                            tutorialSequence = 27;
+                            text('Now go try\nthe rest of\nthe level!', 150, function(){setTimeout(function(){tutorialSequence = 28}, 1000)})
+                        }
+                        if (tutorialSequence == 28) {
+                            tutorialSequence = 29;
+                            
                             text('', 10, function(){console.log('good luck')});
                             textBox.visible = false;
-                            this.game.sound.stopAll();
+                            ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
+                            banishPotat();
+                            //this.game.sound.stopAll();
                             tutorial = false;
-                            nextLevel();
-                            this.restartGame();
+                            //nextLevel();
+                            //this.restartGame();
                         }
                     }
                     
@@ -2125,7 +2236,7 @@
                 }
                 
 ;                if (this.input.manager.activePointer.isDown && typeEdit == 1 && hold == false && creative == true) {
-                    newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0);
+                    newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0, 0);
 
                 }
                 if (this.input.manager.activePointer.isDown) {
@@ -2145,16 +2256,16 @@
                 
                 if (keyE.isDown && typeEdit == 1) {
                     coins.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     burritos.children.iterate(function(child) {
                         
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
@@ -2162,104 +2273,104 @@
                     drillers.children.iterate(function(child) {
                         
                         
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                         }
                     });
                     trees.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[8+Math.round(child.body.y/32)][1+Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                         }
                     });
                     lights.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                         }
                     });
                     mites.children.iterate(function(child) {
                         
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                         }
                     });
                     burritoBarriers.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     rocks.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     bottles.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     lava.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     platforms.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     platformsLeft.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     platformsUp.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     platformsDown.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     limes.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     flags.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
                     });
                     meatballs.children.iterate(function(child) {
                         
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                             
@@ -2267,14 +2378,14 @@
                     });
                     creams.children.iterate(function(child) {
                         
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                         }
                     });
                     checkpoints.children.iterate(function(child) {
-                        if (child && Math.round(child.body.x/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.body.y/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
-                            entity1[Math.round(child.body.y/32)][Math.round(child.body.x/32)] = -1;
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
                             
                         }
@@ -2399,7 +2510,7 @@
                 if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
                 {
                     taco.jumpHold -= 8;
-                    taco.body.velocity.y -= taco.jumpHold;
+                    taco.body.velocity.y -= taco.jumpHold*0.92;
                 }
                 //walking sound effects
                 if ((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down) {
@@ -2759,7 +2870,7 @@
                 this.load.image('cloud2', 'assets/cloud-b.png');
                 this.load.image('button1', 'assets/Dirt.png');
                 this.load.image('menu', 'assets/menu2.png');
-                this.load.audio('titleMusic', ['assets/Silent\ steak.mp3']);
+                this.load.audio('titleMusic', ['assets/Good\ Gummy\ Bears.mp3']);
                 this.load.audio('introMusic', ['assets/Silent\ steak.mp3']);
                 for (var i = 0; i <= 5; i += 1) {
                     this.load.image('level' + String(i), 'assets/level' + String(i) + '.png');
@@ -2773,6 +2884,7 @@
                 for (var i = 1; i <= 8; i += 1) {
                     this.load.image('intro' + String(i), 'assets/intro' + String(i) + '.png');
                 }
+                this.load.image('block', 'assets/Strip.png');
                 //text box
                 this.load.image('text', 'assets/textBox.png');
                 //burrito
@@ -2792,6 +2904,10 @@
 
                 this.load.image('pre1', 'assets/preTitle1.png');
                 this.load.image('pre2', 'assets/preTitle2.png');
+                this.load.image('pre3', 'assets/preTitle3.png');
+
+                this.load.image('clickHere', 'assets/clickHere.png');
+                this.load.image('clickHere2', 'assets/clickHere2.png');
                 //font
                 var element = document.createElement('style');
 
@@ -2877,7 +2993,8 @@
                 repeat:0});
                 this.anims.create({key: 'preAnimation',
                  frames: [{key: 'pre1'},
-                {key: 'pre2'}],
+                {key: 'pre2'},
+                {key: 'pre3'}],
                 frameRate:0.5,
                 repeat:0});
 
@@ -2916,17 +3033,23 @@
                 intro = this.physics.add.sprite(400, 300, 'intro1');
                 intro.started = false;
                 intro.Data = {
-                    scale: [1, 1, 1.1, 1, 1.1, 1, 2, 1],
+                    scale: [1, 1, 1.1, 1, 1.1, 1, 2, 1.4],
                     angle: [-5, 5, -5, 5, -5, 7, -5, 5],
                     offsetX: [50, 50, 25, 0, -60, 0, 0, 40],
                     offsetY: [0, 0, 0, 0, 30, 0, 0, 0, 200],
                     frame: 0
                 }
+
+                block = this.physics.add.sprite(800, 580, 'block').setScale(8);
+                block.angle = 5;
+                block.visible = false;
+                
                 credit = this.physics.add.sprite(400, 200, 'credit1').setScale(0.75);
                 credit.angle = 5;
                 credit.visible = false;
                 //here we have our shooters
                 shooters = this.physics.add.group();
+                shooters.visible = true;
 
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
                 titleMusic = this.sound.add('titleMusic');
@@ -2976,6 +3099,7 @@
                 textBox.visible = false;
                 
                 menu = this.physics.add.sprite(400, 300, 'menu').setScale(0.2).refreshBody();
+                
                 menu.depth = 2;
                 menu.targetScale = 3.5;
                 menu.visible = false;
@@ -2984,6 +3108,11 @@
                 buttons.opened = false;
                 buttons.count = 6;
                 buttons.spacing = 88;
+                //guides
+                clickHere = this.physics.add.sprite(400, 300, 'clickHere').setScale(0.35);
+                clickHere.visible = false;
+                clickHere.depth = 5;
+
                 //font
                 WebFont.load({
                     custom: {
@@ -3095,7 +3224,7 @@
                     intro.visible = true;
                     tv.destroy();
                     this.graphics2.alpha -= 0.02;
-                    intro.scale += 0.001;//account for the delay caused by the graphics 2 fading out.
+                    camera.zoom += 0.0007;//account for the delay caused by the graphics 2 fading out.
 
                     if (introMusic.isPlaying == false) {
                         introMusic.play();
@@ -3105,7 +3234,7 @@
                         intro.angle = intro.Data.angle[intro.Data.frame];
                         intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
                         intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
-                        
+
                         intro.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
                             intro.Data.frame += 1;
                             if (intro.Data.frame < 8) {
@@ -3113,29 +3242,53 @@
                                 intro.angle = intro.Data.angle[intro.Data.frame];
                                 intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
                                 intro.y = intro.Data.offsetY[intro.Data.frame] + 300;
+                                camera.zoom = 1;
                             } else {
-                                shooter = shooters.create(907.3, 473, 'shooter1').setScale(2);
-                                shooter.angle = 5;
-                                shooter.anims.play('shooterAnimation');
-                                shooter.body.velocity.y = -100 * 0.087;
-                                shooter.body.velocity.x = -100 * 0.99;
+                                if (shooters.visible == true) {
+                                    shooter = shooters.create(907.3, 430, 'shooter1').setScale(2);
+                                    shooter.angle = 5;
+                                    shooter.anims.play('shooterAnimation');
+                                    shooter.body.velocity.y = -100 * 0.087;
+                                    shooter.body.velocity.x = -100 * 0.99;
+                                }
+                                
+                            }
+                            if (intro.Data.frame == 7) {
+                                block.visible = true;
                             }
                             if (intro.Data.frame == 8) {
                                 credit.visible = true;
                                 credit.anims.play('creditAnimation');
-
+                                block.body.velocity.y = -100 * 0.087;//set this to the same velocity as shooters below.
+                                block.body.velocity.x = -100 * 0.99;
                             }
                             if (intro.Data.frame == 15) {
+                                var outro = setInterval(function(){
+                                    if (introMusic.volume > 0) {
+                                        introMusic.volume -= 0.0035;
+                                    }
+                                }, 16);
+                                
                                 camera.fadeOut(2500).once('camerafadeoutcomplete', () => {
+                                    clearInterval(outro);
+                                    shooters.visible = false;
                                     shooters.children.iterate(function(child) {
-                                        if (child) {
-                                            child.destroy();
-                                        }
+                                        child.visible = false;
                                     });
-                                    shooters.destroy();
+                                    block.visible = false;
+                                    camera.zoom = 1;
                                     setTimeout(function(){
                                         intro.anims.play('preAnimation').once('animationcomplete', () => {
-                                            camera.fadeIn(2500);
+                                            titleMusic.volume = 0;
+                                            titleMusic.play();
+                                            var backIn = setInterval(function(){
+                                                if (titleMusic.volume < 1) {
+                                                    titleMusic.volume += 0.0035;
+                                                }
+                                            }, 16);
+                                            camera.fadeIn(2500).once('camerafadeincomplete', () => {
+                                                clearInterval(backIn);
+                                            });
                                             logo.visible = true;
                                             intro.visible = false;
                                             mountain.visible = true;
@@ -3148,7 +3301,7 @@
                                         intro.y = 300;
                                         intro.angle = 0;
                                         intro.scale = 1;
-                                        camera.fadeIn(1000);
+                                        camera.fadeIn(1);
                                     }, 1000);
                                     
                                 });
@@ -3169,7 +3322,7 @@
                         introMusic.volume += 0.01;
                     }
                 }else if (intro.Data.frame < 8) {
-                    intro.scale += 0.001;
+                    camera.zoom += 0.0007;
                 } else if (intro.started == true) {
                 }
                 /* else if(bird.body.velocity.x == 0) {
@@ -3265,8 +3418,13 @@
                         buttons.opened = true;
 
                         for (var i = 0; i < buttons.count; i += 1) {
-                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'level' + String(i));
                             
+                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'level' + String(i));
+                            if (i == 0) {
+                                clickHere.x = button.x;
+                                clickHere.y = button.y - 60;
+                                clickHere.visible = true;
+                            }
                             button.depth = 3;
                             button.body.x += button.width;
                             button.setOrigin(0.5, 0.5).refreshBody();
