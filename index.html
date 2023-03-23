@@ -215,9 +215,20 @@
                 this.load.image('burrito7', 'assets/burrito__7.png');
                 this.load.image('burrito8', 'assets/burrito__8.png');
 
+                //shooters
+                this.load.image('shooter1', 'assets/Shooter1.png');
+                this.load.image('shooter2', 'assets/Shooter2.png');
+                this.load.image('shooter3', 'assets/Shooter3.png');
+
+                this.load.image('poison1', 'assets/poison1.png');
+                this.load.image('poison2', 'assets/poison2.png');
+
                 this.load.spritesheet('burritoParticles', 'assets/burritoParticles.svg', { frameWidth: 9, frameHeight: 9 });
 
                 this.load.image('barrier', 'assets/barrier.png');
+
+                this.load.image('key', 'assets/key.png');
+                this.load.image('door', 'assets/door.png');
 
                 //burrito specific killers
                 this.load.image('iceBottle', 'assets/Ice sauce.png');
@@ -331,46 +342,44 @@
                         dead = false;
                     }, 450);
                 }*/
-
-                if (inevitable === true) {
-                    taco.lives = 0;
-                    taco.immortale = false;
-                }
-                if (taco.immortale == false) {
-                    if (taco.lives > 0) {
-                        taco.immortale = true;//after the check.
-                        taco.alpha = 0.5;
-                        setTimeout(function() {taco.immortale = false; taco.alpha = 1;}, 4000);
-                    }
-                    taco.lives -= 1;
-                    setLives(taco.lives);
-                    
-                    if (taco.lives < 0) {
+                if (taco.immortale == false && taco.disabled == false) {
+                    if (inevitable === true) {
                         taco.lives = 0;
+                        taco.immortale = false;
+                    }
+                    if (taco.immortale == false) {
+                        if (taco.lives > 0) {
+                            taco.immortale = true;//after the check.
+                            taco.alpha = 0.5;
+                            setTimeout(function() {taco.immortale = false; taco.alpha = 1;}, 3000);
+                        }
+                        taco.lives -= 1;
+                        setLives(taco.lives);
+                        
+                        if (taco.lives < 0) {
+                            taco.lives = 0;
+                        }
+                    }
+                    
+                    if (taco.immortale == false && taco.lives == 0) {
+                        burritos.children.iterate(function(child) {
+                            child.dying = false;
+                        });
+                        
+                        taco.body.x = taco.startX;//for tutorial
+                        taco.body.y = taco.startY;
+                        taco.body.velocity.x = 0;
+                        taco.body.velocity.y = 0;
+                        returnSprites();
+                        resumeSprites();
+                        camera.startFollow(taco, false, 0.1, 0.1);
+                        drillers.children.iterate(function(child) {
+                            child.started = false;
+                        });
+                        taco.lives = 3;
+                        setLives(taco.lives);
                     }
                 }
-                
-                if (taco.immortale == false && taco.lives == 0) {
-                    burritos.children.iterate(function(child) {
-                        child.dying = false;
-                    });
-                    
-                    taco.body.x = taco.startX;//for tutorial
-                    taco.body.y = taco.startY;
-                    taco.body.velocity.x = 0;
-                    taco.body.velocity.y = 0;
-                    returnSprites();
-                    resumeSprites();
-                    camera.startFollow(taco, false, 0.1, 0.1);
-                    drillers.children.iterate(function(child) {
-                        child.started = false;
-                    });
-                    taco.lives = 1;
-                    setLives(taco.lives);
-                }
-                
-                
-                
                 
             }
             //creating entities
@@ -690,6 +699,60 @@
                     tree.setOrigin(0.8, 1);
                     tree.depth = -1;
                 }
+                if (type == 23) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 23;
+                    var coin = keys.create(x+16, y+16, 'key');
+                    coin.setOrigin(0.5, 0.5);
+                    coin.setScale(1);
+                    coin.depth = 5;
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    //coin.body.x = x;
+                    //coin.body.y = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                    coin.follow = false;
+                } 
+                if (type == 24) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 24;
+                    var coin = doors.create(x+16, y+16, 'door');
+                    coin.setOrigin(0.5, 0.5);
+                    coin.setScale(0.25);
+                    coin.body.gravity.y = 0;
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                } 
+                if (type == 25) {
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 25;
+                    var coin = shooters.create(x+16, y+12, 'shooter1');
+                    coin.anims.play('shooterAnimation');
+                    coin.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
+                        if (frame.index == 1 || frame.index == 3) {
+                            poison = poisons.create(sprite.x, sprite.y, 'poison1');
+                            poison.scale = 0.6;
+                            poison.anims.play('poisonAnimation');
+                            poison.body.velocity.x = 150;
+
+                            poison = poisons.create(sprite.x, sprite.y, 'poison1');
+                            poison.scale = 0.6;
+                            poison.anims.play('poisonAnimation');
+                            poison.body.velocity.x = -150;
+                            poison.flipX = true;
+                        }
+                    }, this);
+                    
+                    coin.setOrigin(0.5, 0.5);
+                    coin.setScale(0.75);
+                    coin.body.gravity.y = 0;
+                    coin.initX = x;
+                    coin.initY = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                } 
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -824,6 +887,22 @@
                     child.body.allowGravity = false;
                 
                 });
+                keys.children.iterate(function(child) {
+                    child.enableBody(true, child.body.x, child.body.y, true, true);
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                });
+                doors.children.iterate(function(child) {
+                    child.enableBody(true, child.body.x, child.body.y, true, true);
+                    child.body.x = child.initX;
+                    child.body.y = child.initY;
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.body.allowGravity = false;
+                });
             }
             function resumeSprites() {
                 
@@ -833,9 +912,6 @@
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
                     child.body.allowGravity = true;
-                    
-
-                
                 });
                 burritos.children.iterate(function(child) {
                     child.body.x = child.initX;
@@ -925,10 +1001,13 @@
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
                     child.body.allowGravity = true;
-                    
-
-                
                 });
+                keys.children.iterate(function(child) {
+                    child.body.velocity.x = child.initXV;
+                    child.body.velocity.y = child.initYV;
+                    child.body.allowGravity = true;
+                });
+                
             }
 
             function updateColliders() {
@@ -1140,6 +1219,20 @@
                  {key: 'burrito8'},],
                 frameRate:10,
                 repeat:-1});
+                //shooter burrito
+                this.anims.create({key: 'shooterAnimation',
+                 frames: [{key: 'shooter1'},
+                {key: 'shooter2'},
+                {key: 'shooter3'},
+                {key: 'shooter2'}],
+                frameRate:1,
+                repeat:-1});
+                //shooter poison
+                this.anims.create({key: 'poisonAnimation',
+                 frames: [{key: 'poison1'},
+                {key: 'poison2'},],
+                frameRate:10,
+                repeat:-1});
                 //lava
                 this.anims.create({key:'lavaAnimation',
                  frames: [{key: 'lava1'},
@@ -1303,11 +1396,15 @@
                 taco.depth = 2;
                 taco.touchingTree = false;
                 taco.immortale = false;
-                taco.lives = 1;
+                taco.lives = 3;
                 taco.setFrictionX(1);
                 taco.jumpHold = 0;
                 taco.minigame = false;
-                taco.startX = 100;
+                if (tutorial == true) {
+                    taco.startX = 400;
+                } else {
+                    taco.startX = 100;
+                }
                 taco.startY = 300;
                 //minigame
                 ship = this.physics.add.sprite(400, 480, "still");
@@ -1347,9 +1444,11 @@
                 this.physics.add.collider(taco, layer1);
                 //hearts
                 hearts = this.physics.add.group();
-                heart = hearts.create(125, 100, 'heart1').setScale(2).refreshBody();
-                heart.scrollFactorX = 0;
-                heart.scrollFactorY = 0;
+                for (var i = 0; i < taco.lives; i += 1) {
+                    heart = hearts.create(125+(i*45), 100, 'heart1').setScale(2);
+                    heart.scrollFactorX = 0;
+                    heart.scrollFactorY = 0;
+                }
 
                 score = this.add.text(105, 117, 'Coins: 0', {fontSize: 20, color: '#ffffff' });
                 score.scrollFactorX = 0;
@@ -1359,6 +1458,7 @@
                     score.value += value;
                     score.setText('Coins: ' + score.value);
                 }
+                score.depth = 5;
                 //entity groups etc
                 //creating the groups
                 coins = this.physics.add.group();
@@ -1390,6 +1490,14 @@
                 meatballs = this.physics.add.group();
                 checkpoints = this.physics.add.group();
                 lights = this.physics.add.group();
+                keys = this.physics.add.group();
+                doors = this.physics.add.group({
+                    immovable: true
+                });
+                shooters = this.physics.add.group({
+                    immovable: true
+                });
+                poisons = this.physics.add.group();
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -1426,6 +1534,9 @@
                 this.physics.add.overlap(burritoBarriers, platformsLeft, barrierHitPlatform, null, this);
                 this.physics.add.overlap(burritoBarriers, platformsDown, barrierHitPlatform, null, this);
                 this.physics.add.overlap(burritoBarriers, platformsUp, barrierHitPlatform, null, this);
+                this.physics.add.overlap(taco, keys, tacoHitKey, null, this);
+                this.physics.add.overlap(keys, doors, keyHitDoor, null, this);
+                this.physics.add.overlap(taco, poisons, tacoHitPoison, null, this);
 
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
@@ -1448,6 +1559,9 @@
                 this.physics.add.collider(limes, burritos);
                 this.physics.add.collider(taco, meatballs, false, null, this);
                 this.physics.add.collider(meatballs, layer1);
+                this.physics.add.collider(keys, layer1);
+                this.physics.add.collider(taco, doors);
+                this.physics.add.collider(poisons, layer1);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -1624,6 +1738,24 @@
                 function barrierHitPlatform(barrier, platform) {
                     platform.turn = true;
                 }
+                function tacoHitKey(taco, key) {
+                    if (keySpace.isDown) {
+                        /*
+                        key.x = taco.x;
+                        key.y = taco.y;
+                        key.body.velocity.x = taco.body.velocity.x;
+                        key.body.velocity.y = taco.body.velocity.y;
+                        */
+                        key.follow = true;
+                    }
+                }
+                function keyHitDoor(key, door) {
+                    key.disableBody(true, true);
+                    door.disableBody(true, true);
+                }
+                function tacoHitPoison(taco, poison) {
+                    death();
+                }
                 var transportThis = this;//allow us to restart the game in a callback.
                 var sequenceEnd = 8;
                 function tacoHitFlag(Taco, Flag) {
@@ -1770,20 +1902,23 @@
 
             }
             function setLives(lives) {
-                    hearts.children.iterate(function(child) {
-                        if (child) {
-                            child.anims.play('heartAnimation');
-                            child.on('animationcomplete', function(){
-                                child.destroy();
-                            });
-                        }
-                    });//get rid of them
-                    for (var i = 0; i < lives; i += 1) {
-                        heart = hearts.create(125+(i*25), 100, 'heart1').setScale(2).refreshBody();
+                if (hearts.children.entries[0]) {
+                    if (lives < hearts.children.entries.length) {
+                        heart = hearts.children.entries[hearts.children.entries.length-1];
+                        heart.anims.play('heartAnimation');
+                        heart.on('animationcomplete', function(){
+                            heart.destroy();
+                        });
+                    }
+                    if (lives > hearts.children.entries.length) {
+                        lastHeart = hearts.children.entries[hearts.children.entries.length-1];
+                        heart = hearts.create(lastHeart.x + 45, 100, 'heart1').setScale(2);
                         heart.scrollFactorX = 0;
                         heart.scrollFactorY = 0;
                     }
                 }
+                
+            }
             function ingredientParticleEmit(x, y, quantity, time, burrito) {
                     var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
                         //loop through emitters
@@ -2159,12 +2294,12 @@
                             tutorialSequence = 9;
                             taco.disabled = true;
                             potat.goto = potat.x - 230;
-                            text('This is your heart.\nIt\'ll protect you\nonce, but not twice.', 150, function(){setTimeout(function(){tutorialSequence = 10}, 1500)})
+                            text('These are your \nhearts.\nThey\'ll protect you\nuntil they run out.', 150, function(){setTimeout(function(){tutorialSequence = 10}, 1500)})
                         }
                         if (taco.x > 810 && tutorialSequence == 10) {
                             tutorialSequence = 11;
                             taco.disabled = true;
-                            text('when you get\nhurt, you\'ll turn\ntransparent for 3\nseconds.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500);})
+                            text('when you get\nhurt, you\'ll turn\ntransparent for 3\nseconds and lose a\nheart.', 150, function(){setTimeout(function(){tutorialSequence = 12}, 1500);})
                         }
                         if (taco.x > 810 && tutorialSequence == 12) {
                             tutorialSequence = 13;
@@ -2390,6 +2525,27 @@
                             
                         }
                     });
+                    keys.children.iterate(function(child) {
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    doors.children.iterate(function(child) {
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
+                    shooters.children.iterate(function(child) {
+                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+mousePointer.x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+mousePointer.y)/32)*32) {
+                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
+                            child.destroy();
+                            
+                        }
+                    });
                 }
 
                 if (this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true) {
@@ -2561,6 +2717,27 @@
                         if (child.angle > 75) {
                             child.triggered = false;
                             child.body.width -= 60;//counter for the first collider extension.
+                        }
+                    }
+                });
+                poisons.children.iterate(function (child) {
+                    if (child) {
+                        if (child.body.blocked.right || child.body.blocked.left) {
+                            child.destroy();
+                        } 
+                    }
+                });
+                keys.children.iterate(function (child) {
+                    if (child.follow == true) {
+                        if (child.x < taco.x) {
+                            child.body.velocity.x += 5;
+                        } else {
+                            child.body.velocity.x -= 5;
+                        }
+                        if (child.y < taco.y) {
+                            child.body.velocity.y += 5;
+                        } else {
+                            child.body.velocity.y -= 5;
                         }
                     }
                 });
@@ -2925,8 +3102,10 @@
             
             //vars?
             var menuOpen = false;
-            var graphics = true;;
-            var graphics2;
+            var graphics = true;
+            var graphics2 = false;
+            var start = false;
+            setTimeout(function() {start = true;}, 2000);
             titleScene.create = function () {
                 camera = this.cameras.main;
 
@@ -2961,15 +3140,11 @@
                  frames: [{key: 'intro1'},
                 {key: 'intro7'},
                 {key: 'intro2'},
-                {key: 'intro3'},
+                {key: 'intro6'},/*used to be 3
                 {key: 'intro4'},
                 {key: 'intro5'},
                 {key: 'intro8'},
-                {key: 'intro6'},
-                {key: 'intro6'},
-                {key: 'intro6'},
-                {key: 'intro6'},
-                {key: 'intro6'},
+                {key: 'intro6'},*/
                 {key: 'intro6'},
                 {key: 'intro6'},
                 {key: 'intro6'},
@@ -2989,21 +3164,22 @@
                 {key: 'credit2'},
                 {key: 'credit3'},
                 {key: 'credit4'},],
-                frameRate:0.1875,
+                frameRate:0.375,
                 repeat:0});
                 this.anims.create({key: 'preAnimation',
                  frames: [{key: 'pre1'},
                 {key: 'pre2'},
                 {key: 'pre3'}],
-                frameRate:0.5,
+                frameRate:0.6,
                 repeat:0});
 
                 keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
-                graphics = this.add.graphics();
+                /*graphics = this.add.graphics();
 
                 graphics.fillStyle(0x000000, 1);
                 graphics.fillRect(0, 0, 800, 600);
-                graphics.depth = 4;
+                graphics.depth = 4;*/
+
                 madeBy = this.add.image(400, 300, 'madeBy');
                 madeBy.visible = false;
                 madeBy.depth = 5;
@@ -3033,9 +3209,9 @@
                 intro = this.physics.add.sprite(400, 300, 'intro1');
                 intro.started = false;
                 intro.Data = {
-                    scale: [1, 1, 1.1, 1, 1.1, 1, 2, 1.4],
+                    scale: [1, 1, 1.1, 1.4, 1.1, 1, 2, 1.4],
                     angle: [-5, 5, -5, 5, -5, 7, -5, 5],
-                    offsetX: [50, 50, 25, 0, -60, 0, 0, 40],
+                    offsetX: [50, 50, 25, 40, -60, 0, 0, 40],
                     offsetY: [0, 0, 0, 0, 30, 0, 0, 0, 200],
                     frame: 0
                 }
@@ -3177,6 +3353,7 @@
                     }
                 }
                 //intro animation
+                /*
                 if (tv.scale < 15) {
                     if (tv.fadeIn === 1) {
                         tv.alpha += 0.02;
@@ -3196,10 +3373,7 @@
                         tv.scale += 5;
                         tv.alpha = 0.02;
                     }
-                }/* else if (lines.alpha < 1 && tv.alpha > 0) {
-                    lines.alpha += 0.02;
-                    lines.visible = true;
-                }*/ else if (graphics) {
+                } else if (graphics) {
                     graphics2 = this.add.graphics();
                     this.graphics2 = graphics2;
                     graphics2.fillStyle(0x000000, 1);
@@ -3218,15 +3392,20 @@
                         madeBy.visible = false;
                     }
                     introMusic.volume = 0;
-                } else if (this.graphics2.alpha > 0) {
+                } else */
+                //got rid of tv
+                
+                if (introMusic.isPlaying == false && start == true) {
                     //textBox.depth = 19;
                     madeBy.visible = false;
                     intro.visible = true;
+                    
                     tv.destroy();
-                    this.graphics2.alpha -= 0.02;
-                    camera.zoom += 0.0007;//account for the delay caused by the graphics 2 fading out.
 
-                    if (introMusic.isPlaying == false) {
+                    //this.graphics2.alpha -= 0.02;
+                    camera.zoom += 0.0007;//account for the delay caused by the graphics 2 fading out.
+                    
+                    if (/*introMusic.isPlaying == false*/true) {
                         introMusic.play();
                         intro.started = true;
                         intro.anims.play('introAnimation');
@@ -3237,7 +3416,7 @@
 
                         intro.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
                             intro.Data.frame += 1;
-                            if (intro.Data.frame < 8) {
+                            if (intro.Data.frame < /*8*/4) {
                                 intro.scale = intro.Data.scale[intro.Data.frame];
                                 intro.angle = intro.Data.angle[intro.Data.frame];
                                 intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
@@ -3253,24 +3432,25 @@
                                 }
                                 
                             }
-                            if (intro.Data.frame == 7) {
+                            if (intro.Data.frame == 3) {
                                 block.visible = true;
                             }
-                            if (intro.Data.frame == 8) {
+                            if (intro.Data.frame == 4) {
                                 credit.visible = true;
                                 credit.anims.play('creditAnimation');
                                 block.body.velocity.y = -100 * 0.087;//set this to the same velocity as shooters below.
                                 block.body.velocity.x = -100 * 0.99;
                             }
-                            if (intro.Data.frame == 15) {
+                            if (intro.Data.frame == 7) {
                                 var outro = setInterval(function(){
-                                    if (introMusic.volume > 0) {
-                                        introMusic.volume -= 0.0035;
+                                    if (introMusic.volume >= 0) {
+                                        introMusic.volume -= 0.015;
                                     }
                                 }, 16);
                                 
-                                camera.fadeOut(2500).once('camerafadeoutcomplete', () => {
+                                camera.fadeOut(2000).once('camerafadeoutcomplete', () => {
                                     clearInterval(outro);
+                                    introMusic.volume = 0;
                                     shooters.visible = false;
                                     shooters.children.iterate(function(child) {
                                         child.visible = false;
@@ -3283,7 +3463,7 @@
                                             titleMusic.play();
                                             var backIn = setInterval(function(){
                                                 if (titleMusic.volume < 1) {
-                                                    titleMusic.volume += 0.0035;
+                                                    titleMusic.volume += 0.015;
                                                 }
                                             }, 16);
                                             camera.fadeIn(2500).once('camerafadeincomplete', () => {
@@ -3321,7 +3501,7 @@
                     if (introMusic.volume < 1) {
                         introMusic.volume += 0.01;
                     }
-                }else if (intro.Data.frame < 8) {
+                }else if (intro.Data.frame < 4) {
                     camera.zoom += 0.0007;
                 } else if (intro.started == true) {
                 }
@@ -3452,7 +3632,7 @@
             game.scene.add('title', titleScene);
             game.scene.add('game', gameScene);
 
-            game.scene.start('title');
+            game.scene.start('game');
             
             function fullscreen() {
                 if (this.scale.isFullscreen)
