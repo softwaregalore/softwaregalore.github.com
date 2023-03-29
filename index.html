@@ -714,6 +714,8 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                     coin.follow = false;
+                    coin.body.maxVelocity.x = 500;
+                    coin.body.maxVelocity.y = 500;
                 } 
                 if (type == 24) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 24;
@@ -894,6 +896,7 @@
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
+                    child.follow = false;
                 });
                 doors.children.iterate(function(child) {
                     child.enableBody(true, child.body.x, child.body.y, true, true);
@@ -1006,6 +1009,10 @@
                     child.body.velocity.x = child.initXV;
                     child.body.velocity.y = child.initYV;
                     child.body.allowGravity = true;
+                });
+                shooters.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('shooterAnimation');
                 });
                 
             }
@@ -1562,6 +1569,7 @@
                 this.physics.add.collider(keys, layer1);
                 this.physics.add.collider(taco, doors);
                 this.physics.add.collider(poisons, layer1);
+                this.physics.add.collider(keys, limes);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -2739,6 +2747,8 @@
                         } else {
                             child.body.velocity.y -= 5;
                         }
+                        child.body.velocity.x *= 0.98;
+                        child.body.velocity.y *= 0.98;
                     }
                 });
                 rocks.children.iterate(function(child) {
@@ -3622,8 +3632,6 @@
                             child.setOrigin(0.5, 0.5);
                             child.setScale(1);
                         });
-                        
-                        
                     }
                 }
             }
@@ -3632,7 +3640,7 @@
             game.scene.add('title', titleScene);
             game.scene.add('game', gameScene);
 
-            game.scene.start('game');
+            game.scene.start('title');
             
             function fullscreen() {
                 if (this.scale.isFullscreen)
