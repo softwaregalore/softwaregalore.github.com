@@ -76,14 +76,19 @@
                 this.load.image('tab5', 'assets/tab5.png');
                 this.load.image('tab6', 'assets/tab6.png');
                 //buttons
-                this.load.image('play', 'assets/play1.png');
+                this.load.image('unpause', 'assets/play1.png');
                 this.load.image('pause', 'assets/play2.png');
 
                 this.load.image('mouse', 'assets/mode1.png');
                 this.load.image('erase', 'assets/mode2.png');
                 //thumbnails
                 this.load.spritesheet('thumbnails', 'assets/thumbnails.png', {frameWidth:32, frameHeight:32});
+                //skill check
+                this.load.spritesheet('skill1', 'assets/skillCheck1.png', {frameWidth:36, frameHeight:36});
+
             }
+            var gameLoaded = false;
+            var check1 = -1;//tell UI what to display.
             function UIcreate () 
             {
                 //debug
@@ -119,12 +124,34 @@
                     tab.order = i + 1;
                     this.physics.world.enable(tab);
                     tabs.push(tab);
-                    this.physics.add.overlap(UIZone, tab, clickTab, null, this);
                 }
-                function clickTab (UIZone, tab) {
-                    if (this.input.activePointer.isDown && folder.texture.key !== 'tab6') {
-                        folder.setTexture('tab' + String(tab.order));
-                        folder.tab = tab.order - 1;
+                
+                tabs[0].setInteractive();
+                tabs[0].on('pointerdown', function() {
+                    clickTab(1);
+                });
+                tabs[1].setInteractive();
+                tabs[1].on('pointerdown', function() {
+                    clickTab(2);
+                });
+                tabs[2].setInteractive();
+                tabs[2].on('pointerdown', function() {
+                    clickTab(3);
+                });
+                tabs[2].depth = 1;
+                tabs[3].setInteractive();
+                tabs[3].on('pointerdown', function() {
+                    clickTab(4);
+                });
+                tabs[4].setInteractive();
+                tabs[4].on('pointerdown', function() {
+                    clickTab(5);
+                });
+                function clickTab (tabClick) {
+                    if (folder.texture.key !== 'tab6') {
+                        folder.setTexture('tab' + String(tabClick));
+                        folder.tab = tabClick - 1;
+                        selectors.refresh();
                         selectors.refresh();
                     }
                 }
@@ -134,7 +161,7 @@
                 handle.setScrollFactor(0, 0);
                 this.physics.world.enable(handle);
                 handle.setInteractive({ useHandCursor: false });
-                handle.on('pointerup', () => {folder.setTexture('tab6');selectors.setVisible(false);});
+                handle.on('pointerup', () => {openHandle.depth = 1; tabs[2].depth = 0;folder.setTexture('tab6');selectors.setVisible(false);});
                 //opening again
                 openHandle = this.add.zone(folder.x, folder.body.y).setSize(72, 60);
                 openHandle.hover = false;
@@ -142,7 +169,7 @@
                 openHandle.setScrollFactor(0, 0);
                 this.physics.world.enable(openHandle);
                 openHandle.setInteractive({ useHandCursor: false });
-                openHandle.on('pointerup', () => {folder.setTexture('tab' + String(folder.tab + 1));selectors.setVisible(true);});
+                openHandle.on('pointerup', () => {openHandle.depth = 0; tabs[2].depth = 1;folder.setTexture('tab' + String(folder.tab + 1));selectors.setVisible(true);});
                 
                 openHandle.on('pointerover', () => {UIZone.hover = true});
                 openHandle.on('pointerout', () => {UIZone.hover = false});
@@ -198,11 +225,12 @@
                 selectors.refresh();
                 selectors.setVisible(false);
                 //mode buttons
-                mode = this.physics.add.sprite(760, 30, 'play');
-                mode.scale = 0.5;
+                mode = this.physics.add.sprite(760, 40, 'unpause');
+                //mode.visible = false;//no creative on default.
+                mode.scale = 0.035;
                 mode.setInteractive();
                 mode.on('pointerup', () => {
-                    if (mode.texture.key == 'play') {
+                    if (mode.texture.key == 'unpause') {
                         mode.setTexture('pause');
                         tool.visible = true;
                         folder.visible = true;
@@ -212,7 +240,7 @@
                         creative = true;
                         creativeUpdate = true;
                     } else {
-                        mode.setTexture('play');
+                        mode.setTexture('unpause');
                         tool.visible = false;
                         folder.visible = false;
                         selectors.setVisible(false);
@@ -220,11 +248,12 @@
                         creativeUpdate = true;
                     }
                 });
+                
                 mode.on('pointerover', () => {disableEdit = true});
                 mode.on('pointerout', () => {disableEdit = false});
 
-                tool = this.physics.add.sprite(700, 30, 'mouse');
-                tool.scale = 0.5;
+                tool = this.physics.add.sprite(690, 40, 'mouse');
+                tool.scale = 0.035;
                 tool.setInteractive();
                 tool.on('pointerup', () => {
                     if (tool.texture.key == 'mouse') {
@@ -238,6 +267,10 @@
                 tool.visible = false;
                 tool.on('pointerover', () => {disableEdit = true});
                 tool.on('pointerout', () => {disableEdit = false});
+                //skill check
+                timeSkill = this.physics.add.sprite(400, 200, 'skill1');
+                timeSkill.scale = 2;
+                timeSkill.visible = false;
             }
             function UIupdate () 
             {
@@ -246,6 +279,41 @@
                     UIZone.x = UIPointer.x;
                     UIZone.y = UIPointer.y;
                 }
+
+                if (gameLoaded == true) {
+                    mode.visible = true;
+                } else {
+                    mode.visible = false;
+                }
+
+                if (check1 == -1) {
+                    timeSkill.visible = false;
+                } else {
+                    timeSkill.visible = true;
+                    timeSkill.setFrame(Math.round(check1));
+                }
+
+                keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                if (Phaser.Input.Keyboard.JustDown(keyM)) {
+                    if (mode.texture.key == 'unpause') {
+                        mode.setTexture('pause');
+                        tool.visible = true;
+                        folder.visible = true;
+                        if (folder.texture.key !== 'tab6') {
+                            selectors.setVisible(true);
+                        }
+                        creative = true;
+                        creativeUpdate = true;
+                    } else {
+                        mode.setTexture('unpause');
+                        tool.visible = false;
+                        folder.visible = false;
+                        selectors.setVisible(false);
+                        creative = false;
+                        creativeUpdate = true;
+                    }
+                }
+                
             }
 
             var titleScene = new Phaser.Scene("title");
@@ -277,14 +345,14 @@
                     tileBias: 32,
                     arcade: {
                         gravity: { y: 0 },//to let us set this individualy
-                        debug: true
+                        debug: true,
                     }
                 },
                 map: {
                     add: 'makeStuff',
                     load: 'loader'
-                }
-                
+                },
+                timeScale: 2
             };
 
             var game = new Phaser.Game(config);
@@ -327,8 +395,10 @@
                 this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
                 //music files
                 this.load.audio('mainMusic', ['assets/UpTown.mp3']);
+                this.load.audio('mainMusic2', ['assets/rainingFun.mp3']);
                 this.load.audio('burritoJump', ['assets/burritojump.wav']);
                 this.load.audio('walking', ['assets/walking.mp3']);
+                this.load.audio('bossMusic', ['assets/crystalBoss.mp3']);
                 //text box
                 this.load.image('text', 'assets/textBox.png');
                 //clouds/background
@@ -463,7 +533,6 @@
                 this.load.image('right1', 'assets/R1.png');
                 this.load.image('right2', 'assets/R2.png');
                 this.load.image('still', 'assets/Stanstill.png');
-
                 //lives
                 this.load.image('heart1', 'assets/N heart1.png');
                 this.load.image('heart2', 'assets/N heart2.png');
@@ -526,6 +595,12 @@
                         dead = false;
                     }, 450);
                 }*/
+                trees.children.iterate(function(child) {
+                    child.angle = 0;
+                    child.triggered = false;
+                    check1 = -1;
+                });
+
                 if (taco.immortale == false && taco.disabled == false) {
                     /*if (inevitable === true) {
                         taco.lives = 0;
@@ -679,6 +754,7 @@
                     rock.initXV = 0;
                     rock.initYV = 0;
                     rock.held = false;
+                    rock.depth = 0;
 
                 }
                 if (type == 10) {
@@ -871,6 +947,7 @@
                     coin.setScale(0.5);
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 500;
+                    coin.body.allowGravity = false;
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
                     coin.initY = y;
@@ -999,10 +1076,9 @@
                 drillers.children.iterate(function(child) {
                     child.anims.stop();
                     child.anims.play('drillingAnimation');
-                    child.enableBody(true, child.body.x, child.body.y, true, true);
-                    child.setOrigin(0.5, 0.5);
-                    child.body.x = child.initX;
-                    child.body.y = child.initY;
+                    child.enableBody(true, child.initX+8, child.initY+32+16, true, true);
+                    child.originX = 0.5;
+                    child.originY = 0.5;
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
@@ -1118,7 +1194,11 @@
                 });
             }
             function resumeSprites() {
+                lava.children.iterate(function(child) {
+                    child.anims.stop();
+                    child.anims.play('lava');
                 
+                });
                 coins.children.iterate(function(child) {
                     child.anims.stop();
                     child.anims.play('coin');
@@ -1272,8 +1352,13 @@
             var creativeUpdate = false;
             var toolSelect = 'mouse';
             var mainMusic;
+            var mainMusic2;
+            var bossMusic;
             function create ()
             {
+                if (level == 3) {
+                    gameLoaded = true;//let it know to add the button for creative.
+                }
                 menuOpen = false;
                 //text and menu type stuff.
                 //levelDisplay = this.add.text(400, 300, 'Level ' + level, {fontFamily: 'Arial', fontSize: '32px', fill: 'white' });//.setOrigin(0.5);
@@ -1294,9 +1379,11 @@
                 }
                 //music
                 mainMusic = this.sound.add('mainMusic');
+                mainMusic2 = this.sound.add('mainMusic2');
                 burritoJump = this.sound.add('burritoJump');
+                bossMusic = this.sound.add('bossMusic');
                 
-                mainMusic.loop = true;
+                //mainMusic.loop = true;
                 mainMusic.play();
                 this.graphics = this.add.graphics();
                 //the variables of the game.
@@ -1641,7 +1728,7 @@
                 menu = this.physics.add.sprite(400, 350, 'menu').setScale(0.2).refreshBody();
                 menu.scrollFactorX = 0;
                 menu.scrollFactorY = 0;
-                menu.depth = 2;
+                menu.depth = 4;
                 menu.targetScale = 3.5;
                 menu.visible = false;
 
@@ -1656,6 +1743,7 @@
                 buttons.opened = false;
                 buttons.count = 6;
                 buttons.spacing = 88;
+                buttons.depth = 4;
 
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8, 10]);
@@ -1796,6 +1884,7 @@
                 this.physics.add.collider(doors, limes);
                 this.physics.add.collider(burritos, doors);
                 this.physics.add.collider(bottles, doors);
+                this.physics.add.collider(meatballs, meatballs);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -1830,7 +1919,7 @@
                     }
                 }
                 function burritoHitTree(burrito, tree) {
-                    if (tree.triggered == true && burrito.triggered == false) {
+                    if (tree.triggered == true && burrito.triggered == false && check1 == 60) {
                         burrito.triggered = true;
                         ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);
                     }
@@ -1991,7 +2080,14 @@
                     death();
                 }
                 function mouseOverlap(mouse, child) {
-                    if (this.input.manager.activePointer.isDown && creative == true && toolSelect == 'erase') {
+                    if (this.input.manager.activePointer.isDown && creative == true && toolSelect == 'erase' || keyE.isDown) {
+                        if (child.texture.key == 'tree1') {
+                            //checks if it is a tree
+                            map.putTileAt(-1, map.worldToTileX(child.initX-32), map.worldToTileY(child.initY));
+                            map.putTileAt(-1, map.worldToTileX(child.initX), map.worldToTileY(child.initY));
+                            map.putTileAt(-1, map.worldToTileX(child.initX+32), map.worldToTileY(child.initY));
+                        }
+                        
                         entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                         child.destroy();
                     }
@@ -2095,9 +2191,15 @@
                     taco.cream = true;
                 }
                 function tacoHitMeatball(Taco, Meatball) {
-                    if (Taco.body.touching.down && (cursors.up.isDown || keyW.isDown) && taco.disabled == false) {
-                        Taco.body.velocity.y = -1700;
-                        Meatball.body.velocity.x = random(100, 200);
+                    if (Math.abs(Taco.x - Meatball.x) < 30 && (Taco.body.y + Taco.height) < Meatball.y) {
+                        if (Taco.body.touching.down) {
+                            Taco.body.velocity.y = -600;
+                            Meatball.body.velocity.x = random(-200, 200);
+                        }
+                        if (Taco.body.touching.down && (cursors.up.isDown || keyW.isDown) && taco.disabled == false) {
+                            Taco.body.velocity.y = -1500;
+                            Meatball.body.velocity.x = random(-200, 200);
+                        }
                     }
                 }
                 
@@ -2450,6 +2552,21 @@
             menuOpen = false;
             function update ()
             {
+                //music loop between backgrounds
+                if (mainMusic.hasEnded == true) {
+                    mainMusic.hasEnded = false;
+                    setTimeout(()=>{mainMusic2.play();}, 3500);
+                }
+                if (mainMusic2.hasEnded == true) {
+                    mainMusic2.hasEnded = false;
+                    setTimeout(()=>{mainMusic.play();}, 3500);
+                }
+                //coins
+                if (score.value > 50) {
+                    taco.lives += 1;
+                    setLives(taco.lives);
+                    score.value = 0;
+                }
                 var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
                 //mouse selector
                 if (creative == true) {
@@ -2478,7 +2595,7 @@
                             }
                             button.scrollFactorX = 0;
                             button.scrollFactorY = 0;
-                            button.depth = 3;
+                            button.depth = 5;
                             button.body.x += button.width;
                             button.setOrigin(0.5, 0.5).refreshBody();
                             button.order = i;//determine which level it is later.
@@ -2793,7 +2910,7 @@
                     hold = false;
                 }
                 
-                if (this.input.manager.activePointer.isDown && toolSelect == 'erase') {
+                if (this.input.manager.activePointer.isDown && toolSelect == 'erase' || keyE.isDown) {
                     var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
                     
                     if (tile !== null) {
@@ -2857,7 +2974,7 @@
                     }
                     //47
                     if (creative == true) {
-                        tacoVelocityX -= 90;
+                        taco.body.x -= 12;
                     }
                     taco.anims.play('left', true);
                 } else if (cursors.right.isDown || keyD.isDown)
@@ -2867,7 +2984,7 @@
                         tacoVelocityX += 27;
                     }
                     if (creative == true) {
-                        tacoVelocityX += 90;
+                        taco.body.x += 12;
                     }
                     taco.anims.play('right', true);
                 } else
@@ -2895,6 +3012,8 @@
 
                 //we need to be able to move up and down in creative too
                 if (creative == true) {
+                    taco.body.velocity.x = 0;
+                    taco.body.velocity.y = 0;
                     if (cursors.up.isDown || keyW.isDown) {
                         taco.body.y -= 8;
                     }
@@ -2912,13 +3031,40 @@
                     this.physics.world.overlapTiles(taco, spikes, death, null, this);
                     this.physics.world.overlapTiles(taco, flag, function(){nextLevel();this.restartGame();}, null, this);
                 }
+                var transportThis = this;
                 trees.children.iterate(function(child) {
                     if (child.triggered == true) {
-                        child.angle += child.angleSpeed;
-                        child.angleSpeed += 0.2;
+                        if (transportThis.physics.world.timeScale < 5) {
+                            transportThis.physics.world.timeScale += 0.1;
+                        }
+                        
+                        if (check1 > 60) {
+                            check1 = 60;
+                            if (transportThis.physics.world.timeScale > 1) {
+                                transportThis.physics.world.timeScale -= 0.2;
+                            }
+                        }
+                        if (check1 < 0) {
+                            check1 = 0;
+                        } else if (check1 !== 60) {
+                            check1 -= 0.4;
+                        }
+                        if (Phaser.Input.Keyboard.JustDown(keySpace) && check1 !== 60) {
+                            check1 += 7.5;
+                        }
+                        child.angle += child.angleSpeed/10;
+                        child.angleSpeed += 0.2/10;
                         if (child.angle > 60) {
                             child.triggered = false;
+                            check1 = -1;
                             child.body.width -= 175;//counter for the first collider extension.
+                        }
+                    } else {
+                        if (transportThis.physics.world.timeScale > 1) {
+                            transportThis.physics.world.timeScale -= 0.2;
+                        }
+                        if (Math.round(transportThis.physics.world.timeScale) == 1) {
+                            transportThis.physics.world.timeScale = 1;
                         }
                     }
                 });
@@ -3094,7 +3240,9 @@
                     }
                 });
                 //sound effects for burritos and ice effect
+                //this.physics.world.timeScale = 1;
                 burritos.children.iterate(function(child) {
+                    
                     if (child.body.blocked.down && !child.frozen) {
                         child.body.velocity.y = -410;
                         if (camera.worldView.contains(child.body.x, child.body.y)) {
@@ -3117,6 +3265,8 @@
                 //slow down the meatballs
                 meatballs.children.iterate(function(child) {
                     child.body.velocity.x *= 0.97;
+                    child.angle += 0.012 * child.body.velocity.x;
+                    child.body.velocity.x *= 0.995;
                 });
                 //we want to slow down and turn the limes
                 limes.children.iterate(function(child) {
@@ -3127,11 +3277,16 @@
                 //here we have the code for the drill boss
                 
                 drillers.children.iterate(function(child) {
-                    
                     if (creative == false && child.active == true/* && camera.worldView.contains(child.body.x, child.body.y) && taco.x > 105*/) {
                         
                         if (child.started == false) {
                             child.started = true;
+                            if (bossMusic.isPlaying == false) {
+                                bossMusic.play();
+                            }
+                            
+                            mainMusic.stop();
+                            mainMusic2.stop();
                         }
                         if (child.body.allowGravity == false) {
                             //child.body.x = child.initX;
@@ -3139,90 +3294,83 @@
                             child.body.velocity.x = child.initXV;
                             child.body.velocity.y = child.initYV;
                             child.body.allowGravity = true;
-                            child.que = -20;//give it time to get to the ground ya know
-                        } else {
+                            child.que = 1;
+                            child.setOrigin(0.5, 0.5);
+                            camera.startFollow(child, false, 0.1, 0.1);
+                        }
+
+
+                        if (child.que == 1 && child.body.x > (child.initX + 230)) { 
                             child.que += 1;
-                        }
-                        
-                        if (child.que == 1) { 
                             child.body.velocity.y = -600;
-                            child.body.velocity.x *= -1;
+                            child.body.velocity.x = -200;
                             camera.shake(400, 0.005);
-
-                        }
-                        if (child.que == 75) {
+                        }else if (child.que == 2 && child.body.x < (child.initX)) {
+                            child.que += 1;
                             child.body.velocity.y = -600;
-                            child.body.velocity.x *= -1;
+                            child.body.velocity.x = 200;
                             camera.shake(400, 0.005);
-                            
-                        }
-                        if (child.que == 150) {
+                        }else if (child.que == 3 && child.body.x > (child.initX + 230)) {
+                            child.que += 1;
                             child.body.velocity.y = -300;
-                            child.body.velocity.x *= -1;
-
-                        }
-                        if (child.que == 190) {
+                            child.body.velocity.x = -200;
+                        }else if (child.que == 4 && child.body.x < (child.initX + 100)) {
+                            child.que += 1;
                             child.body.velocity.y = -300;
-                            
-                        }
-                        if (child.que == 230) {
+                        }else if (child.que == 5 && child.body.x < (child.initX - 50)) {
+                            child.que += 1;
                             child.body.velocity.y = -300;
+                        }else if (child.que == 6 && child.body.x < (child.initX - 230)) {
+                            child.que += 1
                             
-                        }
-                        if (child.que == 270) {
                             child.anims.stop();
-                        }
-                        if (child.que == 275) {
-                            child.originY = 1;
+                            child.setOrigin(0.5, 1);
                             child.pastXV = child.body.velocity.x;
                             child.pastGY = child.body.gravity.y;
                             child.body.gravity.y = 0;
                             child.body.velocity.x = 0;
-                            child.body.y += (child.body.height/2);
-                            child.anims.play('downAnimation');
-                        }
-                        if (child.que == 375 && child.lives < 5) {
-                            child.anims.play('poppingAnimation');
+                            child.body.velocity.y = 0;
+                            child.body.y += (child.body.height/2) + 2;
+                            child.anims.play('downAnimation').on('animationcomplete', ()=>{
+                                taco.immortale = true;
+                                setTimeout(function(){child.que = 8;taco.immortale = false;}, 500);
+                            });
+                        }else if (child.que == 8) {
+                            child.que += 1;
+                            child.anims.play('poppingAnimation').on('animationcomplete', ()=>{
+                                child.que += 1;
+                            });
                             child.invincible = true;
-                        }
-                        if (child.que == 400 && child.lives < 5) {
+                        }else if (child.que == 10) {
+                            child.que += 1;
                             child.anims.play('shredingAnimation');
-                            child.body.velocity.x = child.pastXV*1.5;
-                            child.body.velocity.x *= -1;
+                            child.body.velocity.x = Math.abs(child.pastXV*1.5);
+                        }else if (child.que == 11 && child.body.x > (child.initX + 230)) {
+                            child.que += 1;
+                            child.body.velocity.x = Math.abs(child.pastXV*1.5) * -1;
+                        }else if (child.que == 12 && child.body.x < (child.initX - 230)) {
+                            
+                            child.que += 1;
+                            child.body.velocity.x = 0;
+                            child.anims.play('unPoppingAnimation').on('animationcomplete', ()=>{
+                                child.que = 14;
+                            });
+                        }else if (child.que == 14 && child.lives < 5) {
+                            child.que += 1;
+                            child.anims.play('upAnimation').on('animationcomplete', ()=>{
+                                child.que = 16;
+                                child.originY = 0.5;
+                                child.body.velocity.x = child.pastXV * -1;
+                                child.body.gravity.y = child.pastGY;
+                                child.body.y -= (child.body.height)+4;
+                                child.anims.play('drillingAnimation');
+                                child.body.velocity.y = -600;
+                                camera.shake(400, 0.005);
 
-                        }
-                        if (child.que == 500 && child.lives < 5) {
-                            child.body.velocity.x *= -1;
-                        }
-                        if (child.que == 600 && child.lives < 5) {
-                            child.body.velocity.x = 0;
-                            child.anims.play('unPoppingAnimation');
-                        }
-                        if (child.que == 685 && child.lives < 5) {
-                            child.anims.play('upAnimation');
+                                console.log('up' + child.que);
+                            });
                             child.body.velocity.x = 0;
                             child.invincible = false;
-                        }
-                        if (child.que == 700 && child.lives < 5) {
-                            child.originY = 0.5;
-                            child.body.velocity.x = child.pastXV;
-                            child.body.gravity.y = child.pastGY;
-                            child.body.y -= (child.body.height/2);
-                            child.anims.play('drillingAnimation');
-                            child.que = 0;
-                        }
-                        if (child.que == 375 && child.lives > 4) {
-                            child.anims.play('upAnimation');
-                            child.body.velocity.x = 0;
-                            child.invincible = false;
-                        }
-                        if (child.que == 390 && child.lives > 4) {
-                            child.originY = 0.5;
-                            child.body.velocity.x = child.pastXV;
-                            child.body.gravity.y = child.pastGY;
-                            child.body.y -= (child.body.height/2);
-                            child.anims.play('drillingAnimation');
-                            child.que = 0;
                         }
                         
                     }/* else {
@@ -3299,6 +3447,9 @@
 
                 this.load.image('clickHere', 'assets/clickHere.png');
                 this.load.image('clickHere2', 'assets/clickHere2.png');
+                
+                //new Ui for tutorial
+                this.load.image('new', 'assets/new.png');
                 //font
                 var element = document.createElement('style');
 
@@ -3411,7 +3562,7 @@
                 mountain = this.physics.add.sprite(400, 600, 'mountain1').setScale(8.5).refreshBody();
                 mountain.setOrigin(0.5, 1);
                 mountain.started = false;
-                mountain.visible = false;
+                //mountain.visible = false;
                 mountain.depth = -3;
                 /*
                 burrito = this.physics.add.sprite(400, -100, 'burrito').setScale(4).refreshBody();
@@ -3420,7 +3571,7 @@
                 fireballs = this.physics.add.group();
                 */
                 //attempt two at cutscene
-                intro = this.physics.add.sprite(400, 300, 'intro1');
+                /*intro = this.physics.add.sprite(400, 300, 'intro1');
                 intro.started = false;
                 intro.Data = {
                     scale: [1, 1, 1.1, 1.4, 1.1, 1, 2, 1.4],
@@ -3428,7 +3579,7 @@
                     offsetX: [50, 50, 25, 40, -60, 0, 0, 40],
                     offsetY: [0, 0, 0, 0, 30, 0, 0, 0, 200],
                     frame: 0
-                }
+                }*/
 
                 block = this.physics.add.sprite(800, 580, 'block').setScale(8);
                 block.angle = 5;
@@ -3445,7 +3596,7 @@
                 titleMusic = this.sound.add('titleMusic');
                 introMusic = this.sound.add('introMusic');
                 titleMusic.loop = true;
-                titleMusic.pause();
+                titleMusic.play();
                 //clouds
                 clouds = this.physics.add.group();
                 for (var i=0; i<12; i += 1) {
@@ -3466,11 +3617,11 @@
                 }
                 //the non moving parts (except for button kindof)
                 logo = this.add.image(400, 200, 'background').setScale(2.5);
-                logo.visible = false;
+                //logo.visible = false;
                 logo.depth = 1;
                 
                 playButton = this.add.image(400, 545, 'play').setScale(1);
-                playButton.visible = false;
+                //playButton.visible = false;
                 playButton.depth = 1;
                 playButton.start = function() {
                     playButton.setInteractive({ useHandCursor: true });
@@ -3502,6 +3653,17 @@
                 clickHere = this.physics.add.sprite(400, 300, 'clickHere').setScale(0.35);
                 clickHere.visible = false;
                 clickHere.depth = 5;
+                //new level
+                //section of new UI for tutorial.
+                newLevel = this.physics.add.sprite(40, 40, 'new');
+                newLevel.scale = 0.75;
+                newLevel.setInteractive({ useHandCursor: true });
+                newLevel.on('pointerover', ()=>{newLevel.scale = 0.9});
+                newLevel.on('pointerout', ()=>{newLevel.scale = 0.75});
+                newLevel.on('pointerdown', ()=>{
+                    level = 3;updateCurrentLevel();startGame();
+                    newLevel.visible = false;
+                });
 
                 //font
                 WebFont.load({
@@ -3608,7 +3770,8 @@
                     introMusic.volume = 0;
                 } else */
                 //got rid of tv
-                
+                //regular intro disable
+                /*
                 if (introMusic.isPlaying == false && start == true) {
                     //textBox.depth = 19;
                     madeBy.visible = false;
@@ -3619,7 +3782,7 @@
                     //this.graphics2.alpha -= 0.02;
                     camera.zoom += 0.0007;//account for the delay caused by the graphics 2 fading out.
                     
-                    if (/*introMusic.isPlaying == false*/true) {
+                    if (true) {
                         introMusic.play();
                         intro.started = true;
                         intro.anims.play('introAnimation');
@@ -3630,7 +3793,7 @@
 
                         intro.on(Phaser.Animations.Events.ANIMATION_UPDATE, function (anim, frame, sprite, frameKey) {
                             intro.Data.frame += 1;
-                            if (intro.Data.frame < /*8*/4) {
+                            if (intro.Data.frame < 4) {
                                 intro.scale = intro.Data.scale[intro.Data.frame];
                                 intro.angle = intro.Data.angle[intro.Data.frame];
                                 intro.x = intro.Data.offsetX[intro.Data.frame] + 400;
@@ -3700,13 +3863,6 @@
                                     
                                 });
                             }
-                            /*if (intro.Data.frame == 8) {
-                                logo.visible = true;
-                                intro.visible = false;
-                                mountain.visible = true;
-                                playButton.visible = true;
-                                playButton.start();
-                            }*/
                         }, this);
 
 
@@ -3719,6 +3875,8 @@
                     camera.zoom += 0.0007;
                 } else if (intro.started == true) {
                 }
+                */
+                //end of disabled regular.
                 /* else if(bird.body.velocity.x == 0) {
                     bird.body.velocity.x = 50;
                 } else if (mountain.dialog == null) {
@@ -3845,7 +4003,7 @@
             game.scene.add('game', gameScene);
             game.scene.add('ui', UIScene);
 
-            game.scene.start('game');
+            game.scene.start('title');
             game.scene.start('ui');
             
             function fullscreen() {
