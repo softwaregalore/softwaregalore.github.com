@@ -7,30 +7,34 @@
     <body>
         <script src="data.js"></script>
         <script>
-            var lmap1 = prompt("code1? this will replace level 4.");
-            var lentity1 = prompt("code2? this will replace level 4.");
-            lmap1 = lmap1.split('+');
-            for (var i = 0; i < lmap1.length; i += 1) {
-                lmap1[i] = lmap1[i].split(',');
-                
-                for (var e = 0; e < lmap1[i].length; e += 1) {
-                    lmap1[i][e] = parseInt(lmap1[i][e]);
+            var code = prompt("level code, currently for level 4");
+            if (code != "") {
+                console.log('preping level from code');
+                var lmap1 = code.split('*')[0];
+                var lentity1 = code.split('*')[1];
+                lmap1 = lmap1.split('+');
+                for (var i = 0; i < lmap1.length; i += 1) {
+                    lmap1[i] = lmap1[i].split(',');
+                    
+                    for (var e = 0; e < lmap1[i].length; e += 1) {
+                        lmap1[i][e] = parseInt(lmap1[i][e]);
+                    }
+                    lmap1[i].pop();
                 }
-                lmap1[i].pop();
-            }
-            lmap1.shift();
+                lmap1.shift();
 
-            lentity1 = lentity1.split('+');
-            for (var i = 0; i < lentity1.length; i += 1) {
-                lentity1[i] = lentity1[i].split(',');
-                
-                for (var e = 0; e < lentity1[i].length; e += 1) {
-                    lentity1[i][e] = parseInt(lentity1[i][e]);
+                lentity1 = lentity1.split('+');
+                for (var i = 0; i < lentity1.length; i += 1) {
+                    lentity1[i] = lentity1[i].split(',');
+                    
+                    for (var e = 0; e < lentity1[i].length; e += 1) {
+                        lentity1[i][e] = parseInt(lentity1[i][e]);
+                    }
+                    lentity1[i].pop();
                 }
-                lentity1[i].pop();
+                lentity1.shift();
             }
-            lentity1.shift();
-
+            
             var fullScreen = false;
             var loaded = false;
             var levelMaps = [tutorialMap1, levelMap1, levelMap2, mmap1, lmap1, bossMap1];
@@ -50,7 +54,7 @@
             updateCurrentLevel();
             
         </script>
-        <canvas id="cnvs" width="800" height="608" style="display:block;"></canvas>
+        <canvas id="cnvs" width="800" height="600" style="display:block;"></canvas>
         <p id="outputMap"></p>
         <p id="outputEntity"></p>
         <script src="phaser.js"></script>
@@ -82,13 +86,16 @@
                 this.load.image('mouse', 'assets/mode1.png');
                 this.load.image('erase', 'assets/mode2.png');
                 //thumbnails
-                this.load.spritesheet('thumbnails', 'assets/thumbnails.png', {frameWidth:32, frameHeight:32});
+                this.load.spritesheet('thumbnails', 'assets/thumbnails2.png', {frameWidth:32, frameHeight:32});
                 //skill check
                 this.load.spritesheet('skill1', 'assets/skillCheck1.png', {frameWidth:36, frameHeight:36});
-
+                //end
+                this.load.image('levelComplete', 'assets/levelComplete.png');
+                
             }
             var gameLoaded = false;
             var check1 = -1;//tell UI what to display.
+            var score;//access between scenes.
             function UIcreate () 
             {
                 //debug
@@ -98,6 +105,14 @@
                 UIZone = this.add.zone(0, 0).setSize(2, 2);
                 this.physics.world.enable(UIZone);
                 UIZone.hover = false;
+                //word zone, used for ensuring they can always place blocks.
+                worldZone = this.add.zone(0, 0).setSize(800, 600);
+                this.physics.world.enable(worldZone);
+                //we run this first so that the folder.hover overlap can override it if necesary.
+                this.physics.add.overlap(UIZone, worldZone, hoverWorld, null, this);
+                function hoverWorld(UIZone, worldZone) {
+                    disableEdit = false;
+                }
                 //level UI
                 folder = this.physics.add.sprite(400, 84, 'tab1').setScale(6).refreshBody();
                 folder.scrollFactorX = 0;
@@ -176,25 +191,25 @@
                 //selectors in the folder
                 selectData = {
                     tabsType: [
-                        [2, 2, 2, 2, 2, 1, 1],
+                        [2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
                         [1, 1],
-                        [1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 1],
                         [1, 1, 1, 1, 1],
-                        [1, 1, 1, 1, 1, 1, 1, 1]
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1]
                     ],
                     tabsSelect: [
-                        [0, 2, 3, 4, 11, 19, 4],
+                        [0, 2, 3, 4, 11, 19, 4, 26, 26.1, 26.2, 26.3, 26.4, 26.5, 26.6, 26.7],
                         [5, 25],
-                        [2, 3, 12, 8],
+                        [2, 3, 1, 0, 12, 8],
                         [7, 11, 14, 8, 9],
-                        [24, 23, 21, 15, 17, 18, 16, 13]
+                        [24, 23, 21, 15, 17, 18, 16, 13, 20]
                     ],
                     tabsThumb: [
-                        [0, 2, 3, 4, 11, 10, 18],
+                        [0, 2, 3, 4, 11, 10, 18, 32, 33, 34, 35, 36, 37, 38, 39],
                         [14, 22],
-                        [1, 12, 24, 26],
+                        [1, 12, 1, 1, 24, 26],
                         [27, 20, 23, 26, 19],
-                        [13, 21, 17, 16, 28, 29, 30, 31]
+                        [13, 21, 17, 16, 28, 29, 30, 31, 40]
                     ]
                 }
                 selectors = this.physics.add.group();
@@ -211,9 +226,25 @@
                     });
 
                     for (var i = 0; i<selectData.tabsThumb[folder.tab].length; i += 1) {
-                        selector = selectors.create(36+folder.body.x+(40*i), folder.body.y+82, 'thumbnails');
+                        
+                        if (i < 8) {
+                            selector = selectors.create(36+folder.body.x+(40*i), folder.body.y+82, 'thumbnails');
+                        } else {
+                            selector = selectors.create(36+folder.body.x+(40*(i-8)), folder.body.y+82+40, 'thumbnails');
+                        }
+                        
                         selector.setFrame(selectData.tabsThumb[folder.tab][i]);
                         selector.i = i;
+                        if (folder.tab == 2) {
+                            switch(i) {
+                                case 2:
+                                    selector.angle += 90;
+                                    break;
+                                case 3:
+                                    selector.angle -= 90;
+                                    break;
+                            }
+                        }
                     }
                     selectors.children.iterate(function(child) {
                         child.setInteractive({ useHandCursor: true });
@@ -271,7 +302,51 @@
                 timeSkill = this.physics.add.sprite(400, 200, 'skill1');
                 timeSkill.scale = 2;
                 timeSkill.visible = false;
+                //score
+                score = this.add.text(20, 60, 'Coins: 0', {fontSize: 20, color: '#ffffff' });
+                score.visible = false;
+                score.scrollFactorX = 0;
+                score.scrollFactorY = 0;
+                score.value = 0;
+                score.add = function(value) {
+                    score.value += value;
+                    score.setText('Coins: ' + score.value);
+                }
+                score.depth = 5;
+
+                menu = this.physics.add.sprite(400, 350, 'menu').setScale(0.2).refreshBody();
+                menu.scrollFactorX = 0;
+                menu.scrollFactorY = 0;
+                menu.depth = 4;
+                menu.targetScale = 3.5;
+                menu.visible = false;
+
+                menu.clickHere2 = this.physics.add.sprite(400, 300, 'clickHere2').setScale(0.35);
+                menu.clickHere2.visible = false;
+                menu.clickHere2.depth = 5;
+
+                buttons = this.physics.add.group();
+                buttons.scrollFactorX = 0;
+                buttons.scrollFactorY = 0;
+                // here we have some config type things for the button layout.
+                buttons.opened = false;
+                buttons.count = 6;
+                buttons.spacing = 88;
+                buttons.depth = 4;
+
+                //also associated with minigame, is the level complete sign.
+                levelComplete = this.physics.add.sprite(400, 270, 'levelComplete').setScale(0.05);
+                levelComplete.visible = false;
+                levelComplete.scrollFactorX = 0;
+                levelComplete.scrollFactorY = 0;
+                levelComplete.depth = 6;
+
+                //guides
+                clickHere = this.physics.add.sprite(400, 300, 'clickHere').setScale(0.35);
+                clickHere.visible = false;
+                clickHere.depth = 5;
             }
+            var menuOpen = false;
             function UIupdate () 
             {
                 UIPointer = this.input.activePointer.positionToCamera(this.cameras.main);
@@ -311,6 +386,72 @@
                         selectors.setVisible(false);
                         creative = false;
                         creativeUpdate = true;
+                    }
+                }
+
+
+                //menu
+                if (menuOpen == true) {
+                    
+                    menu.visible = true;
+                    if (menu.scaleX <= menu.targetScale) {
+                        menu.scaleX += 0.1;
+                        menu.scaleY += 0.1;
+                    } else if (buttons.opened == false) {//once the opening is done.
+                        buttons.opened = true;
+
+                        for (var i = 0; i < buttons.count; i += 1) {
+                            
+                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 350, 'level' + String(i));
+                            if (i == 0 && level == 0) {
+                                clickerHere.visible = true;
+                            }
+                            button.scrollFactorX = 0;
+                            button.scrollFactorY = 0;
+                            button.depth = 5;
+                            button.body.x += button.width;
+                            button.setOrigin(0.5, 0.5).refreshBody();
+                            button.order = i;//determine which level it is later.
+                            //button.setScale(1).refreshBody();
+                            
+                        }
+                        menuOpen = false;
+                        //set the interactiveness afterwards
+                        var transportThis = this;
+                        buttons.children.iterate(function(child){
+                            child.setInteractive({ useHandCursor: true });
+                            child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
+                            child.on('pointerout', () => { child.setScale(1).refreshBody(); });
+                            child.on('pointerdown', () => {
+                                level = child.order;
+                                menuOpen = false;
+                                updateCurrentLevel();
+                                if (mainMusic) {
+                                    menu.scale = 0.2;
+                                    menu.visible = false;
+                                    setTimeout(()=>{menu.visible = false;}, 40);//double check.
+                                    buttons.setVisible(false);
+                                    levelComplete.visible = false;
+                                    transportThisGame.scene.restart();
+                                } else {
+                                    menu.visible = false;
+                                    setTimeout(()=>{menu.visible = false;}, 40);//double check.
+                                    menu.scale = 0.2;
+                                    buttons.setVisible(false);
+                                    startGame();
+                                }
+                                
+                                
+                            });
+                            child.refreshBody();
+                            child.setOrigin(0.5, 0.5);
+                            child.setScale(1);
+                        });
+                        
+                        
+                    } else {
+                        buttons.setVisible(true);
+                        menuOpen = false;
                     }
                 }
                 
@@ -515,9 +656,7 @@
 
                 //sky images
                 this.load.image('sky1', 'assets/sky.png');
-
                 //lava images
-                
                 this.load.image('lava1', 'assets/lavaTiles__1.png');
                 this.load.image('lava2', 'assets/lavaTiles__2.png');
                 this.load.image('lava3', 'assets/lavaTiles__3.png');
@@ -533,6 +672,13 @@
                 this.load.image('right1', 'assets/R1.png');
                 this.load.image('right2', 'assets/R2.png');
                 this.load.image('still', 'assets/Stanstill.png');
+                //gumgrass
+                names = ['up', 'upright', 'right', 'downright', 'down', 'downleft', 'left', 'upleft']
+                for (var i = 0; i < 8; i += 1) {
+                    this.load.image(names[i], 'assets/gum' + names[i] + '.png');
+                }
+                //game over
+                this.load.image('gameOver', 'assets/gameOver.png');
                 //lives
                 this.load.image('heart1', 'assets/N heart1.png');
                 this.load.image('heart2', 'assets/N heart2.png');
@@ -558,12 +704,8 @@
 
                 //minigame
                 this.load.image('spaceBox', 'assets/spaceInvadersBox.png');
-                //end
-                this.load.image('levelComplete', 'assets/levelComplete.png');
-                this.load.image('menu', 'assets/menu2.png');
-                for (var i = 0; i <= 5; i += 1) {
-                    this.load.image('level' + String(i), 'assets/level' + String(i) + '.png');
-                }
+                
+                
                 //selector
                 this.load.image('selector', 'assets/selector.png');
 
@@ -574,27 +716,10 @@
             }
             //deaths
             var dead = false;
+            var transportThisGame;
+            var transportThisTitle;
             function death(inevitable) {
-                /*
-                if (dead == false) {
-                    dead = true;
-
-                    taco.active = false;
-                    setTimeout(function(){
-                        taco.active = true;
-                        taco.x = 100;//for tutorial
-                        taco.y = 300;
-                        taco.body.velocity.x = 0;
-                        taco.body.velocity.y = 0;
-                        returnSprites();
-                        resumeSprites();
-                        camera.startFollow(taco, false, 0.1, 0.1);
-                        drillers.children.iterate(function(child) {
-                            child.started = false;
-                        });
-                        dead = false;
-                    }, 450);
-                }*/
+                arrow.visible = false;
                 trees.children.iterate(function(child) {
                     child.angle = 0;
                     child.triggered = false;
@@ -633,26 +758,61 @@
                     });
                     
                     if (taco.lives == 0) {
+                        rocks.setVisible(false);
+                        score.visible = false;
+
                         taco.disabled = true;
-                        menuOpen = true;
+                        gameOver = this.add.image(400, 300, 'gameOver').setScale(0.77);
+                        gameOver.scrollFactorX = 0;
+                        gameOver.scrollFactorY = 0;
+                        gameOver.alpha = 0;
+                        gameOver.depth = 3;
+                        gameOver.fadeout = setInterval(()=>{
+                            gameOver.alpha += 0.005;
+                            mainMusic.volume -= 0.005;
+                            mainMusic2.volume -= 0.005;
+                            bossMusic.volume -= 0.005;
+                            if(gameOver.alpha >= 1)
+                            {
+                                mainMusic.volume = 0;
+                                mainMusic2.volume = 0;
+                                bossMusic.volume = 0;
+                                gameOver.setAlpha(1);
+                                clearInterval(gameOver.fadeout);
+                                menuOpen=true;
+                                transportThisGame.scene.pause();
+                            }
+                        }, 16);
+                        
+                        
                     }
                 }
             }
             //creating entities
             function newEntity(type, x, y, offsetX, offsetY) {
-                if (type == 2 || type == 3) {
+                if (type == 2 || type == 3 || type == 1 || type == 0) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = type;
                     var coin = spikes.create(x+16, y+16, 'spike');
                     if (type == 3) {
                         coin.angle = 180;
+                    } else if (type == 1) {
+                        coin.angle = 90;
+                    } else if (type == 0) {
+                        coin.angle = -90;
                     }
                     coin.body.gravity.y = 0;
                     coin.initX = x;
                     coin.initY = y;
                     coin.initXV = 0;
                     coin.initYV = 0;
-                    coin.body.width *= 0.25;
-                    coin.body.offset.x += 12;
+                    if (type > 2) {
+                        coin.body.width *= 0.25;
+                        coin.body.offset.x += 12;
+                    } else {
+                        coin.body.height *= 0.25;
+                        coin.body.offset.y += 12;
+                    }
+                    
                 } 
                 if (type == 4) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 4;
@@ -705,6 +865,7 @@
                     driller.initYV = 0;
                     driller.started = false;
                     driller.que = 0;
+                    driller.phase = 0;
                     driller.lives = 0;
                     driller.invincible = false;
                     
@@ -1040,6 +1201,29 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                 } 
+                if (type >= 26 && type < 27) {
+                    names = ['up', 'upright', 'right', 'downright', 'down', 'downleft', 'left', 'upleft']
+                    var coin;
+                    for (var i = 0; i < 8; i += 1) {
+                        if (26 + (i/10) == type) {
+                            coin = gums.create(x+16, y+16, names[i]);
+                        }
+                    }
+                    entity1[Math.round(y/32)][Math.round(x/32)] = type;
+                    
+                    map.putTileAt(0, map.worldToTileX(x), map.worldToTileY(y));
+                    coin.setScale(0.100001);
+                    coin.setOrigin(0.5, 0.5);
+                    coin.body.gravity.y = 0;
+                    
+                    //we need to keep track of initial positions for later.
+                    coin.initX = x;
+                    coin.initY = y;
+                    //coin.body.x = x;
+                    //coin.body.y = y;
+                    coin.initXV = 0;
+                    coin.initYV = 0;
+                } 
             }
             function returnSprites() {
                 camera.stopFollow();
@@ -1074,6 +1258,7 @@
                             
                 });
                 drillers.children.iterate(function(child) {
+                    bossEmitter.setQuantity(0);
                     child.anims.stop();
                     child.anims.play('drillingAnimation');
                     child.enableBody(true, child.initX+8, child.initY+32+16, true, true);
@@ -1222,6 +1407,7 @@
                     child.body.allowGravity = true;*/
                     child.body.gravity.y = 1000;
                     child.que = 0;
+                    child.phase = 0;
                 });
                 mites.children.iterate(function(child) {
                     if (child.body.velocity.y == 0) {
@@ -1356,10 +1542,12 @@
             var bossMusic;
             function create ()
             {
+                score.visible = true;
                 if (level == 3) {
                     gameLoaded = true;//let it know to add the button for creative.
                 }
                 menuOpen = false;
+                menu.visible = false;
                 //text and menu type stuff.
                 //levelDisplay = this.add.text(400, 300, 'Level ' + level, {fontFamily: 'Arial', fontSize: '32px', fill: 'white' });//.setOrigin(0.5);
                 //vars for tutorial
@@ -1427,14 +1615,6 @@
 
                 //game.stage.backgroundColor = "#4488AA";
                 
-                
-                //initial gathering the special tiles :)
-                spikes = map.filterTiles(function (tile) {
-                    return (tile.index == 1);
-                });
-                flag = map.filterTiles(function (tile) {
-                    return (tile.index == 9);
-                });
                 
                 //layer1.setFrictionX(5);
                 
@@ -1672,6 +1852,18 @@
                     lifespan: { min: 200, max: 400 },
                 });
                 dirtEmitter.setScale(0.5);
+                bossEmitter = ingredients.createEmitter({
+                    frame: [0],
+                    x: 500,
+                    y: 500,
+                    frequency: 120,
+                    quantity: 0,
+                    angle: { min: -150, max: -30 },
+                    speed: 100,
+                    gravityY: 200,
+                    lifespan: { min: 200, max: 400 },
+                });
+                bossEmitter.setScale(0.5);
                 //able to restart later
                 this.restartGame = function() {
                     this.scene.restart();
@@ -1690,12 +1882,14 @@
                 
                 //player sprite
                 if (tutorial == true) {
-                    taco = this.physics.add.sprite(400, 300, 'still').setScale(1.75).refreshBody();
+                    taco = this.physics.add.sprite(400, 1100, 'still').setScale(1.75).refreshBody();
                 } else {
-                    taco = this.physics.add.sprite(100, 300, 'still').setScale(1.75).refreshBody();
+                    taco = this.physics.add.sprite(100, 1100, 'still').setScale(1.75).refreshBody();
                 }
                 taco.disabled = false;//control whether they can move;
                 taco.cream = false;
+                taco.gum = false;
+                taco.gumDir = 1;
                 taco.body.gravity.y = 1150;
                 taco.body.drag.x = 100;
                 taco.depth = 2;
@@ -1710,40 +1904,13 @@
                 } else {
                     taco.startX = 100;
                 }
-                taco.startY = 300;
+                taco.startY = 1100;
                 //minigame
                 ship = this.physics.add.sprite(400, 480, "still");
                 ship.visible = false;
                 bullets = this.physics.add.group();
                 enemies = this.physics.add.group();
-                //also associated with minigame, is the level complete sign.
-                levelComplete = this.physics.add.sprite(400, 270, 'levelComplete').setScale(0.05);
-                levelComplete.visible = false;
-                levelComplete.scrollFactorX = 0;
-                levelComplete.scrollFactorY = 0;
-                levelComplete.depth = 6;
-
                 
-
-                menu = this.physics.add.sprite(400, 350, 'menu').setScale(0.2).refreshBody();
-                menu.scrollFactorX = 0;
-                menu.scrollFactorY = 0;
-                menu.depth = 4;
-                menu.targetScale = 3.5;
-                menu.visible = false;
-
-                menu.clickHere2 = this.physics.add.sprite(400, 300, 'clickHere2').setScale(0.35);
-                menu.clickHere2.visible = false;
-                menu.clickHere2.depth = 5;
-
-                buttons = this.physics.add.group();
-                buttons.scrollFactorX = 0;
-                buttons.scrollFactorY = 0;
-                // here we have some config type things for the button layout.
-                buttons.opened = false;
-                buttons.count = 6;
-                buttons.spacing = 88;
-                buttons.depth = 4;
 
                 //collisions with player
                 layer1.setCollision([0, 2, 3, 8, 10]);
@@ -1756,15 +1923,7 @@
                     heart.scrollFactorY = 0;
                 }
 
-                score = this.add.text(105, 117, 'Coins: 0', {fontSize: 20, color: '#ffffff' });
-                score.scrollFactorX = 0;
-                score.scrollFactorY = 0;
-                score.value = 0;
-                score.add = function(value) {
-                    score.value += value;
-                    score.setText('Coins: ' + score.value);
-                }
-                score.depth = 5;
+                
                 //mouse selector
                 gridSelector = this.physics.add.sprite(0, 0, 'selector');
                 gridSelector.depth = 2;
@@ -1812,6 +1971,7 @@
                     immovable: true
                 }));
                 poisons = this.physics.add.group();
+                entities.push(gums = this.physics.add.group());
                 
                 //not necesariily a group but goes along with rocks
                 arrow = this.physics.add.sprite(taco.body.x, taco.body.y, 'aimArrow').setScale(4).refreshBody();
@@ -1826,6 +1986,7 @@
                 this.physics.add.overlap(taco, rocks, touchingRock, null, this);
                 this.physics.add.overlap(mites, rocks, rockHitMite, null, this);
                 this.physics.add.overlap(mites, drillers, drillerHitMite, null, this);
+                this.physics.add.overlap(mites, burritos, burritoHitMite, null, this);
                 this.physics.add.overlap(taco, mites, tacoHitMites, null, this);
                 this.physics.add.overlap(rocks, drillers, rockHitDriller, null, this);
                 this.physics.add.overlap(taco, trees, tacoHitTree, null, this);
@@ -1855,6 +2016,7 @@
                     this.physics.add.overlap(mouseZone, entities[i], mouseOverlap, null, this);
                 }
                 this.physics.add.overlap(taco, spikes, death, null, this);
+                this.physics.add.overlap(taco, gums, tacoHitGum, null, this);
 
                 this.physics.add.collider(rocks, rocks);
                 this.physics.add.collider(burritos, layer1);
@@ -1937,6 +2099,7 @@
                 }
                 function drillerHitMite(mite, driller) {
                     if (driller.invincible == false) {
+                        
                         mite.body.x = mite.initX;
                         mite.body.y = mite.initY;
                         mite.body.gravity.y = 0;
@@ -1951,7 +2114,14 @@
                             driller.disableBody(true, true);
                             ingredientParticleEmit(driller.x, driller.y, 40, 1500, false);
                             
+                        } else {
+                            camera.shake(400, 0.005);
                         }
+                    }
+                }
+                function burritoHitMite(mite, burrito) {
+                    if (burrito) {
+                        burrito.disableBody(true, true);
                     }
                 }
                 function hitDrill (taco, drill) {
@@ -2090,6 +2260,14 @@
                         
                         entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                         child.destroy();
+                    }
+                }
+                function tacoHitGum(taco, gum) {
+                    taco.gum = true;
+                    if (gum.x > taco.x) {
+                        taco.gumDir = 1;
+                    } else {
+                        taco.gumDir = 01;
                     }
                 }
                 var transportThis = this;//allow us to restart the game in a callback.
@@ -2356,7 +2534,6 @@
                         if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
                             entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
-                            
                         }
                     });
                     meatballs.children.iterate(function(child) {
@@ -2364,8 +2541,6 @@
                         if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
                             entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
-                            
-                            
                         }
                     });
                     creams.children.iterate(function(child) {
@@ -2379,7 +2554,6 @@
                         if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
                             entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
-                            
                         }
                     });
                     keys.children.iterate(function(child) {
@@ -2392,14 +2566,12 @@
                         if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
                             entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
-                            
                         }
                     });
                     shooters.children.iterate(function(child) {
                         if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
                             entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
                             child.destroy();
-                            
                         }
                     });
                 }
@@ -2549,9 +2721,9 @@
                     }
                 }
             }
-            menuOpen = false;
             function update ()
             {
+                transportThisGame = this;
                 //music loop between backgrounds
                 if (mainMusic.hasEnded == true) {
                     mainMusic.hasEnded = false;
@@ -2575,50 +2747,6 @@
                     gridSelector.visible = true;
                 } else {
                     gridSelector.visible = false;
-                }
-                //menu
-                if (menuOpen == true) {
-                    menu.visible = true;
-                    if (menu.scaleX <= menu.targetScale) {
-                        menu.scaleX += 0.1;
-                        menu.scaleY += 0.1;
-                    } else if (buttons.opened == false) {//once the opening is done.
-                        buttons.opened = true;
-
-                        for (var i = 0; i < buttons.count; i += 1) {
-                            
-                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 350, 'level' + String(i));
-                            if (i == 1 && level == 0) {
-                                menu.clickHere2.x = button.x;
-                                menu.clickHere2.y = button.y - 60;
-                                //menu.clickHere2.visible = true;
-                            }
-                            button.scrollFactorX = 0;
-                            button.scrollFactorY = 0;
-                            button.depth = 5;
-                            button.body.x += button.width;
-                            button.setOrigin(0.5, 0.5).refreshBody();
-                            button.order = i;//determine which level it is later.
-                            //button.setScale(1).refreshBody();
-                            
-                        }
-                        menuOpen = false;
-                        //set the interactiveness afterwards
-                        var transportThis = this;
-                        buttons.children.iterate(function(child){
-                            child.setInteractive({ useHandCursor: true });
-                            child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
-                            child.on('pointerout', () => { child.setScale(1).refreshBody(); });
-                            child.on('pointerdown', () => {level = child.order;updateCurrentLevel();transportThis.scene.restart();menuOpen = false;});
-                            child.refreshBody();
-                            child.setOrigin(0.5, 0.5);
-                            child.setScale(1);
-                        });
-                        
-                        
-                    } else {
-                        menuOpen = false;
-                    }
                 }
                 if (taco.minigame == true) {
                    
@@ -2652,13 +2780,13 @@
                 }
                 sequence();
                 //update clouds and backgroundthis.input.keyboard.createCursorKeys()
-                if (random(1, 250) == 3) {
+                if (random(1, 125) == 3) {
                     
                     if (random(1, 2) == 1) {
-                        cloud = clouds.create(-200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                        cloud = clouds.create(-200, random(1, 450+800), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
                         cloud.body.velocity.x = random(25, 50);
                     } else {
-                        cloud = clouds.create(layer1.width + 200, random(1, 450), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                        cloud = clouds.create(layer1.width + 200, random(1, 450+800), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
                         cloud.body.velocity.x = random(-25, -50);
                     }
                     cloud.depth = -2;
@@ -2706,46 +2834,15 @@
                     }
                 }
                 if (keyF.isDown) {
-                    /*
-                    var exMap = '[';
-                    for (var i=0; i<map1.length; i += 1) {
-                        exMap = String(exMap) + '[' + String(map1[i]) + ']' + ', ';
-                    }
-                    //exMap.charAt(exMap.length-1) = ']';
-                    console.log(exMap);
-                    
-                    document.getElementById('outputMap').innerHTML = exMap;
-                    var exEntity = '[';
-                    for (var i=0; i<entity1.length; i += 1) {
-                        exEntity = String(exEntity) + '[' + String(entity1[i]) + ']' + ', ';
-                    }
-                    
-                    //exEntity.charAt(exEntity.length-1) = ']';
-                    console.log(exEntity);
-                    
-                    document.getElementById('outputEntity').innerHTML = exEntity;
-                    */
                     var exMap = '';
                     for (var i=0; i<map1.length; i += 1) {
                         exMap = String(exMap) + '+' + String(map1[i]) + ', ';
                     }
-                    //exMap.charAt(exMap.length-1) = ']';
-                    console.log(exMap);
-                    
-                    document.getElementById('outputMap').innerHTML = exMap;
                     var exEntity = '';
                     for (var i=0; i<entity1.length; i += 1) {
                         exEntity = String(exEntity) + '+' + String(entity1[i]) + ', ';
                     }
-                    
-                    //exEntity.charAt(exEntity.length-1) = ']';
-                    console.log(exEntity);
-                    
-                    document.getElementById('outputEntity').innerHTML = exEntity;
-                    /*
-                    for (var i=0; i<entity1.length; i += 1) {
-                        console.log(String(entity1[i]));
-                    }*/
+                    navigator.clipboard.writeText(exMap + '*' + exEntity);//copy to clipboard.
                 }
                 //before doing anything with creative, it is important that the positions of sprites are all working the right way animations wise
                 updateColliders();
@@ -2995,10 +3092,13 @@
                 taco.body.velocity.x = tacoVelocityX;
                 if (taco.cream) {
                     tacoVelocityX = tacoVelocityX * 0.98;//0.8
+                } else if (taco.gum) {
+                    tacoVelocityX = tacoVelocityX * 0.78;
+                    taco.body.velocity.y *= 0.8;
                 } else {
                     tacoVelocityX = tacoVelocityX * 0.88;//0.8
                 }
-                taco.cream = false;
+                
                 if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
                     taco.body.velocity.y = -100;//base jump;
                     taco.jumpHold = 105;
@@ -3008,7 +3108,17 @@
                     taco.jumpHold -= 8;
                     taco.body.velocity.y -= taco.jumpHold*0.92;
                 }
-                
+                if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
+                    taco.body.velocity.y = -470;
+                    if (cursors.right.isDown) {
+                        tacoVelocityX = -500;
+                    }
+                    if (cursors.left.isDown) {
+                        tacoVelocityX = 500;
+                    }
+                }
+                taco.cream = false;
+                taco.gum = false;
 
                 //we need to be able to move up and down in creative too
                 if (creative == true) {
@@ -3023,25 +3133,27 @@
                 }
                 
                 //make sure that we die when we fall into the void :)
-                if (taco.body.y > 1000) {
+                if (taco.body.y > 2000) {
                     death(true);
                 }
-                //here we do up to date collisions etc
-                if (creative == false) {
-                    this.physics.world.overlapTiles(taco, spikes, death, null, this);
-                    this.physics.world.overlapTiles(taco, flag, function(){nextLevel();this.restartGame();}, null, this);
-                }
+                
                 var transportThis = this;
-                trees.children.iterate(function(child) {
+                function treeSkillCheck(child, fallAngle, widthPullback) {
+                    function roundTimeScale() {
+                        if (Math.round(transportThis.physics.world.timeScale) == 1) {
+                            transportThis.physics.world.timeScale = 1;
+                        }
+                    }
                     if (child.triggered == true) {
                         if (transportThis.physics.world.timeScale < 5) {
                             transportThis.physics.world.timeScale += 0.1;
                         }
                         
-                        if (check1 > 60) {
+                        if (check1 >= 60) {
                             check1 = 60;
                             if (transportThis.physics.world.timeScale > 1) {
                                 transportThis.physics.world.timeScale -= 0.2;
+                                roundTimeScale();
                             }
                         }
                         if (check1 < 0) {
@@ -3051,32 +3163,29 @@
                         }
                         if (Phaser.Input.Keyboard.JustDown(keySpace) && check1 !== 60) {
                             check1 += 7.5;
+                            if (check1 > 60) {
+                                check1 = 60;
+                            }
                         }
-                        child.angle += child.angleSpeed/10;
-                        child.angleSpeed += 0.2/10;
-                        if (child.angle > 60) {
+                        child.angle += child.angleSpeed/(3.5*transportThis.physics.world.timeScale);
+                        child.angleSpeed += 0.2/(3.5*transportThis.physics.world.timeScale);
+                        if (child.angle > fallAngle) {
                             child.triggered = false;
                             check1 = -1;
-                            child.body.width -= 175;//counter for the first collider extension.
+                            child.body.width -= widthPullback;//counter for the first collider extension.
                         }
                     } else {
                         if (transportThis.physics.world.timeScale > 1) {
                             transportThis.physics.world.timeScale -= 0.2;
                         }
-                        if (Math.round(transportThis.physics.world.timeScale) == 1) {
-                            transportThis.physics.world.timeScale = 1;
-                        }
+                        roundTimeScale();
                     }
+                }
+                trees.children.iterate(function(child) {
+                    treeSkillCheck(child, 60, 175);
                 });
                 lights.children.iterate(function(child) {
-                    if (child.triggered == true) {
-                        child.angle += child.angleSpeed;
-                        child.angleSpeed += 0.2;
-                        if (child.angle > 75) {
-                            child.triggered = false;
-                            child.body.width -= 60;//counter for the first collider extension.
-                        }
-                    }
+                    treeSkillCheck(child, 75, 60);
                 });
                 poisons.children.iterate(function (child) {
                     if (child) {
@@ -3103,12 +3212,13 @@
                 });
                 rocks.children.iterate(function(child) {
                     if (child.held == true) {
+                        transportThis.physics.world.timeScale = 1;
                         arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
                         arrow.body.y = taco.body.y-arrow.body.height-18;
                         if (arrow.direction == 1) {
-                            arrow.angle += 4;
+                            arrow.angle += 4/transportThis.physics.world.timeScale;
                         } else {
-                            arrow.angle -= 4;
+                            arrow.angle -= 4/transportThis.physics.world.timeScale;
                         }
                         if (arrow.angle > 70 || arrow.angle < -70) {
                             arrow.direction *= -1;
@@ -3127,10 +3237,11 @@
                         child.depth = 5;
                         if (keySpace.isDown == false) {
                             child.held = false;
-                            child.body.velocity.x = 1000*Math.sin(arrow.angle * Math.PI/180);
-                            child.body.velocity.y = -500*Math.cos(arrow.angle * Math.PI/180);
+                            child.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
+                            child.body.velocity.y = -700*Math.cos(arrow.angle * Math.PI/180);
                             arrow.angle = 0;
                             arrow.visible = false;
+                            transportThis.physics.world.timeScale = 1;
                         }
                     }
                 })
@@ -3295,11 +3406,313 @@
                             child.body.velocity.y = child.initYV;
                             child.body.allowGravity = true;
                             child.que = 1;
+                            child.phase = 1;
                             child.setOrigin(0.5, 0.5);
-                            camera.startFollow(child, false, 0.1, 0.1);
+                            //camera.startFollow(child, false, 0.1, 0.1);
                         }
-
-
+                        if (child.body.blocked.down) {
+                            bossEmitter.setQuantity(10);
+                            bossEmitter.setPosition(child.x, child.body.y+child.displayHeight);
+                        } else {
+                            bossEmitter.setQuantity(0);
+                        }
+                        switch (child.phase) {
+                            case 1:
+                                switch (child.que) {
+                                case 1:
+                                    if (child.body.x > (child.initX + 200)) {
+                                        child.que += 1;
+                                        child.body.velocity.x = -200;
+                                    }
+                                    break;
+                                case 2:
+                                    if (child.body.x < (child.initX - 200)) {
+                                        child.que += 1;
+                                        child.body.velocity.x = 200;
+                                    }
+                                    break;
+                                case 3:
+                                    if (child.body.x > (child.initX-100)) {
+                                        child.que += 1;
+                                        child.body.velocity.y = -600;
+                                        camera.shake(400, 0.005);
+                                    }
+                                    break;
+                                case 4:
+                                    if (child.body.x > (child.initX + 200)) {
+                                        child.que += 1;
+                                        child.body.velocity.x = -200;
+                                    }
+                                    break;
+                                case 5:
+                                    if (child.body.x < (child.initX+100)) {
+                                        child.que += 1;
+                                        child.body.velocity.y = -600;
+                                        camera.shake(400, 0.005);
+                                    }
+                                    break;
+                                case 6:
+                                    if (child.body.x < (child.initX - 200)) {
+                                        child.que = 1;
+                                        child.phase += 1;//temporary
+                                        child.body.velocity.x = 200;
+                                    }
+                                    break;
+                                }
+                                break;
+                            case 2:
+                                switch (child.que) {
+                                    case 1:
+                                        if (child.body.x > (child.initX + 200)) {
+                                            child.que += 1;
+                                            child.anims.stop();
+                                            child.setOrigin(0.5, 1);
+                                            child.pastXV = child.body.velocity.x;
+                                            child.pastGY = child.body.gravity.y;
+                                            child.body.gravity.y = 0;
+                                            child.body.velocity.x = 0;
+                                            child.body.velocity.y = 0;
+                                            child.body.y += (child.displayHeight/2);
+                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                taco.immortale = true;
+                                                child.timer = setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
+                                            });
+                                        }
+                                        break;
+                                    case 3:
+                                        child.que += 1;
+                                        console.log('popping animation started');
+                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                            console.log('animationcoomplete');
+                                            child.que += 1;
+                                            child.anims.play('shredingAnimation');
+                                        });
+                                        child.invincible = true;
+                                        break;
+                                    case 5:
+                                        child.que += 1;
+                                        child.body.velocity.x = -300;
+                                        break;
+                                    case 6:
+                                        if (child.body.x < (child.initX - 200)) {
+                                            child.que += 1;
+                                            child.body.velocity.x = 300;
+                                        }
+                                        break;
+                                    case 7:
+                                        if (child.body.x > (child.initX + 200)) {
+                                            child.que += 1;
+                                            child.body.velocity.x = 0;
+                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                setTimeout(function(){child.que += 1;}, 500);
+                                            });
+                                        }
+                                        break;
+                                    case 9:
+                                        child.que += 1;
+                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                            child.que += 1;
+                                            child.setOrigin(0.5, 0.5);
+                                            child.body.velocity.x = -200;
+                                            child.body.gravity.y = 1000;
+                                            child.y -= (child.displayHeight/2);
+                                            child.anims.play('drillingAnimation');
+                                            child.body.velocity.y = -400;
+                                            camera.shake(400, 0.005);
+                                        });
+                                        child.body.velocity.x = 0;
+                                        child.invincible = false;
+                                        break;
+                                    case 11:
+                                        if (child.body.blocked.down == true) {
+                                            child.body.velocity.y = -400;
+                                            camera.shake(400, 0.005);
+                                            child.que += 1;
+                                        }
+                                        break;
+                                    case 12:
+                                        if (child.body.x < (child.initX - 200)) {
+                                            child.body.velocity.x = 200;
+                                            
+                                            if (child.lives == 5) {
+                                                child.phase = 1;
+                                                child.que = 1;
+                                            } else {
+                                                child.que = 1;
+                                                child.phase += 1;
+                                            }
+                                            
+                                        }
+                                        break;
+                                    
+                                }
+                                break;
+                            case 3:
+                                switch (child.que) {
+                                    case 1:
+                                        if (child.body.blocked.down == true) {
+                                            child.body.velocity.y = -450;
+                                            camera.shake(400, 0.005);
+                                            child.que += 1;
+                                        }
+                                        break;
+                                    case 2:
+                                    if (child.body.blocked.down == true) {
+                                            camera.shake(400, 0.005);
+                                            child.que += 1;
+                                            child.setOrigin(0.5, 1);
+                                            child.pastXV = child.body.velocity.x;
+                                            child.pastGY = child.body.gravity.y;
+                                            child.body.gravity.y = 0;
+                                            child.body.velocity.x = 0;
+                                            child.body.velocity.y = 0;
+                                            child.body.y += (child.displayHeight/2);
+                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                taco.immortale = true;
+                                                setTimeout(()=>{
+                                                    taco.immortale = false;
+                                                    child.que += 1;
+                                                    child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                                        child.anims.play('drillingAnimation');
+                                                        child.body.velocity.y = -450;
+                                                        child.body.velocity.x = 200;
+                                                        child.body.gravity.y = child.pastGY;
+                                                        child.setOrigin(0.5, 0.5);
+                                                        child.y -= (child.displayHeight/2);
+                                                        child.que += 1;
+                                                    });
+                                                }, 1000);
+                                            });
+                                        }
+                                        break;
+                                    case 5:
+                                        if (child.body.x > (child.initX + 200)) {
+                                            child.que += 1;
+                                            child.anims.stop();
+                                            child.setOrigin(0.5, 1);
+                                            child.pastXV = child.body.velocity.x;
+                                            child.pastGY = child.body.gravity.y;
+                                            child.body.gravity.y = 0;
+                                            child.body.velocity.x = 0;
+                                            child.body.velocity.y = 0;
+                                            child.body.y += (child.displayHeight/2);
+                                            camera.shake(400, 0.005);
+                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                taco.immortale = true;
+                                                child.timer = setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
+                                            });
+                                        }
+                                        break;
+                                    case 7:
+                                        child.que += 1;
+                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                            child.que += 1;
+                                            child.anims.play('shredingAnimation');
+                                        });
+                                        child.invincible = true;
+                                        break;
+                                    case 9:
+                                        child.que += 1;
+                                        child.body.velocity.x = -300;
+                                        break;
+                                    case 10:
+                                        if (child.body.x < (child.initX - 200)) {
+                                            child.que += 1;
+                                            child.body.velocity.x = 0;
+                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                setTimeout(function(){child.que += 1;}, 500);
+                                            });
+                                        }
+                                        break;
+                                    case 12:
+                                        child.que += 1;
+                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                            child.que += 1;
+                                            child.setOrigin(0.5, 0.5);
+                                            child.body.velocity.x = 200;
+                                            child.body.gravity.y = 1000;
+                                            child.y -= (child.displayHeight/2);
+                                            child.anims.play('drillingAnimation');
+                                            camera.shake(400, 0.005);
+                                            //return to start of this phase, or move on to next
+                                            child.que = 1;
+                                            if (child.lives < 3) {
+                                                child.phase += 1;
+                                            }
+                                        });
+                                        child.body.velocity.x = 0;
+                                        child.invincible = false;
+                                        break;
+                                }
+                                break;
+                            case 4:
+                                switch(child.que) {
+                                    case 1:
+                                        if (child.x < (taco.x-100)) {
+                                            child.body.velocity.x += 12;
+                                        } else if (child.x > (taco.x+100)) {
+                                            child.body.velocity.x -= 12;
+                                        } else {
+                                            child.que += 1;
+                                            child.setOrigin(0.5, 1);
+                                            child.pastXV = child.body.velocity.x;
+                                            child.pastGY = child.body.gravity.y;
+                                            child.body.gravity.y = 0;
+                                            child.body.velocity.x = 0;
+                                            child.body.velocity.y = 0;
+                                            child.body.y += (child.displayHeight/2);
+                                            camera.shake(400, 0.005);
+                                            taco.immortale = true;
+                                            setTimeout(()=>{child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                child.timer = setTimeout(function(){child.que += 1;}, 500);
+                                            })}, 1000);
+                                        }
+                                        child.body.velocity.x *= 0.96;
+                                        break;
+                                    case 3:
+                                        child.x = taco.x;
+                                        child.que += 1;
+                                        setTimeout(()=>{child.que += 1;}, 1000);
+                                        break;
+                                    case 5:
+                                        child.que += 1;
+                                        taco.immortale = false;
+                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                            child.que += 1;
+                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                child.que += 1;
+                                                taco.immortale = true;
+                                                setTimeout(()=>{child.que += 1;}, 1000);
+                                            });
+                                        });
+                                        break;
+                                    case 9:
+                                        if (child.x < child.initX) {
+                                            child.x += 100;
+                                        } else {
+                                            child.x -= 100;
+                                        }
+                                        child.que += 1;
+                                        taco.immortale = false;
+                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                            child.que += 1;
+                                            child.setOrigin(0.5, 0.5);
+                                            child.body.velocity.x = 200;
+                                            child.body.gravity.y = 1000;
+                                            child.y -= (child.displayHeight/2);
+                                            child.anims.play('drillingAnimation');
+                                            camera.shake(400, 0.005);
+                                            //loop this phase until dead.
+                                            child.que = 1;
+                                        });
+                                        child.body.velocity.x = 0;
+                                        child.invincible = false;
+                                        break;
+                                }
+                                break;
+                        }
+                        
+                        /*
                         if (child.que == 1 && child.body.x > (child.initX + 230)) { 
                             child.que += 1;
                             child.body.velocity.y = -600;
@@ -3372,6 +3785,7 @@
                             child.body.velocity.x = 0;
                             child.invincible = false;
                         }
+                        */
                         
                     }/* else {
                         child.body.x = child.initX;
@@ -3638,21 +4052,6 @@
                 textBox.scrollFactorY = 0;
                 textBox.depth = -1;
                 textBox.visible = false;
-                
-                menu = this.physics.add.sprite(400, 300, 'menu').setScale(0.2).refreshBody();
-                
-                menu.depth = 2;
-                menu.targetScale = 3.5;
-                menu.visible = false;
-                buttons = this.physics.add.group();
-                // here we have some config type things for the button layout.
-                buttons.opened = false;
-                buttons.count = 6;
-                buttons.spacing = 88;
-                //guides
-                clickHere = this.physics.add.sprite(400, 300, 'clickHere').setScale(0.35);
-                clickHere.visible = false;
-                clickHere.depth = 5;
                 //new level
                 //section of new UI for tutorial.
                 newLevel = this.physics.add.sprite(40, 40, 'new');
@@ -3717,6 +4116,7 @@
             }
             var delay = 0;//non interval delay.
             titleScene.update = function () {
+                transportThisTitle = this;
                 //fullscreen
                 if (Phaser.Input.Keyboard.JustDown(keyC)) {
                     if (this.scale.isFullscreen)
@@ -3960,41 +4360,6 @@
                     var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
                     cloud.depth = -2;
-                }
-                if (menuOpen) {
-                    menu.visible = true;
-                    if (menu.scaleX <= menu.targetScale) {
-                        menu.scaleX += 0.1;
-                        menu.scaleY += 0.1;
-                    } else if (buttons.opened == false) {//once the opening is done.
-                        buttons.opened = true;
-
-                        for (var i = 0; i < buttons.count; i += 1) {
-                            
-                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 300, 'level' + String(i));
-                            if (i == 0) {
-                                clickHere.x = button.x;
-                                clickHere.y = button.y - 60;
-                                clickHere.visible = true;
-                            }
-                            button.depth = 3;
-                            button.body.x += button.width;
-                            button.setOrigin(0.5, 0.5).refreshBody();
-                            button.order = i;//determine which level it is later.
-                            //button.setScale(1).refreshBody();
-                            
-                        }
-                        //set the interactiveness afterwards
-                        buttons.children.iterate(function(child){
-                            child.setInteractive({ useHandCursor: true });
-                            child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
-                            child.on('pointerout', () => { child.setScale(1).refreshBody(); });
-                            child.on('pointerdown', () => {level = child.order;updateCurrentLevel();startGame();});
-                            child.refreshBody();
-                            child.setOrigin(0.5, 0.5);
-                            child.setScale(1);
-                        });
-                    }
                 }
             }
 
