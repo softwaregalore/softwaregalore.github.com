@@ -7,38 +7,12 @@
     <body>
         <script src="data.js"></script>
         <script>
-            var code = prompt("level code, currently for level 4");
-            if (code != "") {
-                console.log('preping level from code');
-                var lmap1 = code.split('*')[0];
-                var lentity1 = code.split('*')[1];
-                lmap1 = lmap1.split('+');
-                for (var i = 0; i < lmap1.length; i += 1) {
-                    lmap1[i] = lmap1[i].split(',');
-                    
-                    for (var e = 0; e < lmap1[i].length; e += 1) {
-                        lmap1[i][e] = parseFloat(lmap1[i][e]);
-                    }
-                    lmap1[i].pop();
-                }
-                lmap1.shift();
-
-                lentity1 = lentity1.split('+');
-                for (var i = 0; i < lentity1.length; i += 1) {
-                    lentity1[i] = lentity1[i].split(',');
-                    
-                    for (var e = 0; e < lentity1[i].length; e += 1) {
-                        lentity1[i][e] = parseFloat(lentity1[i][e]);
-                    }
-                    lentity1[i].pop();
-                }
-                lentity1.shift();
-            }
             
+            var lmap1, lentity1;
             var fullScreen = false;
             var loaded = false;
-            var levelMaps = [tutorialMap1, levelMap1, levelMap2, mmap1, lmap1, bossMap1];
-            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, eentity1, lentity1, bossEntity1];
+            var levelMaps = [tutorialMap1, levelMap1, levelMap2, mmap1, lmap1, bossMap1, mmap1, lmap1];
+            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, eentity1, lentity1, bossEntity1, eentity1, lentity1];
             var level = 3;
             var unlocked = 5;
             var tutorial;
@@ -105,6 +79,9 @@
                 this.load.audio('complete', ['assets/complete.mp3']);
                 //level locks
                 this.load.image('lock', 'assets/lock.png');
+                //saving buttons
+                this.load.image('import', 'assets/import.png');
+                this.load.image('export', 'assets/export.png');
             }
             var gameLoaded = false;
             var check1 = -1;//tell UI what to display.
@@ -179,7 +156,7 @@
                     clickTab(5);
                 });
                 function clickTab (tabClick) {
-                    if (folder.texture.key !== 'tab6') {
+                    if (folder.texture.key !== 'tab6' && creative == true) {
                         folder.setTexture('tab' + String(tabClick));
                         folder.tab = tabClick - 1;
                         selectors.refresh();
@@ -193,7 +170,14 @@
                 handle.setScrollFactor(0, 0);
                 this.physics.world.enable(handle);
                 handle.setInteractive({ useHandCursor: false });
-                handle.on('pointerup', () => {openHandle.depth = 1; tabs[2].depth = 0;folder.setTexture('tab6');selectors.setVisible(false);});
+                handle.on('pointerup', () => {
+                    if (creative == true) {
+                        openHandle.depth = 1; 
+                        tabs[2].depth = 0;
+                        folder.setTexture('tab6');
+                        selectors.setVisible(false);
+                    }
+                });
                 //opening again
                 openHandle = this.add.zone(folder.x, folder.body.y).setSize(72, 60);
                 openHandle.hover = false;
@@ -201,7 +185,14 @@
                 openHandle.setScrollFactor(0, 0);
                 this.physics.world.enable(openHandle);
                 openHandle.setInteractive({ useHandCursor: false });
-                openHandle.on('pointerup', () => {openHandle.depth = 0; tabs[2].depth = 1;folder.setTexture('tab' + String(folder.tab + 1));selectors.setVisible(true);});
+                openHandle.on('pointerup', () => {
+                    if (creative == true) {
+                        openHandle.depth = 0; 
+                        tabs[2].depth = 1;
+                        folder.setTexture('tab' + String(folder.tab + 1));
+                        selectors.setVisible(true);
+                    }
+                });
                 
                 openHandle.on('pointerover', () => {UIZone.hover = true});
                 openHandle.on('pointerout', () => {UIZone.hover = false});
@@ -209,24 +200,24 @@
                 selectData = {
                     tabsType: [
                         [2, 2, 2, 2, 2, 1, 1, 1],
-                        [1, 1],
+                        [1, 1, 1],
                         [1, 1, 1, 1, 1, 1],
                         [1, 1, 1, 1, 1],
-                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
+                        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                     ],
                     tabsSelect: [
                         [0, 2, 3, 4, 11, 19, 4, 26],
-                        [5, 25],
+                        [5, 25, 29],
                         [2, 3, 1, 0, 12, 8],
                         [7, 11, 14, 8, 9],
-                        [24, 23, 21, 15, 17, 18, 16, 13, 20, 27]
+                        [24, 30, 31, 23, 21, 15, 17, 18, 16, 13, 20, 27]
                     ],
                     tabsThumb: [
                         [49, 2, 3, 4, 11, 10, 18, 32],
-                        [14, 22],
+                        [14, 22, 51],
                         [1, 12, 1, 1, 24, 26],
                         [27, 20, 23, 26, 19],
-                        [13, 21, 17, 16, 28, 29, 30, 31, 40, 50]
+                        [54, 53, 52, 21, 17, 16, 28, 29, 30, 31, 40, 50]
                     ]
                 }
                 selectors = this.physics.add.group();
@@ -307,6 +298,8 @@
                         mode.setTexture('pause');
                         tool.visible = true;
                         folder.visible = true;
+                        Import.visible = true;
+                        Export.visible = true;
                         if (folder.texture.key !== 'tab6') {
                             selectors.setVisible(true);
                         }
@@ -316,6 +309,8 @@
                         mode.setTexture('unpause');
                         tool.visible = false;
                         folder.visible = false;
+                        Import.visible = false;
+                        Export.visible = false;
                         selectors.setVisible(false);
                         creative = false;
                         creativeUpdate = true;
@@ -340,6 +335,75 @@
                 tool.visible = false;
                 tool.on('pointerover', () => {disableEdit = true});
                 tool.on('pointerout', () => {disableEdit = false});
+                //export and import
+                Import = this.physics.add.sprite(760, 110, 'import');
+                Import.setInteractive();
+                Import.scale = 3;
+                Import.visible = false;
+                Import.on('pointerup', () => {
+                    var code = prompt("Level Code:");
+                    if (code != "") {
+                        console.log('preparing level from code');
+                        lmap1 = code.split('*')[0];
+                        lentity1 = code.split('*')[1];
+                        lmap1 = lmap1.split('+');
+                        for (var i = 0; i < lmap1.length; i += 1) {
+                            lmap1[i] = lmap1[i].split(',');
+                            
+                            for (var e = 0; e < lmap1[i].length; e += 1) {
+                                lmap1[i][e] = parseFloat(lmap1[i][e]);
+                            }
+                            lmap1[i].pop();
+                        }
+                        lmap1.shift();
+
+                        lentity1 = lentity1.split('+');
+                        for (var i = 0; i < lentity1.length; i += 1) {
+                            lentity1[i] = lentity1[i].split(',');
+                            
+                            for (var e = 0; e < lentity1[i].length; e += 1) {
+                                lentity1[i][e] = parseFloat(lentity1[i][e]);
+                            }
+                            lentity1[i].pop();
+                        }
+                        lentity1.shift();
+                    }
+                    //go out of creative mode.
+                    mode.setTexture('unpause');
+                    tool.visible = false;
+                    folder.visible = false;
+                    Import.visible = false;
+                    Export.visible = false;
+                    selectors.setVisible(false);
+                    creative = false;
+                    creativeUpdate = true;
+                    levelMaps[7] = lmap1;
+                    levelEntitys[7] = lentity1;
+                    //reset the game with new level.
+                    level = 7;updateCurrentLevel();
+                    transportThisGame.scene.restart();
+
+                });
+                Import.on('pointerover', () => {disableEdit = true});
+                Import.on('pointerout', () => {disableEdit = false});
+                Export = this.physics.add.sprite(690, 110, 'export');
+                Export.setInteractive();
+                Export.scale = 3;
+                Export.visible = false;
+                Export.on('pointerup', () => {
+                    var exMap = '';
+                    for (var i=0; i<map1.length; i += 1) {
+                        exMap = String(exMap) + '+' + String(map1[i]) + ', ';
+                    }
+                    var exEntity = '';
+                    for (var i=0; i<entity1.length; i += 1) {
+                        exEntity = String(exEntity) + '+' + String(entity1[i]) + ', ';
+                    }
+                    navigator.clipboard.writeText(exMap + '*' + exEntity);//copy to clipboard.
+                    alert('Level Code Copied to Clipboard.');
+                });
+                Export.on('pointerover', () => {disableEdit = true});
+                Export.on('pointerout', () => {disableEdit = false});
                 //skill check
                 timeSkill = this.physics.add.sprite(400, 200, 'skill1');
                 timeSkill.scale = 2;
@@ -426,9 +490,22 @@
                 restart.visible = false;
                 restart.setInteractive();
                 restart.on('pointerup', ()=>{
+                    clearInterval(makeText);
+                    text('', 30, function(){});
                     transportThisUI.hideMenuButtons(false);
                     pause.setTexture('UIplay');
                     sound.setTexture('UIsoundon');
+                    //go out of creative mode.
+                    mode.setTexture('unpause');
+                    tool.visible = false;
+                    folder.visible = false;
+                    Import.visible = false;
+                    Export.visible = false;
+                    selectors.setVisible(false);
+                    creative = false;
+                    creativeUpdate = true;
+                    levelMaps[7] = lmap1;
+                    levelEntitys[7] = lentity1;
                     transportThisGame.scene.restart();
                 });
                 toMenu = this.physics.add.sprite(580, 40, 'UImenu');
@@ -438,10 +515,26 @@
                 toMenu.on('pointerup', ()=>{
                     transportThisUI.hideMenuButtons(false);
                     score.visible = false;
+                    clearInterval(makeText);
+                    text('', 30, function(){});
                     menuOpen = false;
                     clearInterval(transportThisUI.musicFade);
                     pause.setTexture('UIplay');
                     sound.setTexture('UIsoundon');
+                    //go out of creative mode.
+                    mode.setTexture('unpause');
+                    mode.visible = false;
+                    gameLoaded = false;//ensure that it actually gets hidden.
+                    tool.visible = false;
+                    folder.visible = false;
+                    Import.visible = false;
+                    Export.visible = false;
+                    selectors.setVisible(false);
+                    creative = false;
+                    creativeUpdate = true;
+                    levelMaps[7] = lmap1;
+                    levelEntitys[7] = lentity1;
+                    //restart.
                     restartMenu();
                 });
                 this.hideMenuButtons = function(visible) {
@@ -481,6 +574,9 @@
                     UIZone.x = UIPointer.x;
                     UIZone.y = UIPointer.y;
                 }
+                if (UIPointer.y > folder.displayHeight) {
+                    disableEdit = false;
+                }
 
                 if (gameLoaded == true) {
                     mode.visible = true;
@@ -501,6 +597,8 @@
                         mode.setTexture('pause');
                         tool.visible = true;
                         folder.visible = true;
+                        Import.visible = true;
+                        Export.visible = true;
                         if (folder.texture.key !== 'tab6') {
                             selectors.setVisible(true);
                         }
@@ -510,6 +608,8 @@
                         mode.setTexture('unpause');
                         tool.visible = false;
                         folder.visible = false;
+                        Import.visible = false;
+                        Export.visible = false;
                         selectors.setVisible(false);
                         creative = false;
                         creativeUpdate = true;
@@ -518,7 +618,7 @@
 
                 //rotate
                 keyR = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.R);
-                if (Phaser.Input.Keyboard.JustDown(keyR)) {
+                if (Phaser.Input.Keyboard.JustDown(keyR) && creative == true) {
                     rotate += 1;
                     if (rotate >= 8) {
                         rotate = 0;
@@ -808,7 +908,9 @@
                 this.load.image('barrier', 'assets/barrier.png');
 
                 this.load.image('key', 'assets/key.png');
-                this.load.image('door', 'assets/door.png');
+                this.load.image('door1', 'assets/lock1.png');
+                this.load.image('door2', 'assets/lock2.png');
+                this.load.image('door3', 'assets/lock3.png');
 
                 //burrito specific killers
                 this.load.image('iceBottle', 'assets/Ice sauce.png');
@@ -898,6 +1000,10 @@
                 this.load.image('selector', 'assets/selector.png');
                 //background stone
                 this.load.image('3by3', 'assets/3by3stone.png');
+                //flying burritos
+                for (var i = 0; i < 8; i += 1) {
+                    this.load.image('flying' + String(i+1), 'assets/flying' + String(i+1) + '.png');
+                }
 
             }
             //global game functions and variables.
@@ -1044,6 +1150,7 @@
                     burrito.initY = y;
                     burrito.initXV = 200;
                     burrito.initYV = 0;
+                    burrito.fly = false;
                     //tree killing
                     burrito.triggered = false;
                     burrito.frozen = false;
@@ -1354,7 +1461,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = 23;
                     var coin = keys.create(x+16, y+16, 'key');
                     coin.setOrigin(0.5, 0.5);
-                    coin.setScale(1);
+                    coin.setScale(0.4);
                     coin.depth = 5;
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
@@ -1367,11 +1474,18 @@
                     coin.body.maxVelocity.x = 500;
                     coin.body.maxVelocity.y = 500;
                 } 
-                if (type == 24) {
+                if (type == 24 || type == 30 || type == 31) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 24;
-                    var coin = doors.create(x+16, y+16, 'door');
+                    var coin;
+                    if (type == 24) {
+                        coin = doors.create(x+16, y+16, 'door1');
+                    } else if (type == 30) {
+                        coin = doors.create(x+16, y+16, 'door2');
+                    } else {
+                        coin = doors.create(x+16, y+16, 'door3');
+                    }
                     coin.setOrigin(0.5, 0.5);
-                    coin.setScale(0.25);
+                    coin.locked = true;
                     coin.body.gravity.y = 0;
                     coin.initX = x;
                     coin.initY = y;
@@ -1457,10 +1571,37 @@
                     coin.initXV = 0;
                     coin.initYV = 0;
                 } 
+                if (type == 29) {
+                    
+                    entity1[Math.round(y/32)][Math.round(x/32)] = 29;
+                    var burrito = burritos.create(x+16, y+48, 'flying1');//32 because it is two "blocks" tall.
+                    burrito.anims.play('burrito2Animation');
+                    burrito.setScale(0.2);
+                    //burrito.body.bounce.y = 1; we don't want it to stop when it is in tight spaces.
+                    burrito.body.bounce.x = 1;
+                    burrito.body.velocity.x = 0;//normally 200 but doesn't need to move yet.
+                    burrito.body.allowGravity = false;
+                    //look above :)
+                    burrito.initX = x;
+                    burrito.initY = y;
+                    burrito.initXV = 200;
+                    burrito.initYV = 0;
+                    burrito.fly = true;
+                    //tree killing
+                    burrito.triggered = false;
+                    burrito.frozen = false;
+                    
+                }
             }
             function returnSprites() {
+                
                 camera.stopFollow();
                 camera.startFollow(taco, false, 0.1, 0.1);
+                taco.setCollideWorldBounds(false);
+                while (taco.lives < 3) {
+                    taco.lives += 1;
+                    setLives(taco.lives);
+                }
                 coins.children.iterate(function(child) {
                     child.anims.stop();
                     child.anims.play('coin');
@@ -1487,8 +1628,14 @@
                     child.body.allowGravity = false;
                 });
                 burritos.children.iterate(function(child) {
-                    child.anims.stop();
-                    child.anims.play('burritoAnimation');
+                    if (child.fly == true) {
+                        child.anims.stop();
+                        child.anims.play('burrito2Animation');
+                    } else {
+                        child.anims.stop();
+                        child.anims.play('burritoAnimation');
+                    }
+                    
                     child.enableBody(true, child.body.x, child.body.y, true, true);
                     child.body.x = child.initX;
                     child.body.y = child.initY;
@@ -1518,6 +1665,7 @@
                     child.phase = 0;
                     child.lives = 8;
                     child.immune = false;
+                    child.started = false;
                 });
                 rocks.children.iterate(function(child) {
                     child.body.x = child.initX;
@@ -1615,9 +1763,9 @@
                     child.follow = false;
                 });
                 doors.children.iterate(function(child) {
-                    child.enableBody(true, child.body.x, child.body.y, true, true);
-                    child.body.x = child.initX;
-                    child.body.y = child.initY;
+                    child.enableBody(true, child.x, child.y, true, true);
+                    child.scale = 1;
+                    child.locked = true;
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
@@ -1628,6 +1776,10 @@
                 lights.children.iterate(function(child) {
                     child.angle = 0;
                 });
+                for (var i = 0; i < bossMusic.length; i += 1) {
+                    bossMusic[i].stop();
+                }
+                taco.setCollideWorldBounds(false);
             }
             function resumeSprites() {
                 lava.children.iterate(function(child) {
@@ -1800,7 +1952,7 @@
                 pause.visible = true;
                 score.visible = true;
                 
-                if (level == 3) {
+                if (level == 6 || level == 7) {
                     gameLoaded = true;//let it know to add the button for creative.
                     pause.y = 560;
                     sound.y = 560;
@@ -1854,13 +2006,24 @@
                     bossMusic[i].loop = true;
                 }*/
                 gameOverMusic = this.sound.add('overMusic');
-                
+                mainMusic.volume = 0;
+                mainMusic2.volume = 0;
                 //mainMusic.loop = true;
-                if (Math.round(level/2) != 0) {
+                if (Math.round(level/2) != level/2) {
                     mainMusic2.play();
+                    
                 } else {
                     mainMusic.play();
                 }
+                mainMusic.fade = setInterval(()=>{
+                    mainMusic.volume += 0.08;
+                    mainMusic2.volume += 0.08;
+                    if (mainMusic.volume >= 1) {
+                        mainMusic.volume = 1;
+                        mainMusic2.volume = 1;
+                        clearInterval(mainMusic.fade);
+                    }
+                }, 16);
                 mainMusic.on('complete', ()=>{setTimeout(()=>{mainMusic2.play();}, 1000)});
                 mainMusic2.on('complete', ()=>{setTimeout(()=>{mainMusic.play();}, 1000)});
                 this.graphics = this.add.graphics();
@@ -1994,13 +2157,17 @@
                  {key: 'burrito8'},],
                 frameRate:10,
                 repeat:-1});
-                //shooter burrito
-                this.anims.create({key: 'shooterAnimation',
-                 frames: [{key: 'shooter1'},
-                {key: 'shooter2'},
-                {key: 'shooter3'},
-                {key: 'shooter2'}],
-                frameRate:1,
+                //burrito2
+                this.anims.create({key:'burrito2Animation',
+                 frames: [{key: 'flying1'},
+                 {key: 'flying2'/*, width:16, height:31*/},
+                 {key: 'flying3'},
+                 {key: 'flying4'},
+                 {key: 'flying5'},
+                 {key: 'flying6'},
+                 {key: 'flying7'},
+                 {key: 'flying8'},],
+                frameRate:10,
                 repeat:-1});
                 //shooter poison
                 this.anims.create({key: 'poisonAnimation',
@@ -2213,6 +2380,7 @@
                     heart = hearts.create(125+(i*45), 100, 'heart1').setScale(2);
                     heart.scrollFactorX = 0;
                     heart.scrollFactorY = 0;
+                    heart.depth = 3;
                 }
 
                 
@@ -2326,9 +2494,15 @@
                 this.physics.add.overlap(taco, spikes, death, null, this);
                 this.physics.add.overlap(taco, gums, tacoHitGum, null, this);
                 this.physics.add.overlap(taco, boulders, tacoHitBoulder, null, this);
-                this.physics.add.overlap(taco, lives, tacoHitLive, null, this)
+                this.physics.add.overlap(taco, lives, tacoHitLive, null, this);
+                this.physics.add.overlap(doors, doors, doorHitDoor, null, this)
 
                 this.physics.add.collider(rocks, rocks);
+                this.physics.add.collider(doors, meatballs);
+                this.physics.add.collider(doors, platforms);
+                this.physics.add.collider(doors, platformsDown);
+                this.physics.add.collider(doors, platformsLeft);
+                this.physics.add.collider(doors, platformsUp);
                 this.physics.add.collider(burritos, layer1);
                 this.physics.add.collider(drillers, layer1);
                 this.physics.add.collider(rocks, layer1);
@@ -2388,6 +2562,10 @@
                         checkpoint.anims.play("checkpointAnimation");
                         taco.startX = checkpoint.x;
                         taco.startY = checkpoint.y - 150;
+                        while (taco.lives < 3) {
+                            taco.lives += 1;
+                            setLives(taco.lives);
+                        }
                     }
                 }
                 function burritoHitTree(burrito, tree) {
@@ -2566,8 +2744,12 @@
                     }
                 }
                 function keyHitDoor(key, door) {
-                    key.disableBody(true, true);
-                    door.disableBody(true, true);
+                    if (creative == false) {
+                        key.disableBody(true, true);
+                        door.scale = 1.01;
+                        door.locked = false;
+                        setTimeout(()=>{door.disableBody(true, true);}, 200);
+                    }
                 }
                 function tacoHitPoison(taco, poison) {
                     death();
@@ -2602,6 +2784,22 @@
                     Live.disableBody(true, true);
                     taco.lives += 1;
                     setLives(taco.lives);
+                }
+                function doorHitDoor(door1, door2) {
+                    if (creative == false) {
+                        if (door1.locked == false && door1.scale > 1 || door2.locked == false && door2.scale > 1) {
+                            door1.locked = false;
+                            door2.locked = false;
+                            if (door1.scale == 1) {
+                                setTimeout(()=>{door1.scale = 1.01;}, 200);
+                                setTimeout(()=>{door1.disableBody(true, true);}, 600);
+                            }
+                            if (door2.scale == 1) {
+                                setTimeout(()=>{door2.scale = 1.01;}, 200);
+                                setTimeout(()=>{door2.disableBody(true, true);}, 600);
+                            }
+                        }
+                    }
                 }
                 var transportThis = this;//allow us to restart the game in a callback.
                 var sequenceEnd = 8;
@@ -2691,165 +2889,15 @@
                     this.scene.restart();
                 }
                 this.eraseEntity = function eraseEntity(x, y) {
-                    spikes.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    coins.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    burritos.children.iterate(function(child) {
-                        
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    drillers.children.iterate(function(child) {
-                        
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    trees.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    lights.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    mites.children.iterate(function(child) {
-                        
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    burritoBarriers.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    rocks.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    bottles.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    lava.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    platforms.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    platformsLeft.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    platformsUp.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    platformsDown.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    limes.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                            
-                        }
-                    });
-                    flags.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    meatballs.children.iterate(function(child) {
-                        
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    creams.children.iterate(function(child) {
-                        
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    checkpoints.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    keys.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    doors.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    shooters.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
-                    lives.children.iterate(function(child) {
-                        if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
-                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
-                            child.destroy();
-                        }
-                    });
+                    
+                    for (var i = 0; i < entities.length; i += 1) {
+                        entities[i].children.iterate(function(child) {
+                            if (child && Math.round(child.initX/32)*32 == Math.round((-16+x)/32)*32 && Math.round(child.initY/32)*32 == Math.round((-16+y)/32)*32) {
+                                entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
+                                child.destroy();
+                            }
+                        });
+                    }
                 }
             }
             function setLives(lives) {
@@ -2864,6 +2912,7 @@
                     if (lives > hearts.children.entries.length) {
                         lastHeart = hearts.children.entries[hearts.children.entries.length-1];
                         heart = hearts.create(lastHeart.x + 45, 100, 'heart1').setScale(2);
+                        heart.depth = 3;
                         heart.scrollFactorX = 0;
                         heart.scrollFactorY = 0;
                     }
@@ -2899,8 +2948,9 @@
                 }
             //goes with text function as global var
             var currentDialog;
+            var makeText;
             function text(text, delay, action) {
-                var makeText = setInterval(drawCurrentText, 65);
+                makeText = setInterval(drawCurrentText, 65);
                 if (currentDialog) {
                     currentDialog.destroy();
                 }
@@ -3101,17 +3151,7 @@
                         this.scale.startFullscreen();
                     }
                 }
-                if (keyF.isDown) {
-                    var exMap = '';
-                    for (var i=0; i<map1.length; i += 1) {
-                        exMap = String(exMap) + '+' + String(map1[i]) + ', ';
-                    }
-                    var exEntity = '';
-                    for (var i=0; i<entity1.length; i += 1) {
-                        exEntity = String(exEntity) + '+' + String(entity1[i]) + ', ';
-                    }
-                    navigator.clipboard.writeText(exMap + '*' + exEntity);//copy to clipboard.
-                }
+                
                 //before doing anything with creative, it is important that the positions of sprites are all working the right way animations wise
                 updateColliders();
                 
@@ -3335,8 +3375,14 @@
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
                     if (taco.disabled == false) {
-                        tacoVelocityX -= 27;
+                        if (taco.cream) {
+                            tacoVelocityX -= 4.5;
+                        } else {
+                            tacoVelocityX -= 27;
+                        }
+                        
                     }
+                    
                     //47
                     if (creative == true) {
                         taco.body.x -= 12;
@@ -3346,7 +3392,11 @@
                 {
                     dirtEmitter.setPosition(taco.x, taco.y + 40);
                     if (taco.disabled == false) {
-                        tacoVelocityX += 27;
+                        if (taco.cream) {
+                            tacoVelocityX += 4.5;
+                        } else {
+                            tacoVelocityX += 27;
+                        }
                     }
                     if (creative == true) {
                         taco.body.x += 12;
@@ -3359,7 +3409,7 @@
 
                 taco.body.velocity.x = tacoVelocityX;
                 if (taco.cream) {
-                    tacoVelocityX = tacoVelocityX * 0.98;//0.8
+                    tacoVelocityX = tacoVelocityX * 0.991;//0.8
                 } else if (taco.gum) {
                     tacoVelocityX = tacoVelocityX * 0.78;
                     taco.body.velocity.y *= 0.8;
@@ -3638,19 +3688,11 @@
                 //sound effects for burritos and ice effect
                 //this.physics.world.timeScale = 1;
                 burritos.children.iterate(function(child) {
-                    
-                    if (child.body.blocked.down && !child.frozen) {
+                    if (child.body.blocked.down && !child.frozen && child.fly == false) {
                         child.body.velocity.y = -410;
-                        if (camera.worldView.contains(child.body.x, child.body.y)) {
-                            this.burritoJump.play();
-                        }
                         
                     }
-                    if (child.frozen) {
-                        //child.body.velocity.x *= 0.99;
-                        //child.body.velocity.x = 0;
-                    }
-                })
+                });
                 //slow down the rocks
                 rocks.children.iterate(function(child) {
                     child.body.velocity.x *= 0.97;
@@ -3673,7 +3715,7 @@
                 //here we have the code for the drill boss
                 
                 drillers.children.iterate(function(child) {
-                    if (creative == false && child.active == true && taco.x > 6175) {
+                    if (creative == false && child.active == true && (taco.x > 6175 || child.started == true)) {
                         
                         if (child.phase == 2) {
                             if (random(1, 170) == 1) {
@@ -3691,14 +3733,10 @@
                             }
                         }
                         if (child.started == false) {
-                            taco.setCollideWorldBounds();
-                            child.setCollideWorldBounds();
-                            transportThisGame.physics.world.setBounds(camera.worldView.x+(camera.worldView.width/2)+16, camera.worldView.y, camera.worldView.width, camera.worldView.height);
                             child.started = true;
                             if (bossMusic[0].isPlaying == false) {
                                 bossMusic[0].play();
                             }
-                            
                             mainMusic.stop();
                             mainMusic2.stop();
                         }
@@ -3714,7 +3752,12 @@
                             
                         }
                         if (child.body.allowGravity == false) {
-                            camera.pan(6176+400, 760+300, 2000);
+                            camera.pan(6176+400, 760+300, 1500);
+                            camera.once('camerapancomplete', ()=>{
+                                taco.setCollideWorldBounds();
+                                child.setCollideWorldBounds();
+                                transportThisGame.physics.world.setBounds(camera.worldView.x, camera.worldView.y, camera.worldView.width, camera.worldView.height);
+                            });
                             camera.stopFollow();
                             while (taco.lives < 5) {
                                 taco.lives += 1;
@@ -3982,9 +4025,9 @@
                                             child.body.velocity.y = 0;
                                             child.body.y += (child.displayHeight/2);
                                             camera.shake(400, 0.005);
-                                            taco.immortale = true;
                                             setTimeout(()=>{child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
-                                                child.timer = setTimeout(function(){child.que += 1;}, 400);
+                                                taco.immortale = true;
+                                                child.timer = setTimeout(function(){child.que += 1;}, 50);
                                                 boulders.makeNew();
                                             })}, 0);
                                         }
@@ -3993,11 +4036,11 @@
                                     case 3:
                                         child.x = taco.x;
                                         child.que += 1;
-                                        setTimeout(()=>{child.que += 1;}, 500);
+                                        setTimeout(()=>{child.que += 1;}, 900);
                                         break;
                                     case 5:
                                         child.que += 1;
-                                        taco.immortale = false;
+                                        setTimeout(()=>{taco.immortale = false;}, 300);
                                         child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
                                             child.que += 1;
                                             child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
@@ -4144,6 +4187,7 @@
                 mainMusic.destroy();
                 mainMusic2.destroy();
                 for (var i = 0; i < bossMusic; i += 1) {
+                    bossMusic[i].stop();
                     bossMusic[i].destroy();
                 }
                 game.scene.stop('game');
@@ -4279,7 +4323,7 @@
                 {key: 'shooter2'},
                 {key: 'shooter3'},
                 {key: 'shooter2'}],
-                frameRate:1.5,
+                frameRate:0.9,
                 repeat:-1});
                 this.anims.create({key: 'creditAnimation',
                  frames: [{key: 'credit1'},
@@ -4399,7 +4443,9 @@
                 newLevel.on('pointerover', ()=>{newLevel.scale = 0.9});
                 newLevel.on('pointerout', ()=>{newLevel.scale = 0.75});
                 newLevel.on('pointerdown', ()=>{
-                    level = 3;updateCurrentLevel();startGame();
+                    buttons.setVisible(false);
+                    menu.visible = false;
+                    level = 6;updateCurrentLevel();startGame();
                     newLevel.visible = false;
                 });
 
