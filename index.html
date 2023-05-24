@@ -48,6 +48,7 @@
             }
 
             var level = 3;
+            var hearts;
             var unlocked = 5;
             var tutorial;
             var inMenu = true;
@@ -253,8 +254,8 @@
                         [49, 2, 3, 4, 11, 10, 18, 32],
                         [14, 22, 51],
                         [1, 12, 1, 1, 24, 26],
-                        [27, 20, 23, 26, 19],
-                        [54, 53, 52, 21, 17, 16, 28, 29, 30, 31, 40, 50]
+                        [27, 57, 23, 26, 19],
+                        [54, 53, 52, 21, 56, 55, 28, 29, 30, 31, 40, 50]
                     ]
                 }
                 selectors = this.physics.add.group();
@@ -567,6 +568,7 @@
                     Import.visible = false;
                     Export.visible = false;
                     selectors.setVisible(false);
+                    hearts.setVisible(false);
                     creative = false;
                     creativeUpdate = true;
                     levelMaps[7] = lmap1;
@@ -757,32 +759,12 @@
                                             titleMusic.volume -= 0.008;
                                             if (titleMusic.volume <= 0) {
                                                 titleMusic.volume = 0;
-                                                console.log('faded out');
                                                 clearInterval(transportThisUI.musicFade);
                                             }
                                         }, 16);
                                     }
                                     if (inMenu == false) {
-                                        const callbacks = {
-                                            adFinished: () => {
-                                                console.log("End midgame ad (callback)");
-                                                transportThisGame.scene.resume();
-                                                transportThisGame.sound.setMute(false);
-                                                //continue with the game.
-                                                cont();
-                                            },
-                                            adError: (error) => {
-                                                console.log("Error midgame ad (callback)", error);
-                                                transportThisGame.scene.resume();
-                                                transportThisGame.sound.setMute(false);
-                                            },
-                                            adStarted: () => {
-                                                console.log("Start midgame ad (callback)");
-                                            },
-                                        };
-                                        transportThisGame.scene.pause();
-                                        transportThisGame.sound.setMute(true);
-                                        window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+                                        midGame(cont);
                                     } else {
                                         cont();
                                     }
@@ -982,6 +964,10 @@
 
                 //burrito specific killers
                 this.load.image('iceBottle', 'assets/Ice sauce.png');
+                this.load.image('ice1', 'assets/ice1.png');
+                this.load.image('ice2', 'assets/ice2.png');
+                this.load.image('ice3', 'assets/ice3.png');
+                
                 this.load.image('iceBall', 'assets/Iceball.png');
                 this.load.image('lime', 'assets/lime.png');
                 //terrain images
@@ -1081,15 +1067,67 @@
             function random (one, two) {
                 return(Math.round(Math.random()*(two-one))+one);
             }
+            function midGame(cont) {
+                const callbacks = {
+                    adFinished: () => {
+                        console.log("End midgame ad (callback)");
+                        transportThisGame.scene.resume();
+                        transportThisGame.sound.setMute(false);
+                        //continue with the game.
+                        if (cont) {
+                            cont();
+                        }
+                        
+                    },
+                    adError: (error) => {
+                        console.log("Error midgame ad (callback)", error);
+                        transportThisGame.scene.resume();
+                        transportThisGame.sound.setMute(false);
+                    },
+                    adStarted: () => {
+                        console.log("Start midgame ad (callback)");
+                    },
+                };
+                transportThisGame.scene.pause();
+                transportThisGame.sound.setMute(true);
+                window.CrazyGames.SDK.ad.requestAd("midgame", callbacks);
+            }
+            function rewarded(cont) {
+                const callbacks = {
+                    adFinished: () => {
+                        console.log("End rewarded ad (callback)");
+                        transportThisTitle.scene.resume();
+                        transportThisTitle.sound.setMute(false);
+                        //continue with the game.
+                        if (cont) {
+                            cont();
+                        }
+                        
+                    },
+                    adError: (error) => {
+                        console.log("Error rewarded ad (callback)", error);
+                        transportThisTitle.scene.resume();
+                        transportThisTitle.sound.setMute(false);
+                    },
+                    adStarted: () => {
+                        console.log("Start rewarded ad (callback)");
+                    },
+                };
+                transportThisTitle.scene.pause();
+                transportThisTitle.sound.setMute(true);
+                window.CrazyGames.SDK.ad.requestAd("rewarded", callbacks);
+            }
             //deaths
             var dead = false;
             var transportThisGame;
             var transportThisTitle;
             var transportThisUI;
             function death(inevitable) {
+                transportThisGame.physics.world.timeScale = 1;
                 arrow.visible = false;
                 trees.children.iterate(function(child) {
                     child.angle = 0;
+                    child.angleSpeed = 0;
                     child.triggered = "none";
                     child.falling = false;
                     check1 = -1;
@@ -1098,19 +1136,41 @@
                 burritos.children.iterate(function(child) {
                     child.triggered = false;
                 });
+                bottles.children.iterate(function(child) {
+                    child.enableBody(true, child.initX+16, child.initY+16, true, true);
+                    child.body.velocity.x = 0;
+                    child.body.velocity.y = 0;
+                    child.held = false;
+                    child.angle = 0;
+                    child.uses = 3;
+                    child.setTexture("ice1");
+                    child.visible = true;
+                });
+                
 
                 if ((taco.skipDeath == false || inevitable == true) && taco.disabled == false) {
                     /*if (inevitable === true) {
                         taco.lives = 0;
                         taco.immortale = false;
                     }*/
+                    meatballs.children.iterate(function(child) {
+                        child.body.x = child.initX;
+                        child.body.y = child.initY;
+                        child.angle = random(0, 1)*180;
+                    });
                     if (taco.lives > 0) {
                         taco.skipDeath = true;//after the check.
                         taco.alpha = 0.5;
+                        taco.disabled = true;
+                        taco.body.velocity.x = 0;
+                        taco.body.velocity.y = 0;
+                        setTimeout(function() {taco.disabled = false;}, 800);
                         setTimeout(function() {taco.skipDeath = false; taco.alpha = 1;}, 3000);
                     }
                     taco.lives -= 1;
                     setLives(taco.lives);
+                    
+                    
                     
                     if (taco.lives < 0) {
                         taco.lives = 0;
@@ -1132,6 +1192,9 @@
                     if (taco.lives == 0) {
                         rocks.setVisible(false);
                         score.visible = false;
+                        hearts.setVisible(false);
+                        mode.visible = false;
+                        pause.visible = false;
 
                         taco.disabled = true;
                         gameOver = transportThisGame.add.image(400, 300, 'gameOver').setScale(0.77);
@@ -1154,9 +1217,14 @@
                                 transportThisGame.sound.detune = 1;
                                 gameOver.setAlpha(1);
                                 gameOverMusic.play();
-                                gameOverMusic.on('complete', ()=>{
+                                gameOverMusic.once('complete', ()=>{
                                     transportThisUI.cameras.main.fadeOut(900);//ensure it completes first.
-                                    setTimeout(()=>{transportThisGame.scene.restart();}, 1000);
+                                    setTimeout(()=>{
+                                        
+                                        midGame(()=>{
+                                            transportThisGame.scene.restart();
+                                        });
+                                    }, 1000);
                                 });
                                 clearInterval(gameOver.fadeout);
                                 transportThisGame.scene.pause();
@@ -1184,7 +1252,7 @@
                     coin.initY = y;
                     coin.initXV = 0;
                     coin.initYV = 0;
-                    if (type > 2) {
+                    if (type >= 2) {
                         coin.body.width *= 0.25;
                         coin.body.offset.x += 12;
                     } else {
@@ -1319,8 +1387,8 @@
                 if (type == 11) {
                     //bottles, but variables are called coins from the first one. Same with type 10.
                     entity1[Math.round(y/32)][Math.round(x/32)] = 11;
-                    var coin = bottles.create(x+16, y+16, 'iceBottle');//.setScale(2);//.refreshBody(); this causes a bug i think?
-                    coin.setScale(2);
+                    var coin = bottles.create(x+16, y+16, 'ice1');//.setScale(2);//.refreshBody(); this causes a bug i think?
+                    coin.setScale(0.2);
                     coin.setOrigin(0.5, 0.5);
                     
                     coin.body.gravity.y = 500;
@@ -1330,8 +1398,9 @@
                     coin.initY = y;
                     coin.initXV = 0;
                     coin.initYV = 0;
-                    coin.depth = 2;
+                    coin.depth = 4;
                     coin.body.allowGravity = false;
+                    coin.uses = 3;
                 } 
                 if (type == 12) {
                     
@@ -1767,6 +1836,9 @@
                     child.body.allowGravity = false;
                     child.held = false;
                     child.angle = 0;
+                    child.uses = 3;
+                    child.setTexture("ice1");
+                    child.visible = true;
                 });
                 lava.children.iterate(function(child) {
                     child.anims.stop();
@@ -1829,13 +1901,13 @@
                 meatballs.children.iterate(function(child) {
                     child.body.x = child.initX;
                     child.body.y = child.initY;
+                    child.angle = random(0, 1)*180;
                     //child.originX = 0.5;
                     //child.originY = 0.5;
                     child.setOrigin(0.5, 0.5);
                     child.body.velocity.x = 0;
                     child.body.velocity.y = 0;
                     child.body.allowGravity = false;
-                
                 });
                 keys.children.iterate(function(child) {
                     child.enableBody(true, child.body.x, child.body.y, true, true);
@@ -2037,11 +2109,22 @@
             var bossMusic;
             function create ()
             {
+                menuOpen = false;
+                menu.visible = false;
                 clearInterval(makeText);
                 setTimeout(()=>{clearInterval(transportThisUI.musicFade);}, 1000);
                 transportThisUI.cameras.main.fadeIn(1000);
                 pause.visible = true;
                 score.visible = true;
+                hearts.setVisible(true);
+                for (var i = 0; i < 5; i += 1) {
+                    hearts.children.iterate((child) =>{
+                        if (child) {
+                            child.destroy();
+                        }
+                    });
+                }
+                mode.visible = true;
                 
                 if (level == 6 || level == 7) {
                     gameLoaded = true;//let it know to add the button for creative.
@@ -2235,14 +2318,7 @@
                 repeat:0});
                 //burrito
                 this.anims.create({key:'burritoAnimation',
-                 frames: [{key: 'burrito1'},
-                 {key: 'burrito2'/*, width:16, height:31*/},
-                 {key: 'burrito3'},
-                 {key: 'burrito4'},
-                 {key: 'burrito5'},
-                 {key: 'burrito6'},
-                 {key: 'burrito7'},
-                 {key: 'burrito8'},],
+                 frames: this.anims.generateFrameNames('burrito'),
                 frameRate:10,
                 repeat:-1});
                 //burrito2
@@ -2483,7 +2559,7 @@
                 //hearts = this.physics.add.group();
                 //we put this in the UI create
                 for (var i = 0; i < taco.lives; i += 1) {
-                    heart = hearts.create(40+(i*45), 40, 'heart1').setScale(2);
+                    heart = hearts.create(35+(i*35), 35, 'heart1').setScale(2);
                     heart.scrollFactorX = 0;
                     heart.scrollFactorY = 0;
                     heart.depth = 3;
@@ -2615,6 +2691,7 @@
                 this.physics.add.collider(rocks, layer1);
                 this.physics.add.collider(burritos, burritoBarriers);
                 this.physics.add.collider(bottles, layer1);
+                this.physics.add.collider(bottles, bottles);
                 this.physics.add.collider(burritos, burritos);
                 this.physics.add.collider(taco, platforms);
                 this.physics.add.collider(taco, platformsLeft);
@@ -2773,13 +2850,19 @@
                 }
                 function tacoHitTree(Taco, Tree) {
                     taco.touchingTree = true;
-                    if (Tree.triggered == "none" && keySpace.isDown) {
+                    var otherTree = false;
+                    trees.children.iterate((child) =>{
+                        if (child.triggered == true) {
+                            otherTree = true;
+                        }
+                    });
+                    if (Tree.triggered == "none" && keySpace.isDown && otherTree == false) {
                         console.log('triggered');
                         Tree.triggered = true;
                         check1 = 0;
-                        Tree.body.offset.x =  0;
+                        Tree.body.offset.x =  175; //move the tree with it.
                         Tree.body.offset.y = 0;
-                        Tree.body.width += 175;
+                        //Tree.body.width += 175;
                     }
                 }
                 function tacoHitLight(Taco, Light) {
@@ -2792,7 +2875,7 @@
                     }
                 }
                 function tacoHitBottle(Taco, Bottle) {
-                    if (keySpace.isDown) {
+                    if (keySpace.isDown && Bottle.visible == true) {
                         
                         Bottle.held = true;
                         //Bottle.allowGravity = false;
@@ -3021,23 +3104,21 @@
                 }
             }
             function setLives(lives) {
-                if (hearts.children.entries[0]) {
+                if (/*hearts.children.entries[0]*/true) {
                     if (lives < hearts.children.entries.length) {
                         heart = hearts.children.entries[hearts.children.entries.length-1];
-                        heart.anims.play('heartAnimation');
-                        heart.on('animationcomplete', function(){
+                        heart.anims.play('heartAnimation').once('animationcomplete', function(){
                             heart.destroy();
                         });
                     }
                     if (lives > hearts.children.entries.length) {
                         lastHeart = hearts.children.entries[hearts.children.entries.length-1];
-                        heart = hearts.create(lastHeart.x + 45, 40, 'heart1').setScale(2);
+                        heart = hearts.create(lastHeart.x + 35, 35, 'heart1').setScale(2);
                         heart.depth = 3;
                         heart.scrollFactorX = 0;
                         heart.scrollFactorY = 0;
                     }
                 }
-                
             }
             function ingredientParticleEmit(x, y, quantity, time, burrito) {
                     var ingredientSelect = 0;//default is zero to prevent bugs when too many burritos
@@ -3091,7 +3172,6 @@
 
                 });
                 function drawCurrentText() {
-                    console.log('drawing text');
                     if (text.charAt(currentDialog._text.length) == ' ') {
                         if (currentDialog.setText) {
                             currentDialog.setText(currentDialog._text + text.charAt(currentDialog._text.length));
@@ -3175,10 +3255,13 @@
             }
             function update ()
             {
+                if (this.physics.world.timeScale < 1) {
+                    this.physics.world.timeScale = 1;
+                }
                 transportThisGame = this;
                 inMenu = false;
                 //coins
-                if (score.value > 50) {
+                if (score.value >= 50) {
                     taco.lives += 1;
                     setLives(taco.lives);
                     score.value = 0;
@@ -3569,24 +3652,40 @@
                 //before we move, run this
                 bottles.children.iterate(function(child){
                     if (child.held) {
-                        //child.x = taco.x;
-                        //child.y = taco.y;
-                        child.body.x = taco.body.x+taco._displayOriginX/2;
-                        child.body.y = taco.body.y+8+taco._displayOriginY/2;
-                        child.angle += 3;
+                        child.x = taco.x;
+                        child.y = taco.y-52;
+                        child.body.velocity.x = taco.body.velocity.x;
+                        child.body.velocity.y = taco.body.velocity.y;
+                        //child.body.x = taco.body.x+taco._displayOriginX/2;
+                        //child.body.y = taco.body.y+8+taco._displayOriginY/2;
+                        //child.angle += 3;
+                        //aim arrow
+                        arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
+                        arrow.body.y = taco.body.y-arrow.body.height-15;
+                        arrow.angle += 3;
+                        arrow.visible = true;
                         if (keySpace.isDown == false/*Phaser.Input.Keyboard.JustDown(keySpace)*/) {
+                            //take a bite
+                            child.uses -= 1;
+                            if (child.uses > 0) {
+                                child.setTexture('ice' + String((child.uses*-1)+4));
+                            } else {
+                                child.visible = false;
+                            }
+                            //other things
                             iceBall = iceBalls.create(child.x, child.y, 'iceBall').setScale(0.8);
                             
-                            iceBall.body.velocity.x = 500*Math.sin(child.angle * Math.PI/180);
-                            iceBall.body.velocity.y = -500*Math.cos(child.angle * Math.PI/180);
-                            iceBall.angle = child.angle-90;
+                            iceBall.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
+                            iceBall.body.velocity.y = -500*Math.cos(arrow.angle * Math.PI/180);
+                            iceBall.angle = arrow.angle-90;
                             child.held = false;
-                            child.angle = 0;
+                            arrow.angle = 0;
+                            arrow.visible = false;
                             child.body.velocity.x = 0;
                             child.body.velocity.y = -260;
                             child.body.allowGravity = true;
                             child.body.gravity.y = 500;
-                            
+                            Phaser.tacoHarmony.active = true;
                         }
                     }
                 });
@@ -3645,7 +3744,7 @@
                 }
                 
                 if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
-                    taco.body.velocity.y = -100;//base jump;
+                    taco.body.velocity.y = -120;//base jump;
                     taco.jumpHold = 105;
                 }
                 if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
@@ -3704,26 +3803,26 @@
                 var transportThis = this;
                 function treeSkillCheck(child, fallAngle, widthPullback) {
                     function roundTimeScale() {
-                        if (Math.round(transportThis.physics.world.timeScale) == 1) {
-                            transportThis.physics.world.timeScale = 1;
+                        if (Math.round(transportThisGame.physics.world.timeScale) == 1 && child.triggered == false) {
+                            transportThisGame.physics.world.timeScale = 1;
                         }
                     }
-                    if (child.triggered == true) {
+                    if (child.triggered == true || (timeSkill.alpha < 1)) {
                         timeSkill.alpha -= 0.0022;
-                        if (transportThis.physics.world.timeScale < 5) {
-                            transportThis.physics.world.timeScale += 0.1;
+                        if (transportThisGame.physics.world.timeScale < 5) {
+                            transportThisGame.physics.world.timeScale += 0.1;
                         }
                         if (check1 >= 60) {
                             check1 = 60;
                             child.falling = true;
-                            if (transportThis.physics.world.timeScale > 1) {
-                                transportThis.physics.world.timeScale -= 0.2;
+                            if (transportThisGame.physics.world.timeScale > 1) {
+                                transportThisGame.physics.world.timeScale -= 0.2;
                                 //roundTimeScale();
                             }
                         }
                         if (check1 < 0) {
                             check1 = 0;
-                        } else if (check1 !== 60) {
+                        } else if (check1 != 60) {
                             check1 -= 0.4;
                         }
                         if (Phaser.Input.Keyboard.JustDown(keySpace) && check1 !== 60) {
@@ -3733,8 +3832,8 @@
                             }
                         }
                         if (child.falling == true) {
-                            child.angle += 0.2*(child.angleSpeed/(transportThis.physics.world.timeScale));
-                            child.angleSpeed += 1/(transportThis.physics.world.timeScale);
+                            child.angle += 0.1*(child.angleSpeed/(transportThisGame.physics.world.timeScale));
+                            child.angleSpeed += 1/(transportThisGame.physics.world.timeScale);
                         }
                         
                         if (child.angle > fallAngle || timeSkill.alpha <= 0) {
@@ -3742,29 +3841,42 @@
                             child.falling = false;
                             check1 = -1;
                             timeSkill.visible = false;
-                            child.body.width -= widthPullback;//counter for the first collider extension.
+                            
+                            //child.body.width -= widthPullback;//counter for the first collider extension.
+                            child.body.offset.x = 0;
                             if (timeSkill.alpha <= 0 && !(child.angle > fallAngle)) {
                                 //if unused, then reset and give them another go at it.
+                                console.log('reset');
+                                child.speedUp = setInterval(()=>{
+                                    if (transportThisGame.physics.world.timeScale > 1) {
+                                        transportThisGame.physics.world.timeScale -= 0.2;
+                                    }
+                                    if (Math.round(transportThisGame.physics.world.timeScale) == 1) {
+                                        transportThisGame.physics.world.timeScale = 1;
+
+                                        clearInterval(child.speedUp);
+                                    }
+                                    
+                                }, 16.66);
                                 setTimeout(()=>{child.triggered = "none";}, 1000);
                             }
                             timeSkill.alpha = 1;
                         }
-                    } else {
-                        if (transportThis.physics.world.timeScale > 1) {
-                            transportThis.physics.world.timeScale -= 0.2;
-                        }
-                        roundTimeScale();
                     }
                 }
                 trees.children.iterate(function(child) {
-                    treeSkillCheck(child, 60, 175);
+                    if (child.triggered == true) {
+                        treeSkillCheck(child, 60, 175);
+                    }
                 });
                 lights.children.iterate(function(child) {
-                    treeSkillCheck(child, 75, 60);
+                    if (child.triggered == true) {
+                        treeSkillCheck(child, 75, 60);
+                    }
                 });
                 poisons.children.iterate(function (child) {
                     if (child) {
-                        if (child.body.blocked.right || child.body.blocked.left) {
+                        if (child.body.blocked.right || child.body.blocked.left || child.body.velocity.x == 0) {
                             child.destroy();
                         } 
                     }
@@ -3995,7 +4107,11 @@
                             camera.pan(6176+400, 760+300, 1500);
                             camera.once('camerapancomplete', ()=>{
                                 taco.setCollideWorldBounds();
-                                rocks.children.iterate((child)=>{child.setCollideWorldBounds();});
+                                rocks.children.iterate((child)=>{
+                                    if (camera.worldView.contains(child.x, child.y)) {
+                                        child.setCollideWorldBounds();
+                                    }
+                                });
                                 child.setCollideWorldBounds();
                                 transportThisGame.physics.world.setBounds(camera.worldView.x, camera.worldView.y, camera.worldView.width, camera.worldView.height);
                             });
@@ -4080,9 +4196,8 @@
                                         break;
                                     case 9:
                                         child.que += 1;
-                                        console.log('popping animation started');
                                         child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
-                                            console.log('animationcoomplete');
+                                            
                                             child.que += 1;
                                             child.anims.play('shredingAnimation');
                                         });
@@ -4392,8 +4507,6 @@
                                 child.anims.play('drillingAnimation');
                                 child.body.velocity.y = -600;
                                 camera.shake(400, 0.005);
-
-                                console.log('up' + child.que);
                             });
                             child.body.velocity.x = 0;
                             child.invincible = false;
@@ -4469,7 +4582,7 @@
                 //text box
                 this.load.image('text', 'assets/textBox.png');
                 //burrito
-                this.load.image('burrito', 'assets/burrito__2.png');
+                this.load.spritesheet('burrito', 'assets/burrito.png', { frameWidth: 16, frameHeight: 32 });
                 //fire
                 this.load.image('fire1', 'assets/fire1.png');
                 this.load.image('fire2', 'assets/fire2.png');
@@ -4686,11 +4799,18 @@
                 newLevel.on('pointerover', ()=>{newLevel.scale = 0.9;creatorGuide.visible = true;});
                 newLevel.on('pointerout', ()=>{newLevel.scale = 0.75;creatorGuide.visible = false;});
                 newLevel.on('pointerdown', ()=>{
-                    buttons.setVisible(false);
-                    locks.setVisible(false);
-                    menu.visible = false;
-                    level = 6;updateCurrentLevel();startGame();
-                    newLevel.visible = false;
+
+                    rewarded(()=>{
+                        transportThisTitle.scene.pause();
+                        buttons.setVisible(false);
+                        locks.setVisible(false);
+                        menu.visible = false;
+                        level = 6;
+                        updateCurrentLevel();
+                        startGame();
+                        newLevel.visible = false;
+
+                    });
                 });
 
                 creatorGuide = this.physics.add.sprite(300, 40, 'creatorGuide');
