@@ -49,10 +49,12 @@
             }
 
             var level = 3;
+            var gameDelta;
             var hearts;
             var unlocked = 5;
             var tutorial;
             var inMenu = true;
+            var finished = false;
             
             function updateCurrentLevel() {
                 if (level == 0) {
@@ -240,21 +242,21 @@
                     tabsType: [
                         [2, 2, 2, 2, 2, 1, 1, 1],
                         [1, 1, 1],
-                        [1, 1, 1, 1, 1, 1],
+                        [1, 1, 1, 1, 1, 2, 1],
                         [1, 1, 1, 1, 1],
                         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
                     ],
                     tabsSelect: [
                         [0, 2, 3, 4, 11, 19, 4, 26],
                         [5, 25, 29],
-                        [2, 3, 1, 0, 12, 8],
+                        [2, 3, 1, 0, 12, 21, 8],
                         [7, 11, 14, 8, 9],
                         [24, 30, 31, 23, 21, 15, 17, 18, 16, 13, 20, 27]
                     ],
                     tabsThumb: [
                         [49, 2, 3, 4, 11, 10, 18, 32],
                         [14, 22, 51],
-                        [1, 12, 1, 1, 24, 26],
+                        [1, 12, 1, 1, 24, 58, 26],
                         [27, 57, 23, 26, 19],
                         [54, 53, 52, 21, 56, 55, 28, 29, 30, 31, 40, 50]
                     ]
@@ -869,6 +871,7 @@
                 this.load.script('webfont', 'https://ajax.googleapis.com/ajax/libs/webfont/1.6.26/webfont.js');
                 //music files
                 this.load.audio('mainMusic', ['assets/UpTown.mp3']);
+                this.load.audio('caveMusic', ['assets/Cave in.mp3']);
                 this.load.audio('mainMusic2', ['assets/rainingFun.mp3']);
                 this.load.audio('burritoJump', ['assets/burritojump.wav']);
                 this.load.audio('walking', ['assets/walking.mp3']);
@@ -1204,13 +1207,14 @@
                         gameOver.alpha = 0;
                         gameOver.depth = 3;
                         gameOver.fadeout = setInterval(()=>{
-                            gameOver.alpha += 0.005;
-                            transportThisGame.sound.volume -= 0.005;
-                            transportThisGame.sound.detune -= 5;
+                            gameOver.alpha += 0.005*(gameDelta/16.666);
+                            transportThisGame.sound.volume -= 0.005*(gameDelta/16.666);
+                            transportThisGame.sound.detune -= 5*(gameDelta/16.666);
                             if (gameOver.alpha >= 1)
                             {
                                 mainMusic.volume = 0;
                                 mainMusic2.volume = 0;
+                                caveMusic.volume = 0;
                                 for (var i = 0; i < bossMusic.length; i += 1) {
                                     bossMusic[i].volume = 0;
                                 }
@@ -1439,6 +1443,7 @@
                     coin.body.setImmovable = true;
                     coin.anims.play('platformAnimation');
                     //coin.setOrigin(0.5, 0.5);
+                    coin.depth = 1;
                 } 
                 if (type == 14) {
                     
@@ -1495,6 +1500,7 @@
                     coin.setFrictionX(1);
                     coin.dir = 1;
                     coin.body.setImmovable = true;
+                    coin.depth = 1;
                 } 
                 if (type == 17) {
                     
@@ -1516,6 +1522,7 @@
                     coin.distance = 300;//how far it goes.
                     coin.dir = -1;
                     coin.body.setImmovable = true;
+                    coin.depth = 1;
                 } 
                 if (type == 18) {
                     
@@ -1539,6 +1546,7 @@
                     coin.setFrictionX(1);
                     coin.dir = 1;
                     coin.body.setImmovable = true;
+                    coin.depth = 1;
                 } 
                 if (type == 19) {
                     
@@ -1708,7 +1716,7 @@
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 28;
                     var coin = stones.create(x+16, y+16, '3by3');
-                    coin.depth = -1;
+                    coin.depth = -2;
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     //we need to keep track of initial positions for later.
@@ -2110,6 +2118,8 @@
             var bossMusic;
             function create ()
             {
+                textSequence = 0;
+
                 menuOpen = false;
                 menu.visible = false;
                 clearInterval(makeText);
@@ -2168,6 +2178,7 @@
                 //music
                 mainMusic = this.sound.add('mainMusic');
                 mainMusic2 = this.sound.add('mainMusic2');
+                caveMusic = this.sound.add('caveMusic');
                 burritoJump = this.sound.add('burritoJump');
                 bossMusic = [];
                 for (var i = 1; i < 7; i += 1) {
@@ -2180,13 +2191,19 @@
                 gameOverMusic = this.sound.add('overMusic');
                 mainMusic.volume = 0;
                 mainMusic2.volume = 0;
+                
                 //mainMusic.loop = true;
-                if (Math.round(level/2) != level/2) {
-                    mainMusic2.play();
-                    
+                if (level != 5) {
+                    if (Math.round(level/2) != level/2) {
+                        mainMusic2.play();
+                        
+                    } else {
+                        mainMusic.play();
+                    }
                 } else {
-                    mainMusic.play();
+                    caveMusic.play();
                 }
+                
                 mainMusic.fade = setInterval(()=>{
                     mainMusic.volume += 0.08;
                     mainMusic2.volume += 0.08;
@@ -2198,6 +2215,7 @@
                 }, 16);
                 mainMusic.on('complete', ()=>{setTimeout(()=>{mainMusic2.play();}, 1000)});
                 mainMusic2.on('complete', ()=>{setTimeout(()=>{mainMusic.play();}, 1000)});
+                caveMusic.on('complete', ()=>{setTimeout(()=>{caveMusic.play();}, 1000)});
                 this.graphics = this.add.graphics();
                 //the variables of the game.
                 tacoVelocityX = 0;
@@ -2232,7 +2250,7 @@
                     } else {
                         cloud.body.velocity.x = random(-25, -50);
                     }
-                    cloud.depth = -2;
+                    cloud.depth = -3;
                     if (random(1, 2) == 1) {
                         cloud.flipX = true;
                     }
@@ -2506,7 +2524,7 @@
                     this.scene.restart();
                 }
                 //tutorial potato
-                potat = this.physics.add.sprite(400, 400, 'potat1').setScale(2.3).refreshBody();
+                potat = this.physics.add.sprite(400, 1000, 'potat1').setScale(2.3).refreshBody();
                 potat.anims.play('potatAnim');
                 potat.depth = 2;
                 potat.summoned = false;//only used outside of tutorial.
@@ -2794,8 +2812,9 @@
 
                             }
                             bossMusic[5].play();
-                            bossMusic[5].on('complete', ()=>{
-
+                            bossMusic[5].once('complete', ()=>{
+                                //have mr potat congradulate them
+                                finished = true;
                             });
                             setTimeout(function(){camera.shake(2000, 0.02)}, 400);
                             
@@ -3106,6 +3125,9 @@
             }
             function setLives(lives) {
                 if (/*hearts.children.entries[0]*/true) {
+                    if (lives < 1) {
+                        lives = 1;
+                    }
                     if (lives < hearts.children.entries.length) {
                         heart = hearts.children.entries[hearts.children.entries.length-1];
                         heart.anims.play('heartAnimation').once('animationcomplete', function(){
@@ -3216,10 +3238,46 @@
                 potat.summoned = false;
                 //this.ingredientParticleEmit(potat.x, potat.y, 20, 300, false);
             }
-            //all level sequences ith mr potat besides the tutorial
+            //all level sequences with mr potat besides the tutorial
             var textSequence = 0;
             var checkpoint = 0;
             function sequence() {
+                if (finished == true) {
+                    if (potat.summoned == false) {
+                        summonPotat();
+                    }
+                    if (potat.summoned) {
+                        if (textSequence == 0) {
+                            textSequence += 1;
+                            text('congradulations!', 30, ()=>{setTimeout(()=>{textSequence += 1;}, 1500)});
+                        }
+                        if (textSequence == 2) {
+                            textSequence += 1;
+                            text('now what will we do \nwith you?', 30, ()=>{setTimeout(()=>{textSequence += 1;}, 1500)});
+                        }
+                        if (textSequence == 4) {
+                            textSequence += 1;
+                            text('might as well put \nyou in the level \ncreator.', 30, ()=>{setTimeout(()=>{textSequence += 1;}, 1500)});
+                        }
+                        if (textSequence == 6) {
+                            textSequence += 1;
+                            ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
+                            banishPotat();
+                            transportThisUI.cameras.main.fadeOut(2000).once('camerafadeoutcomplete', ()=>{
+                                level = 6;
+                                //play an ad before the next level, but only if out of titlescreen..
+                                function cont2() {
+                                    updateCurrentLevel();
+                                    transportThisGame.scene.restart();
+                                }
+                                midGame(cont2);
+
+                            });
+                            finished = false;
+                            potat.summoned = false;
+                        }
+                    }
+                }
                 /*
                 if (level == 1) {
                     if (taco.x > 640 && checkpoint == 0) {
@@ -3254,8 +3312,9 @@
                 }
                 */
             }
-            function update ()
+            function update (time, delta)
             {
+                gameDelta = delta;
                 if (this.physics.world.timeScale < 1) {
                     this.physics.world.timeScale = 1;
                 }
@@ -3317,7 +3376,7 @@
                         cloud = clouds.create(layer1.width + 200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
                         cloud.body.velocity.x = random(-25, -50);
                     }
-                    cloud.depth = -2;
+                    cloud.depth = -3;
                     if (random(1, 2) == 1) {
                         cloud.flipX = true;
                     }
@@ -3406,11 +3465,14 @@
                         potat.body.velocity.x *= 0.94;
                     }
                 }
+                if (finished == true) {
+
+                }
                 if (tutorial == true) {
                     if (textBox.scale < 4) {
                         textBox.scale += 0.2;
                     } else {
-                        var intro = false
+                        var intro = false;
                         if (tutorialSequence == 0) {
                             tutorialSequence += 1;
                             taco.disabled = true;
@@ -3545,7 +3607,7 @@
                             text('Well, that is all. \nHave fun almost \ndying in the cave \npast the tree.', 150, function(){setTimeout(function(){
                                 tutorialSequence += 1;
                                 taco.disabled = false;
-                                text('', 10, function(){console.log(tutorial = false);});
+                            text('', 10, function(){/*console.log(tutorial = false);*/});
                                 textBox.visible = false;
                                 ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
                                 banishPotat();
@@ -3706,6 +3768,9 @@
                             tacoVelocityX -= 4.5;
                         } else {
                             tacoVelocityX -= 27;
+                            if (delta/16.66 > 1.5) {
+                                tacoVelocityX -= 7;
+                            }
                         }
                         
                     }
@@ -3723,6 +3788,9 @@
                             tacoVelocityX += 4.5;
                         } else {
                             tacoVelocityX += 27;
+                            if (delta/16.66 > 1.5) {
+                                tacoVelocityX += 7;
+                            }
                         }
                     }
                     if (creative == true) {
@@ -3734,7 +3802,7 @@
                     taco.anims.play('holdStill');
                 }
 
-                taco.body.velocity.x = tacoVelocityX;
+                taco.setVelocityX(tacoVelocityX);
                 if (taco.cream) {
                     tacoVelocityX = tacoVelocityX * 0.991;//0.8
                 } else if (taco.gum) {
@@ -3745,13 +3813,16 @@
                 }
                 
                 if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
-                    taco.body.velocity.y = -120;//base jump;
+                    taco.body.velocity.y = -120*(delta/16.666);//base jump;
+                    if (taco.body.velocity.y < -240) {
+                        taco.body.velocity.y = -240;
+                    }
                     taco.jumpHold = 105;
                 }
                 if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
                 {
                     taco.jumpHold -= 8;
-                    taco.body.velocity.y -= taco.jumpHold*0.92;
+                    taco.body.velocity.y -= (taco.jumpHold*0.92);
                 }
                 if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
                     taco.body.velocity.y = -470;
@@ -3767,7 +3838,7 @@
                 if (taco.body.blocked.up && taco.gum == true && (cursors.up.isDown || keyW.isDown)) {
                     if (taco.holding == false) {
                         taco.holding = true;
-                        taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2000);
+                        taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2000*(delta/16.666));
                     } else {
                         taco.body.velocity.y = -50;
                     }
@@ -3904,9 +3975,9 @@
                         arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
                         arrow.body.y = taco.body.y-arrow.body.height-18;
                         if (arrow.direction == 1) {
-                            arrow.angle += 4/transportThis.physics.world.timeScale;
+                            arrow.angle += (delta/16.666)*(4/transportThis.physics.world.timeScale);
                         } else {
-                            arrow.angle -= 4/transportThis.physics.world.timeScale;
+                            arrow.angle -= (delta/16.666)*(4/transportThis.physics.world.timeScale);
                         }
                         if (arrow.angle > 70 || arrow.angle < -70) {
                             arrow.direction *= -1;
@@ -3971,8 +4042,8 @@
                             child.waiting = false;
                         }*/
                         if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*3;
-                            child.angle += (child.body.velocity.x * -1)/160;
+                            child.body.velocity.x += child.dir*3*(delta/16.666);
+                            child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
                         } else {
                             if (child.angle > 0) {
                                 child.angle -= 0.5;
@@ -3996,8 +4067,8 @@
                             child.dir = -1;
                         }
                         if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*3;
-                            child.angle += (child.body.velocity.x * -1)/160;
+                            child.body.velocity.x += child.dir*3*(delta/16.666);
+                            child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
 
                         } else {
                             if (child.angle > 0) {
@@ -4021,7 +4092,7 @@
                             child.dir = 1;
                         }
                         if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*3;
+                            child.body.velocity.y += child.dir*3*(delta/16.666);
                         }
                     }
                 });
@@ -4034,7 +4105,7 @@
                             child.dir = -1;
                         }
                         if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*3;
+                            child.body.velocity.y += child.dir*3*(delta/16.666);
                         }
                     }
                 });
@@ -4092,6 +4163,7 @@
                             }
                             mainMusic.stop();
                             mainMusic2.stop();
+                            caveMusic.stop();
                         }
                         if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.1 || bossMusic[child.currentSong].isPlaying == false) {
                             if (child.goUpTo > child.currentSong) {
@@ -4391,9 +4463,9 @@
                                         child.body.velocity.x *= 0.96;
                                         break;
                                     case 3:
-                                        child.x = taco.x;
+                                        child.gotoX = taco.x;
                                         child.que += 1;
-                                        setTimeout(()=>{child.que += 1;}, 900);
+                                        setTimeout(()=>{child.que += 1;child.x = child.gotoX}, 900);
                                         break;
                                     case 5:
                                         child.que += 1;
@@ -4541,6 +4613,7 @@
                 transportThisGame = null;
                 mainMusic.destroy();
                 mainMusic2.destroy();
+                caveMusic.destroy();
                 for (var i = 0; i < bossMusic; i += 1) {
                     bossMusic[i].stop();
                     bossMusic[i].destroy();
@@ -4608,6 +4681,8 @@
                 
                 //new Ui for tutorial
                 this.load.image('new', 'assets/new.png');
+                this.load.image('vid', 'assets/vid.png');
+
                 //font
                 var element = document.createElement('style');
 
@@ -4771,7 +4846,7 @@
                     
                     var cloud = clouds.create(random(10, 790), random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
-                    cloud.depth = -2;
+                    cloud.depth = -3;
                 }
                 //the non moving parts (except for button kindof)
                 logo = this.add.image(400, 200, 'background').setScale(2.5);
@@ -4814,9 +4889,9 @@
                     });
                 });
 
-                creatorGuide = this.physics.add.sprite(300, 40, 'creatorGuide');
+                creatorGuide = this.physics.add.sprite(110, 40, 'vid');
                 creatorGuide.visible = false;
-                creatorGuide.scale = 0.6;
+                creatorGuide.scale = 4;
                 creatorGuide.depth = 4;
 
                 //font
@@ -5117,7 +5192,7 @@
                     
                     var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
-                    cloud.depth = -2;
+                    cloud.depth = -3;
                 }
             }
 
