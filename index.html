@@ -735,6 +735,8 @@
                                 child.on('pointerover', () => { child.setScale(1.25).refreshBody(); });
                                 child.on('pointerout', () => { child.setScale(1).refreshBody(); });
                                 child.on('pointerup', () => {
+                                    child.removeInteractive();
+                                    
                                     //play an ad before the next level, but only if out of titlescreen..
                                     function cont() {
                                         transportThisUI.cameras.main.fadeOut(2000).once('camerafadeoutcomplete', ()=>{
@@ -827,7 +829,11 @@
                     add: 'makeStuff',
                     load: 'loader'
                 },
-                timeScale: 2
+                timeScale: 1,
+                fps: {
+                    target: 60,
+                    forceSetTimeOut: true
+                }
             };
 
             var game = new Phaser.Game(config);
@@ -1201,6 +1207,8 @@
                         pause.visible = false;
 
                         taco.disabled = true;
+
+                        finished = false;
                         gameOver = transportThisGame.add.image(400, 300, 'gameOver').setScale(0.77);
                         gameOver.scrollFactorX = 0;
                         gameOver.scrollFactorY = 0;
@@ -2530,6 +2538,7 @@
                 potat.summoned = false;//only used outside of tutorial.
                 if (tutorial == true) {
                     potat.visible = true;
+                    potat.y = 400;
                 } else {
                     potat.visible = false;
                 }
@@ -2541,6 +2550,7 @@
                 } else {
                     taco = this.physics.add.sprite(100, layer1.height-200, 'still').setScale(1.75).refreshBody();
                 }
+                taco.body.setMaxVelocityY(900);
                 taco.disabled = false;//control whether they can move;
                 taco.cream = false;
                 taco.gum = false;
@@ -2555,6 +2565,7 @@
                 taco.lives = 5;
                 taco.defLives = 5;
                 taco.setFrictionX(1);
+                taco.limitX = 664;
                 //taco.setCollideWorldBounds();
                 taco.jumpHold = 0;
                 taco.minigame = false;
@@ -2777,13 +2788,14 @@
                 function burritoHitTree(burrito, tree) {
                     if (tree.triggered == true && burrito.triggered == false && check1 == 60) {
                         burrito.triggered = true;
-                        ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);
+                        setTimeout(()=>{ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);}, 500);
+                        
                     }
                 }
                 function burritoHitLight(burrito, tree) {
                     if (tree.triggered == true && burrito.triggered == false) {
                         burrito.triggered = true;
-                        ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);
+                        setTimeout(()=>{ingredientParticleEmit(burrito.x, burrito.y, 10, 300, burrito);}, 500);
                     }
                 }
                 
@@ -3247,6 +3259,7 @@
                         summonPotat();
                     }
                     if (potat.summoned) {
+                        taco.disabled = false;
                         if (textSequence == 0) {
                             textSequence += 1;
                             text('congradulations!', 30, ()=>{setTimeout(()=>{textSequence += 1;}, 1500)});
@@ -3469,13 +3482,16 @@
 
                 }
                 if (tutorial == true) {
+                    if (taco.x > taco.limitX) {
+                        taco.x = taco.limitX;
+                    }
                     if (textBox.scale < 4) {
                         textBox.scale += 0.2;
                     } else {
                         var intro = false;
                         if (tutorialSequence == 0) {
                             tutorialSequence += 1;
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             intro = text('Hello player. \nWelcome to the \nwonderful world of \nbad burritos. ', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)});
                             
                         }
@@ -3489,7 +3505,7 @@
                             text('Great!\nOver here you will \nsee a wall.\nwalk up to it.', 150, function(){tutorialSequence += 1;})
                         }
                         if (tutorialSequence == 6 && taco.x > 565) {
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             tutorialSequence += 1;
                             text('You could cross it, \nbut who wants to do \nthat?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
                         }
@@ -3498,17 +3514,18 @@
                             text('Just Kidding, this \nside of the wall is \ndepressing.', 150, function(){setTimeout(function(){tutorialSequence += 1;taco.disabled = false;}, 1000)})
                         }
                         if (tutorialSequence == 10) {
+                            taco.limitX = 900;
                             tutorialSequence += 1;
                             text('Hold the up arrow \nwhile walking to \njump over it.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
                         }
                         if (taco.x > 800 && tutorialSequence == 12) {
                             tutorialSequence += 1;
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             text('look over there, \nsome unsuspecting \nred points!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
                         }
                         if (tutorialSequence == 14) {
                             tutorialSequence += 1;
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             //potat.goto = potat.x - 230;
                             text('if you couldn\'t \ntell, these adorable \nlittle spikes will \nsend you to the \nstart of the level. \n(don\'t ask me how)', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
                         }
@@ -3517,7 +3534,7 @@
                             potat.goto = 1530;
                             camera.stopFollow();
                             camera.pan(1530, 3000, 4000);
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             text('but that can change,\nsee this sleepy \nlittle guy over \nhere?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500);})
                         }
                         if (tutorialSequence == 18) {
@@ -3534,6 +3551,7 @@
                         }
                         if (tutorialSequence == 22) {
                             tutorialSequence +=1;
+                            taco.limitX = 1710;
                             text('if you wake him up.', 150, function(){setTimeout(function(){
                                 
                                 potat.goto = false;
@@ -3584,6 +3602,7 @@
                         }
                         if (tutorialSequence == 34) {
                             tutorialSequence +=1;
+                            taco.limitX = 2060;
                             taco.disabled = false;
                             text('I want you to go up \nto the tree and \npress space as fast \nas you can. ', 150, function(){setTimeout(function(){
                                 tutorialSequence += 1;
@@ -3591,7 +3610,7 @@
                         }
                         if (trees.children.entries[0].angle > 50 && tutorialSequence == 36) {
                             tutorialSequence +=1;
-                            taco.disabled = true;
+                            //taco.disabled = true;
                             text('Oh, well lookie here \nthat burrito was \nguarding the way to \nthe next part of the \nlevel.', 150, function(){setTimeout(function(){
                                 tutorialSequence += 1;
                             }, 1000);});
@@ -3604,9 +3623,10 @@
                         }
                         if (tutorialSequence == 40) {
                             tutorialSequence += 1;
-                            text('Well, that is all. \nHave fun almost \ndying in the cave \npast the tree.', 150, function(){setTimeout(function(){
+                            text('Well, that is all. \nGood luck with the \nrest of the level!', 150, function(){setTimeout(function(){
                                 tutorialSequence += 1;
                                 taco.disabled = false;
+                                taco.limitX = 4000;
                             text('', 10, function(){/*console.log(tutorial = false);*/});
                                 textBox.visible = false;
                                 ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
