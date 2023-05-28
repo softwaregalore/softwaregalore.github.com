@@ -831,8 +831,8 @@
                 },
                 timeScale: 1,
                 fps: {
-                    target: 60,
-                    forceSetTimeOut: true
+                    target: 60/*,
+                    forceSetTimeOut: true*/
                 }
             };
 
@@ -3291,1330 +3291,1306 @@
                         }
                     }
                 }
-                /*
-                if (level == 1) {
-                    if (taco.x > 640 && checkpoint == 0) {
-                        if (potat.summoned == false) {
-                            summonPotat();
-                        }
-                        if (potat.summoned) {
-                            if (textSequence == 0) {
-                                textSequence += 1
-                                text('well what do we\nhave here?', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
-                            }
-                            if (textSequence == 2) {
-                                textSequence += 1
-                                text('it looks like \nanother tree?', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
-                            }
-                            if (textSequence == 4) {
-                                textSequence += 1
-                                text('i bet it works\nthe same way.', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
-                            }
-                            if (textSequence == 6) {
-                                textSequence += 1
-                                text('well, good luck!', 30, function(){setTimeout(function(){textSequence += 1}, 1500)});
-                            }
-                            if (textSequence == 8) {
-                                textSequence = 7;
-                                ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
-                                banishPotat();
-                                checkpoint += 1;
-                            }
-                        }
-                    }
-                }
-                */
             }
+            var frameTime = 0;
             function update (time, delta)
             {
-                gameDelta = delta;
-                if (this.physics.world.timeScale < 1) {
-                    this.physics.world.timeScale = 1;
-                }
                 transportThisGame = this;
-                inMenu = false;
-                //coins
-                if (score.value >= 50) {
-                    taco.lives += 1;
-                    setLives(taco.lives);
-                    score.value = 0;
-                }
-                var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
-                //mouse selector
-                if (creative == true) {
-                    gridSelector.body.x = Math.round((mousePointer.x-16)/32)*32;
-                    gridSelector.body.y = Math.round((mousePointer.y-16)/32)*32;
-                    gridSelector.visible = true;
-                } else {
-                    gridSelector.visible = false;
-                }
-                if (taco.minigame == true) {
-                   
-                    if (cursors.right.isDown || keyD.isDown) {
-                        ship.body.x += 5;
-                    }
-                    if (cursors.left.isDown || keyA.isDown) {
-                        ship.body.x -= 5;
-                    }
-                    if (ship.x > 600) {
-                        ship.x = 600;
-                    }
-                    if (ship.x < 200) {
-                        ship.x = 200;
-                    }
-
-                    if (Phaser.Input.Keyboard.JustDown(keySpace)) {
-                        bullet = bullets.create(ship.x, ship.y, "lava1");
-                        bullet.body.velocity.y = -200;
-                        bullet.scrollFactorX = 0;
-                        bullet.scrollFactorY = 0;
-                        bullet.depth = 13;
-                    }
-                    if (random(1, 60) > taco.timeLeft && random(1, 6) == 1) {
-                        enemy = enemies.create(random(100, 500, "burrito1"));
-                        enemy.anims.play("burritoAnimation");
-                        enemy.body.velocity.y = 100 + (60-taco.timeLeft);
-                        enemy.depth = 15;
+                frameTime += delta;
+                //account for fast monitors
+                if (frameTime > 14.5) {
+                    frameTime = 0;
+                    //actual update loop
+                    gameDelta = delta;
+                    if (this.physics.world.timeScale < 1) {
+                        this.physics.world.timeScale = 1;
                     }
                     
-                }
-                sequence();
-                //update clouds and backgroundthis.input.keyboard.createCursorKeys()
-                if (random(1, 125) == 3) {
-                    
-                    if (random(1, 2) == 1) {
-                        cloud = clouds.create(-200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
-                        cloud.body.velocity.x = random(25, 50);
-                    } else {
-                        cloud = clouds.create(layer1.width + 200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
-                        cloud.body.velocity.x = random(-25, -50);
+                    inMenu = false;
+                    //coins
+                    if (score.value >= 50) {
+                        taco.lives += 1;
+                        setLives(taco.lives);
+                        score.value = 0;
                     }
-                    cloud.depth = -3;
-                    if (random(1, 2) == 1) {
-                        cloud.flipX = true;
-                    }
-                }
-                
-                var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
-                mouseZone.x = mousePointer.x;
-                mouseZone.y = mousePointer.y;
-                
-                var tileSelectX = map.worldToTileX(mousePointer.x);
-                var tileSelectY = map.worldToTileY(mousePointer.y);
-
-                //keys
-                cursors = this.input.keyboard.createCursorKeys();
-                keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
-                keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-                keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
-                keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
-                keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
-                keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
-                keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
-                keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
-                keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
-                keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
-                keyY = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
-                keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
-                //make sure the camera zoom is right
-                if (camera.zoom <= 1.3 && keySpace.isDown == false) {
-                    camera.zoom += 0.015;
-                }
-                //debugging cursor position
-                if (Phaser.Input.Keyboard.JustDown(keyC)) {
-                    /*
-                    if (this.scale.isFullscreen)
-                    {
-
-                        this.scale.stopFullscreen();
-                    }
-                    else
-                    {
-
-                        this.scale.startFullscreen();
-                    }
-                    */
-                }
-                
-                //before doing anything with creative, it is important that the positions of sprites are all working the right way animations wise
-                updateColliders();
-                
-                //creative mode decisions
-                if (creativeUpdate == true) {
-                    creativeUpdate = false;
+                    var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
+                    //mouse selector
                     if (creative == true) {
-                        returnSprites();
-                        taco.body.checkCollision.none = true;
-                        taco.body.allowGravity = false;
-                        taco.body.velocity.y = 0;
-                        //this.physics.world.drawDebug = true;
+                        gridSelector.body.x = Math.round((mousePointer.x-16)/32)*32;
+                        gridSelector.body.y = Math.round((mousePointer.y-16)/32)*32;
+                        gridSelector.visible = true;
                     } else {
-                        resumeSprites();
-                        taco.body.checkCollision.none = false;
-                        taco.body.allowGravity = true;
-                        //this.physics.world.drawDebug = false;
-                        //this.physics.world.debugGraphic.clear();
+                        gridSelector.visible = false;
                     }
-                }
-                
-                
-                //tutorial code and potat code.
-                access = this;
-                if (potat && potat.goto == false) {
-                    if (potat.x > taco.x+100) {
-                        potat.body.velocity.x = -180;
-                    }else if (potat.x < taco.x-100) {
-                        potat.body.velocity.x = 180;
-                    } else {
-                        potat.body.velocity.x *= 0.94;
-                    }
-                }
-                if (potat && potat.goto !== false) {
-                    if (potat.x > potat.goto+100) {
-                        potat.body.velocity.x = -140;
-                    }else if (potat.x < potat.goto-100) {
-                        potat.body.velocity.x = 140;
-                    } else {
-                        potat.body.velocity.x *= 0.94;
-                    }
-                }
-                if (finished == true) {
+                    if (taco.minigame == true) {
+                    
+                        if (cursors.right.isDown || keyD.isDown) {
+                            ship.body.x += 5;
+                        }
+                        if (cursors.left.isDown || keyA.isDown) {
+                            ship.body.x -= 5;
+                        }
+                        if (ship.x > 600) {
+                            ship.x = 600;
+                        }
+                        if (ship.x < 200) {
+                            ship.x = 200;
+                        }
 
-                }
-                if (tutorial == true) {
-                    if (taco.x > taco.limitX) {
-                        taco.x = taco.limitX;
+                        if (Phaser.Input.Keyboard.JustDown(keySpace)) {
+                            bullet = bullets.create(ship.x, ship.y, "lava1");
+                            bullet.body.velocity.y = -200;
+                            bullet.scrollFactorX = 0;
+                            bullet.scrollFactorY = 0;
+                            bullet.depth = 13;
+                        }
+                        if (random(1, 60) > taco.timeLeft && random(1, 6) == 1) {
+                            enemy = enemies.create(random(100, 500, "burrito1"));
+                            enemy.anims.play("burritoAnimation");
+                            enemy.body.velocity.y = 100 + (60-taco.timeLeft);
+                            enemy.depth = 15;
+                        }
+                        
                     }
-                    if (textBox.scale < 4) {
-                        textBox.scale += 0.2;
-                    } else {
-                        var intro = false;
-                        if (tutorialSequence == 0) {
-                            tutorialSequence += 1;
-                            //taco.disabled = true;
-                            intro = text('Hello player. \nWelcome to the \nwonderful world of \nbad burritos. ', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)});
-                            
+                    sequence();
+                    //update clouds and backgroundthis.input.keyboard.createCursorKeys()
+                    if (random(1, 125) == 3) {
+                        
+                        if (random(1, 2) == 1) {
+                            cloud = clouds.create(-200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                            cloud.body.velocity.x = random(25, 50);
+                        } else {
+                            cloud = clouds.create(layer1.width + 200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
+                            cloud.body.velocity.x = random(-25, -50);
                         }
-                        if (tutorialSequence == 2) {
-                            taco.disabled = false;
-                            tutorialSequence += 1;
-                            text('You should press \nsome arrow keys and \nsee what happens.', 150, function(){tutorialSequence += 1;})
+                        cloud.depth = -3;
+                        if (random(1, 2) == 1) {
+                            cloud.flipX = true;
                         }
-                        if ((cursors.up.isDown || keyW.isDown) && tutorialSequence == 4) {
-                            tutorialSequence += 1;
-                            text('Great!\nOver here you will \nsee a wall.\nwalk up to it.', 150, function(){tutorialSequence += 1;})
+                    }
+                    
+                    var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
+                    mouseZone.x = mousePointer.x;
+                    mouseZone.y = mousePointer.y;
+                    
+                    var tileSelectX = map.worldToTileX(mousePointer.x);
+                    var tileSelectY = map.worldToTileY(mousePointer.y);
+
+                    //keys
+                    cursors = this.input.keyboard.createCursorKeys();
+                    keyB = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.B);
+                    keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
+                    keyC = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.C);
+                    keyE = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.E);
+                    keyF = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.F);
+                    keyA = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.A);
+                    keyD = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.D);
+                    keyW = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.W);
+                    keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+                    keySpace = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.SPACE);
+                    keyY = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.Y);
+                    keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
+                    //make sure the camera zoom is right
+                    if (camera.zoom <= 1.3 && keySpace.isDown == false) {
+                        camera.zoom += 0.015;
+                    }
+                    //debugging cursor position
+                    if (Phaser.Input.Keyboard.JustDown(keyC)) {
+                        /*
+                        if (this.scale.isFullscreen)
+                        {
+
+                            this.scale.stopFullscreen();
                         }
-                        if (tutorialSequence == 6 && taco.x > 565) {
-                            //taco.disabled = true;
-                            tutorialSequence += 1;
-                            text('You could cross it, \nbut who wants to do \nthat?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
+                        else
+                        {
+
+                            this.scale.startFullscreen();
                         }
-                        if (tutorialSequence == 8) {
-                            tutorialSequence += 1;
-                            text('Just Kidding, this \nside of the wall is \ndepressing.', 150, function(){setTimeout(function(){tutorialSequence += 1;taco.disabled = false;}, 1000)})
+                        */
+                    }
+                    
+                    //before doing anything with creative, it is important that the positions of sprites are all working the right way animations wise
+                    updateColliders();
+                    
+                    //creative mode decisions
+                    if (creativeUpdate == true) {
+                        creativeUpdate = false;
+                        if (creative == true) {
+                            returnSprites();
+                            taco.body.checkCollision.none = true;
+                            taco.body.allowGravity = false;
+                            taco.body.velocity.y = 0;
+                            //this.physics.world.drawDebug = true;
+                        } else {
+                            resumeSprites();
+                            taco.body.checkCollision.none = false;
+                            taco.body.allowGravity = true;
+                            //this.physics.world.drawDebug = false;
+                            //this.physics.world.debugGraphic.clear();
                         }
-                        if (tutorialSequence == 10) {
-                            taco.limitX = 900;
-                            tutorialSequence += 1;
-                            text('Hold the up arrow \nwhile walking to \njump over it.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
+                    }
+                    
+                    
+                    //tutorial code and potat code.
+                    access = this;
+                    if (potat && potat.goto == false) {
+                        if (potat.x > taco.x+100) {
+                            potat.body.velocity.x = -180;
+                        }else if (potat.x < taco.x-100) {
+                            potat.body.velocity.x = 180;
+                        } else {
+                            potat.body.velocity.x *= 0.94;
                         }
-                        if (taco.x > 800 && tutorialSequence == 12) {
-                            tutorialSequence += 1;
-                            //taco.disabled = true;
-                            text('look over there, \nsome unsuspecting \nred points!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                    }
+                    if (potat && potat.goto !== false) {
+                        if (potat.x > potat.goto+100) {
+                            potat.body.velocity.x = -140;
+                        }else if (potat.x < potat.goto-100) {
+                            potat.body.velocity.x = 140;
+                        } else {
+                            potat.body.velocity.x *= 0.94;
                         }
-                        if (tutorialSequence == 14) {
-                            tutorialSequence += 1;
-                            //taco.disabled = true;
-                            //potat.goto = potat.x - 230;
-                            text('if you couldn\'t \ntell, these adorable \nlittle spikes will \nsend you to the \nstart of the level. \n(don\'t ask me how)', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                    }
+                    if (finished == true) {
+
+                    }
+                    if (tutorial == true) {
+                        if (taco.x > taco.limitX) {
+                            taco.x = taco.limitX;
                         }
-                        if (tutorialSequence == 16) {
-                            tutorialSequence += 1;
-                            potat.goto = 1530;
-                            camera.stopFollow();
-                            camera.pan(1530, 3000, 4000);
-                            //taco.disabled = true;
-                            text('but that can change,\nsee this sleepy \nlittle guy over \nhere?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500);})
-                        }
-                        if (tutorialSequence == 18) {
-                            tutorialSequence += 1;
-                            taco.disabled = true;
-                            
-                            text('This man right here \nis what I like to \ncall a checkpoint.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000);})
-                        }
-                        if (tutorialSequence == 20) {
-                            tutorialSequence +=1;
-                            text('he will bring you \nback to where he is \nwhen you die...', 150, function(){setTimeout(function(){
+                        if (textBox.scale < 4) {
+                            textBox.scale += 0.2;
+                        } else {
+                            var intro = false;
+                            if (tutorialSequence == 0) {
                                 tutorialSequence += 1;
-                            }, 1000);})
-                        }
-                        if (tutorialSequence == 22) {
-                            tutorialSequence +=1;
-                            taco.limitX = 1710;
-                            text('if you wake him up.', 150, function(){setTimeout(function(){
+                                //taco.disabled = true;
+                                intro = text('Hello player. \nWelcome to the \nwonderful world of \nbad burritos. ', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)});
                                 
-                                potat.goto = false;
-                                camera.pan(taco.x, 3000, 4000).once('camerapancomplete', ()=>{
-                                    camera.startFollow(taco, 0.1, 0.1);
-                                    taco.disabled = false;
+                            }
+                            if (tutorialSequence == 2) {
+                                taco.disabled = false;
+                                tutorialSequence += 1;
+                                text('You should press \nsome arrow keys and \nsee what happens.', 150, function(){tutorialSequence += 1;})
+                            }
+                            if ((cursors.up.isDown || keyW.isDown) && tutorialSequence == 4) {
+                                tutorialSequence += 1;
+                                text('Great!\nOver here you will \nsee a wall.\nwalk up to it.', 150, function(){tutorialSequence += 1;})
+                            }
+                            if (tutorialSequence == 6 && taco.x > 565) {
+                                //taco.disabled = true;
+                                tutorialSequence += 1;
+                                text('You could cross it, \nbut who wants to do \nthat?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
+                            }
+                            if (tutorialSequence == 8) {
+                                tutorialSequence += 1;
+                                text('Just Kidding, this \nside of the wall is \ndepressing.', 150, function(){setTimeout(function(){tutorialSequence += 1;taco.disabled = false;}, 1000)})
+                            }
+                            if (tutorialSequence == 10) {
+                                taco.limitX = 900;
+                                tutorialSequence += 1;
+                                text('Hold the up arrow \nwhile walking to \njump over it.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
+                            }
+                            if (taco.x > 800 && tutorialSequence == 12) {
+                                tutorialSequence += 1;
+                                //taco.disabled = true;
+                                text('look over there, \nsome unsuspecting \nred points!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                            }
+                            if (tutorialSequence == 14) {
+                                tutorialSequence += 1;
+                                //taco.disabled = true;
+                                //potat.goto = potat.x - 230;
+                                text('if you couldn\'t \ntell, these adorable \nlittle spikes will \nsend you to the \nstart of the level. \n(don\'t ask me how)', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                            }
+                            if (tutorialSequence == 16) {
+                                tutorialSequence += 1;
+                                potat.goto = 1530;
+                                camera.stopFollow();
+                                camera.pan(1530, 3000, 4000);
+                                //taco.disabled = true;
+                                text('but that can change,\nsee this sleepy \nlittle guy over \nhere?', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500);})
+                            }
+                            if (tutorialSequence == 18) {
+                                tutorialSequence += 1;
+                                taco.disabled = true;
+                                
+                                text('This man right here \nis what I like to \ncall a checkpoint.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000);})
+                            }
+                            if (tutorialSequence == 20) {
+                                tutorialSequence +=1;
+                                text('he will bring you \nback to where he is \nwhen you die...', 150, function(){setTimeout(function(){
                                     tutorialSequence += 1;
-                                });
-                                
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 24 && checkpoints.children.entries[1].anims.currentAnim.key == "pointAwakeAnimation") {
-                            tutorialSequence += 1;
-                            text('Great job!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000);})
-                        }
-                        if (tutorialSequence == 26) {
-                            tutorialSequence +=1;
-                            camera.stopFollow();
-                            camera.pan(1850, 3000, 2000);
-                            taco.disabled = true;
-                            potat.goto = 1850;
-                            text('what is that?', 150, function(){setTimeout(function(){
-                                tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 28) {
-                            tutorialSequence +=1;
-                            text('Don\'t bother \nanswering because I \nknow what it is. ', 150, function(){setTimeout(function(){
-                                tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 30) {
-                            tutorialSequence +=1;
-                            text('That is a burrito, \nand it wants to \nsmash you.', 150, function(){setTimeout(function(){
-                                potat.goto = false;
-                                camera.pan(taco.x, 3000, 1800).once('camerapancomplete', ()=>{
-                                    camera.startFollow(taco, 0.1, 0.1);
+                                }, 1000);})
+                            }
+                            if (tutorialSequence == 22) {
+                                tutorialSequence +=1;
+                                taco.limitX = 1710;
+                                text('if you wake him up.', 150, function(){setTimeout(function(){
                                     
+                                    potat.goto = false;
+                                    camera.pan(taco.x, 3000, 4000).once('camerapancomplete', ()=>{
+                                        camera.startFollow(taco, 0.1, 0.1);
+                                        taco.disabled = false;
+                                        tutorialSequence += 1;
+                                    });
+                                    
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 24 && checkpoints.children.entries[1].anims.currentAnim.key == "pointAwakeAnimation") {
+                                tutorialSequence += 1;
+                                text('Great job!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000);})
+                            }
+                            if (tutorialSequence == 26) {
+                                tutorialSequence +=1;
+                                camera.stopFollow();
+                                camera.pan(1850, 3000, 2000);
+                                taco.disabled = true;
+                                potat.goto = 1850;
+                                text('what is that?', 150, function(){setTimeout(function(){
                                     tutorialSequence += 1;
-                                });
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 32) {
-                            tutorialSequence +=1;
-                            text('See that tree next \nto him?', 150, function(){setTimeout(function(){
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 28) {
+                                tutorialSequence +=1;
+                                text('Don\'t bother \nanswering because I \nknow what it is. ', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 30) {
+                                tutorialSequence +=1;
+                                text('That is a burrito, \nand it wants to \nsmash you.', 150, function(){setTimeout(function(){
+                                    potat.goto = false;
+                                    camera.pan(taco.x, 3000, 1800).once('camerapancomplete', ()=>{
+                                        camera.startFollow(taco, 0.1, 0.1);
+                                        
+                                        tutorialSequence += 1;
+                                    });
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 32) {
+                                tutorialSequence +=1;
+                                text('See that tree next \nto him?', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 34) {
+                                tutorialSequence +=1;
+                                taco.limitX = 2060;
+                                taco.disabled = false;
+                                text('I want you to go up \nto the tree and \npress space as fast \nas you can. ', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                }, 1000);});
+                            }
+                            if (trees.children.entries[0].angle > 50 && tutorialSequence == 36) {
+                                tutorialSequence +=1;
+                                //taco.disabled = true;
+                                text('Oh, well lookie here \nthat burrito was \nguarding the way to \nthe next part of the \nlevel.', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 38) {
+                                tutorialSequence +=1;
+                                text('It\'s a shame he \njust... ran off.', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                }, 1000);});
+                            }
+                            if (tutorialSequence == 40) {
                                 tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 34) {
-                            tutorialSequence +=1;
-                            taco.limitX = 2060;
-                            taco.disabled = false;
-                            text('I want you to go up \nto the tree and \npress space as fast \nas you can. ', 150, function(){setTimeout(function(){
+                                text('Well, that is all. \nGood luck with the \nrest of the level!', 150, function(){setTimeout(function(){
+                                    tutorialSequence += 1;
+                                    taco.disabled = false;
+                                    taco.limitX = 4000;
+                                text('', 10, function(){/*console.log(tutorial = false);*/});
+                                    textBox.visible = false;
+                                    ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
+                                    banishPotat();
+                                }, 1500);});
+                            }
+                            /*
+                            if (tutorialSequence == 22) {
                                 tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (trees.children.entries[0].angle > 50 && tutorialSequence == 36) {
-                            tutorialSequence +=1;
-                            //taco.disabled = true;
-                            text('Oh, well lookie here \nthat burrito was \nguarding the way to \nthe next part of the \nlevel.', 150, function(){setTimeout(function(){
+                                text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                            }
+                            if (tutorialSequence == 18) {
                                 tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 38) {
-                            tutorialSequence +=1;
-                            text('It\'s a shame he \njust... ran off.', 150, function(){setTimeout(function(){
-                                tutorialSequence += 1;
-                            }, 1000);});
-                        }
-                        if (tutorialSequence == 40) {
-                            tutorialSequence += 1;
-                            text('Well, that is all. \nGood luck with the \nrest of the level!', 150, function(){setTimeout(function(){
+                                text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                            }
+                            if (tutorialSequence == 20) {
                                 tutorialSequence += 1;
                                 taco.disabled = false;
-                                taco.limitX = 4000;
-                            text('', 10, function(){/*console.log(tutorial = false);*/});
+                                text('Go up to the\ntree and press space\nuntil the circle is\nfull.', 150, function(){tutorialSequence += 1;})
+                            }
+                            if (trees.children.entries[0].angle > 50 && tutorialSequence == 22) {
+                                taco.disabled = true;
+                                tutorialSequence += 1;
+                                text('hmm... \nsatisfying...', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                                
+                            }
+                            if (tutorialSequence == 24) {
+                                tutorialSequence += 1;
+                                text("Throughout the game\nyou'll find more\nexciting ways to\nkill burritos.", 150, function(){setTimeout(function(){tutorialSequence += 1;taco.disabled = false;}, 1500)})
+                            }
+                            if (tutorialSequence == 26) {
+                                tutorialSequence += 1;
+                                text('Now go try\nthe rest of\nthe level!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
+                            }
+                            if (tutorialSequence == 28) {
+                                tutorialSequence += 1;
+                                
+                                text('', 10, function(){console.log(tutorial = false);});
                                 textBox.visible = false;
                                 ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
                                 banishPotat();
-                            }, 1500);});
+                                //this.game.sound.stopAll();
+                                //nextLevel();
+                                //this.restartGame();
+                            }
+                            */
                         }
-                        /*
-                        if (tutorialSequence == 22) {
-                            tutorialSequence += 1;
-                            text('We don\'t exactly\nlike burritos, so\nstay away.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                        
+                    }
+                    //the map editing
+                    
+                    //typeEdit is defined at the beggining of the code :)
+                    if (keyB.isDown && creative == true) {
+                        if (prompt('1.entity 2.block') == '1') {
+                            typeEdit = 1;
+                            select = prompt('type');
+                            select = Number(select);
+                        } else {
+                            typeEdit = 2;
+                            select = prompt('type');
+                            select = Number(select);
                         }
-                        if (tutorialSequence == 18) {
-                            tutorialSequence += 1;
-                            text('However, there are\nways to get rid\nof them.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
-                        }
-                        if (tutorialSequence == 20) {
-                            tutorialSequence += 1;
-                            taco.disabled = false;
-                            text('Go up to the\ntree and press space\nuntil the circle is\nfull.', 150, function(){tutorialSequence += 1;})
-                        }
-                        if (trees.children.entries[0].angle > 50 && tutorialSequence == 22) {
-                            taco.disabled = true;
-                            tutorialSequence += 1;
-                            text('hmm... \nsatisfying...', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
-                            
-                        }
-                        if (tutorialSequence == 24) {
-                            tutorialSequence += 1;
-                            text("Throughout the game\nyou'll find more\nexciting ways to\nkill burritos.", 150, function(){setTimeout(function(){tutorialSequence += 1;taco.disabled = false;}, 1500)})
-                        }
-                        if (tutorialSequence == 26) {
-                            tutorialSequence += 1;
-                            text('Now go try\nthe rest of\nthe level!', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1000)})
-                        }
-                        if (tutorialSequence == 28) {
-                            tutorialSequence += 1;
-                            
-                            text('', 10, function(){console.log(tutorial = false);});
-                            textBox.visible = false;
-                            ingredientParticleEmit(potat.x, potat.y, 30, 300, false);
-                            banishPotat();
-                            //this.game.sound.stopAll();
-                            //nextLevel();
-                            //this.restartGame();
-                        }
-                        */
+                        
                     }
                     
-                }
-                //the map editing
-                
-                //typeEdit is defined at the beggining of the code :)
-                if (keyB.isDown && creative == true) {
-                    if (prompt('1.entity 2.block') == '1') {
-                        typeEdit = 1;
-                        select = prompt('type');
-                        select = Number(select);
+                    if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 1/* && hold == false*/ && creative == true && disableEdit == false) {
+                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== -1) {
+                            this.eraseEntity(Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32);
+                        }
+                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== select) {
+                            newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0, 0);
+                        }
+                        
+                    }
+                    if (this.input.manager.activePointer.isDown) {
+                        hold = true;
+                        //this isn't in the above statement because it ends up alternating.
                     } else {
-                        typeEdit = 2;
-                        select = prompt('type');
-                        select = Number(select);
+                        hold = false;
                     }
                     
-                }
-                
-                if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 1/* && hold == false*/ && creative == true && disableEdit == false) {
-                    if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== -1) {
-                        this.eraseEntity(Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32);
-                    }
-                    if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== select) {
-                        newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0, 0);
-                    }
-                    
-                }
-                if (this.input.manager.activePointer.isDown) {
-                    hold = true;
-                    //this isn't in the above statement because it ends up alternating.
-                } else {
-                    hold = false;
-                }
-                
-                if (this.input.manager.activePointer.isDown && toolSelect == 'erase' || keyE.isDown) {
-                    var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
-                    
-                    if (tile !== null) {
-                        map.removeTile(tile, -1, false);
-                        map1[tile.y][tile.x] = -1;
+                    if (this.input.manager.activePointer.isDown && toolSelect == 'erase' || keyE.isDown) {
+                        var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
+                        
+                        if (tile !== null) {
+                            map.removeTile(tile, -1, false);
+                            map1[tile.y][tile.x] = -1;
+                        }
+
+                        
                     }
 
-                    
-                }
+                    if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true && disableEdit == false) {
+                            map.putTileAt(select, tileSelectX, tileSelectY);
+                            map1[tileSelectY][tileSelectX] = select;
+                        //we need to make sure that block groups get updated when we change the map
+                        /*
+                        spikes = map.filterTiles(function (tile) {
+                            return (tile.index == 1 || tile.index == 12);
+                        });
+                        flag = map.filterTiles(function (tile) {
+                            return (tile.index == 9);
+                        });*/
+                    }
 
-                if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true && disableEdit == false) {
-                        map.putTileAt(select, tileSelectX, tileSelectY);
-                        map1[tileSelectY][tileSelectX] = select;
-                    //we need to make sure that block groups get updated when we change the map
-                    /*
-                    spikes = map.filterTiles(function (tile) {
-                        return (tile.index == 1 || tile.index == 12);
+                    //before we move, run this
+                    bottles.children.iterate(function(child){
+                        if (child.held) {
+                            child.x = taco.x;
+                            child.y = taco.y-52;
+                            child.body.velocity.x = taco.body.velocity.x;
+                            child.body.velocity.y = taco.body.velocity.y;
+                            //child.body.x = taco.body.x+taco._displayOriginX/2;
+                            //child.body.y = taco.body.y+8+taco._displayOriginY/2;
+                            //child.angle += 3;
+                            //aim arrow
+                            arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
+                            arrow.body.y = taco.body.y-arrow.body.height-15;
+                            arrow.angle += 3;
+                            arrow.visible = true;
+                            if (keySpace.isDown == false/*Phaser.Input.Keyboard.JustDown(keySpace)*/) {
+                                //take a bite
+                                child.uses -= 1;
+                                if (child.uses > 0) {
+                                    child.setTexture('ice' + String((child.uses*-1)+4));
+                                } else {
+                                    child.visible = false;
+                                }
+                                //other things
+                                iceBall = iceBalls.create(child.x, child.y, 'iceBall').setScale(0.8);
+                                
+                                iceBall.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
+                                iceBall.body.velocity.y = -500*Math.cos(arrow.angle * Math.PI/180);
+                                iceBall.angle = arrow.angle-90;
+                                child.held = false;
+                                arrow.angle = 0;
+                                arrow.visible = false;
+                                child.body.velocity.x = 0;
+                                child.body.velocity.y = -260;
+                                child.body.allowGravity = true;
+                                child.body.gravity.y = 500;
+                                Phaser.tacoHarmony.active = true;
+                            }
+                        }
                     });
-                    flag = map.filterTiles(function (tile) {
-                        return (tile.index == 9);
-                    });*/
-                }
-
-                //before we move, run this
-                bottles.children.iterate(function(child){
-                    if (child.held) {
-                        child.x = taco.x;
-                        child.y = taco.y-52;
-                        child.body.velocity.x = taco.body.velocity.x;
-                        child.body.velocity.y = taco.body.velocity.y;
-                        //child.body.x = taco.body.x+taco._displayOriginX/2;
-                        //child.body.y = taco.body.y+8+taco._displayOriginY/2;
-                        //child.angle += 3;
-                        //aim arrow
-                        arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
-                        arrow.body.y = taco.body.y-arrow.body.height-15;
-                        arrow.angle += 3;
-                        arrow.visible = true;
-                        if (keySpace.isDown == false/*Phaser.Input.Keyboard.JustDown(keySpace)*/) {
-                            //take a bite
-                            child.uses -= 1;
-                            if (child.uses > 0) {
-                                child.setTexture('ice' + String((child.uses*-1)+4));
+                    //walking effects
+                    if ((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down && Math.abs(taco.body.velocity.x) > 90) {
+                        dirtEmitter.setQuantity(3);
+                    }
+                    if (!((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down && Math.abs(taco.body.velocity.x) > 90)) {
+                        dirtEmitter.setQuantity(0);
+                    }
+                    //walking
+                    if (cursors.left.isDown || keyA.isDown)
+                    {
+                        dirtEmitter.setPosition(taco.x, taco.y + 40);
+                        if (taco.disabled == false) {
+                            if (taco.cream) {
+                                tacoVelocityX -= 4.5;
                             } else {
-                                child.visible = false;
+                                tacoVelocityX -= 27;
+                                if (delta/16.66 > 1.5) {
+                                    tacoVelocityX -= 7;
+                                }
                             }
-                            //other things
-                            iceBall = iceBalls.create(child.x, child.y, 'iceBall').setScale(0.8);
                             
-                            iceBall.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
-                            iceBall.body.velocity.y = -500*Math.cos(arrow.angle * Math.PI/180);
-                            iceBall.angle = arrow.angle-90;
-                            child.held = false;
-                            arrow.angle = 0;
-                            arrow.visible = false;
-                            child.body.velocity.x = 0;
-                            child.body.velocity.y = -260;
-                            child.body.allowGravity = true;
-                            child.body.gravity.y = 500;
-                            Phaser.tacoHarmony.active = true;
-                        }
-                    }
-                });
-                //walking effects
-                if ((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down && Math.abs(taco.body.velocity.x) > 90) {
-                    dirtEmitter.setQuantity(3);
-                }
-                if (!((cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && taco.body.blocked.down && Math.abs(taco.body.velocity.x) > 90)) {
-                    dirtEmitter.setQuantity(0);
-                }
-                //walking
-                if (cursors.left.isDown || keyA.isDown)
-                {
-                    dirtEmitter.setPosition(taco.x, taco.y + 40);
-                    if (taco.disabled == false) {
-                        if (taco.cream) {
-                            tacoVelocityX -= 4.5;
-                        } else {
-                            tacoVelocityX -= 27;
-                            if (delta/16.66 > 1.5) {
-                                tacoVelocityX -= 7;
-                            }
                         }
                         
-                    }
-                    
-                    //47
-                    if (creative == true) {
-                        taco.body.x -= 12;
-                    }
-                    taco.anims.play('left', true);
-                } else if (cursors.right.isDown || keyD.isDown)
-                {
-                    dirtEmitter.setPosition(taco.x, taco.y + 40);
-                    if (taco.disabled == false) {
-                        if (taco.cream) {
-                            tacoVelocityX += 4.5;
-                        } else {
-                            tacoVelocityX += 27;
-                            if (delta/16.66 > 1.5) {
-                                tacoVelocityX += 7;
+                        //47
+                        if (creative == true) {
+                            taco.body.x -= 12;
+                        }
+                        taco.anims.play('left', true);
+                    } else if (cursors.right.isDown || keyD.isDown)
+                    {
+                        dirtEmitter.setPosition(taco.x, taco.y + 40);
+                        if (taco.disabled == false) {
+                            if (taco.cream) {
+                                tacoVelocityX += 4.5;
+                            } else {
+                                tacoVelocityX += 27;
+                                if (delta/16.66 > 1.5) {
+                                    tacoVelocityX += 7;
+                                }
                             }
                         }
+                        if (creative == true) {
+                            taco.body.x += 12;
+                        }
+                        taco.anims.play('right', true);
+                    } else
+                    {
+                        taco.anims.play('holdStill');
                     }
-                    if (creative == true) {
-                        taco.body.x += 12;
-                    }
-                    taco.anims.play('right', true);
-                } else
-                {
-                    taco.anims.play('holdStill');
-                }
 
-                taco.setVelocityX(tacoVelocityX);
-                if (taco.cream) {
-                    tacoVelocityX = tacoVelocityX * 0.991;//0.8
-                } else if (taco.gum) {
-                    tacoVelocityX = tacoVelocityX * 0.78;
-                    taco.body.velocity.y *= 0.8;
-                } else {
-                    tacoVelocityX = tacoVelocityX * 0.88;//0.8
-                }
-                
-                if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
-                    taco.body.velocity.y = -120*(delta/16.666);//base jump;
-                    if (taco.body.velocity.y < -240) {
-                        taco.body.velocity.y = -240;
-                    }
-                    taco.jumpHold = 105;
-                }
-                if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
-                {
-                    taco.jumpHold -= 8;
-                    taco.body.velocity.y -= (taco.jumpHold*0.92);
-                }
-                if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
-                    taco.body.velocity.y = -470;
-                    taco.jumpHold = 0;
-
-                    if (cursors.right.isDown && taco.body.blocked.right) {
-                        tacoVelocityX = -300;
-                    }
-                    if (cursors.left.isDown && taco.body.blocked.left) {
-                        tacoVelocityX = 300;
-                    }
-                }
-                if (taco.body.blocked.up && taco.gum == true && (cursors.up.isDown || keyW.isDown)) {
-                    if (taco.holding == false) {
-                        taco.holding = true;
-                        taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2000*(delta/16.666));
+                    taco.setVelocityX(tacoVelocityX);
+                    if (taco.cream) {
+                        tacoVelocityX = tacoVelocityX * 0.991;//0.8
+                    } else if (taco.gum) {
+                        tacoVelocityX = tacoVelocityX * 0.78;
+                        taco.body.velocity.y *= 0.8;
                     } else {
-                        taco.body.velocity.y = -50;
+                        tacoVelocityX = tacoVelocityX * 0.88;//0.8
                     }
                     
-                    tacoVelocityX *= 0.89;
-                } else if (cursors.up.isDown == false) {
-                    taco.holding = false;
-                    if (taco.timeout) {
-                        clearTimeout(taco.timeout);
+                    if ((cursors.up.isDown || keyW.isDown) && taco.body.blocked.down) {
+                        taco.body.velocity.y = -120*(delta/16.666);//base jump;
+                        if (taco.body.velocity.y < -240) {
+                            taco.body.velocity.y = -240;
+                        }
+                        taco.jumpHold = 105;
                     }
-                }
-                if (taco.body.blocked.down) {
-                    taco.cream = false;
-                }
-                taco.gum = false;
+                    if ((cursors.up.isDown || keyW.isDown) && taco.jumpHold > 0)
+                    {
+                        taco.jumpHold -= 8;
+                        taco.body.velocity.y -= (taco.jumpHold*0.92);
+                    }
+                    if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
+                        taco.body.velocity.y = -470;
+                        taco.jumpHold = 0;
 
-                //we need to be able to move up and down in creative too
-                if (creative == true) {
-                    taco.body.velocity.x = 0;
-                    taco.body.velocity.y = 0;
-                    if (cursors.up.isDown || keyW.isDown) {
-                        taco.body.y -= 8;
-                    }
-                    if (cursors.down.isDown || keyS.isDown) {
-                        taco.body.y += 8;
-                    }
-                }
-                
-                //make sure that we die when we fall into the void :)
-                if (taco.body.y > 2000) {
-                    death(true);
-                }
-                
-                var transportThis = this;
-                function treeSkillCheck(child, fallAngle, widthPullback) {
-                    function roundTimeScale() {
-                        if (Math.round(transportThisGame.physics.world.timeScale) == 1 && child.triggered == false) {
-                            transportThisGame.physics.world.timeScale = 1;
+                        if (cursors.right.isDown && taco.body.blocked.right) {
+                            tacoVelocityX = -300;
+                        }
+                        if (cursors.left.isDown && taco.body.blocked.left) {
+                            tacoVelocityX = 300;
                         }
                     }
-                    if (child.triggered == true || (timeSkill.alpha < 1)) {
-                        timeSkill.alpha -= 0.0022;
-                        if (transportThisGame.physics.world.timeScale < 5) {
-                            transportThisGame.physics.world.timeScale += 0.1;
+                    if (taco.body.blocked.up && taco.gum == true && (cursors.up.isDown || keyW.isDown)) {
+                        if (taco.holding == false) {
+                            taco.holding = true;
+                            taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2000*(delta/16.666));
+                        } else {
+                            taco.body.velocity.y = -50;
                         }
-                        if (check1 >= 60) {
-                            check1 = 60;
-                            child.falling = true;
-                            if (transportThisGame.physics.world.timeScale > 1) {
-                                transportThisGame.physics.world.timeScale -= 0.2;
-                                //roundTimeScale();
+                        
+                        tacoVelocityX *= 0.89;
+                    } else if (cursors.up.isDown == false) {
+                        taco.holding = false;
+                        if (taco.timeout) {
+                            clearTimeout(taco.timeout);
+                        }
+                    }
+                    if (taco.body.blocked.down) {
+                        taco.cream = false;
+                    }
+                    taco.gum = false;
+
+                    //we need to be able to move up and down in creative too
+                    if (creative == true) {
+                        taco.body.velocity.x = 0;
+                        taco.body.velocity.y = 0;
+                        if (cursors.up.isDown || keyW.isDown) {
+                            taco.body.y -= 8;
+                        }
+                        if (cursors.down.isDown || keyS.isDown) {
+                            taco.body.y += 8;
+                        }
+                    }
+                    
+                    //make sure that we die when we fall into the void :)
+                    if (taco.body.y > 2000) {
+                        death(true);
+                    }
+                    
+                    var transportThis = this;
+                    function treeSkillCheck(child, fallAngle, widthPullback) {
+                        function roundTimeScale() {
+                            if (Math.round(transportThisGame.physics.world.timeScale) == 1 && child.triggered == false) {
+                                transportThisGame.physics.world.timeScale = 1;
                             }
                         }
-                        if (check1 < 0) {
-                            check1 = 0;
-                        } else if (check1 != 60) {
-                            check1 -= 0.4;
-                        }
-                        if (Phaser.Input.Keyboard.JustDown(keySpace) && check1 !== 60) {
-                            check1 += 7.5;
-                            if (check1 > 60) {
+                        if (child.triggered == true || (timeSkill.alpha < 1)) {
+                            timeSkill.alpha -= 0.0022;
+                            if (transportThisGame.physics.world.timeScale < 5) {
+                                transportThisGame.physics.world.timeScale += 0.1;
+                            }
+                            if (check1 >= 60) {
                                 check1 = 60;
+                                child.falling = true;
+                                if (transportThisGame.physics.world.timeScale > 1) {
+                                    transportThisGame.physics.world.timeScale -= 0.2;
+                                    //roundTimeScale();
+                                }
                             }
-                        }
-                        if (child.falling == true) {
-                            child.angle += 0.1*(child.angleSpeed/(transportThisGame.physics.world.timeScale));
-                            child.angleSpeed += 1/(transportThisGame.physics.world.timeScale);
-                        }
-                        
-                        if (child.angle > fallAngle || timeSkill.alpha <= 0) {
-                            child.triggered = false;
-                            child.falling = false;
-                            check1 = -1;
-                            timeSkill.visible = false;
+                            if (check1 < 0) {
+                                check1 = 0;
+                            } else if (check1 != 60) {
+                                check1 -= 0.4;
+                            }
+                            if (Phaser.Input.Keyboard.JustDown(keySpace) && check1 !== 60) {
+                                check1 += 7.5;
+                                if (check1 > 60) {
+                                    check1 = 60;
+                                }
+                            }
+                            if (child.falling == true) {
+                                child.angle += 0.1*(child.angleSpeed/(transportThisGame.physics.world.timeScale));
+                                child.angleSpeed += 1/(transportThisGame.physics.world.timeScale);
+                            }
                             
-                            //child.body.width -= widthPullback;//counter for the first collider extension.
-                            child.body.offset.x = 0;
-                            if (timeSkill.alpha <= 0 && !(child.angle > fallAngle)) {
-                                //if unused, then reset and give them another go at it.
-                                console.log('reset');
-                                child.speedUp = setInterval(()=>{
-                                    if (transportThisGame.physics.world.timeScale > 1) {
-                                        transportThisGame.physics.world.timeScale -= 0.2;
-                                    }
-                                    if (Math.round(transportThisGame.physics.world.timeScale) == 1) {
-                                        transportThisGame.physics.world.timeScale = 1;
+                            if (child.angle > fallAngle || timeSkill.alpha <= 0) {
+                                child.triggered = false;
+                                child.falling = false;
+                                check1 = -1;
+                                timeSkill.visible = false;
+                                
+                                //child.body.width -= widthPullback;//counter for the first collider extension.
+                                child.body.offset.x = 0;
+                                if (timeSkill.alpha <= 0 && !(child.angle > fallAngle)) {
+                                    //if unused, then reset and give them another go at it.
+                                    console.log('reset');
+                                    child.speedUp = setInterval(()=>{
+                                        if (transportThisGame.physics.world.timeScale > 1) {
+                                            transportThisGame.physics.world.timeScale -= 0.2;
+                                        }
+                                        if (Math.round(transportThisGame.physics.world.timeScale) == 1) {
+                                            transportThisGame.physics.world.timeScale = 1;
 
-                                        clearInterval(child.speedUp);
-                                    }
-                                    
-                                }, 16.66);
-                                setTimeout(()=>{child.triggered = "none";}, 1000);
+                                            clearInterval(child.speedUp);
+                                        }
+                                        
+                                    }, 16.66);
+                                    setTimeout(()=>{child.triggered = "none";}, 1000);
+                                }
+                                timeSkill.alpha = 1;
                             }
-                            timeSkill.alpha = 1;
                         }
                     }
-                }
-                trees.children.iterate(function(child) {
-                    if (child.triggered == true) {
-                        treeSkillCheck(child, 60, 175);
-                    }
-                });
-                lights.children.iterate(function(child) {
-                    if (child.triggered == true) {
-                        treeSkillCheck(child, 75, 60);
-                    }
-                });
-                poisons.children.iterate(function (child) {
-                    if (child) {
-                        if (child.body.blocked.right || child.body.blocked.left || child.body.velocity.x == 0) {
-                            child.destroy();
-                        } 
-                    }
-                });
-                keys.children.iterate(function (child) {
-                    if (child.follow == true) {
-                        if (child.x < taco.x) {
-                            child.body.velocity.x += 5;
-                        } else {
-                            child.body.velocity.x -= 5;
+                    trees.children.iterate(function(child) {
+                        if (child.triggered == true) {
+                            treeSkillCheck(child, 60, 175);
                         }
-                        if (child.y < taco.y) {
-                            child.body.velocity.y += 5;
-                        } else {
-                            child.body.velocity.y -= 5;
+                    });
+                    lights.children.iterate(function(child) {
+                        if (child.triggered == true) {
+                            treeSkillCheck(child, 75, 60);
                         }
-                        child.body.velocity.x *= 0.98;
-                        child.body.velocity.y *= 0.98;
-                    }
-                });
-                rocks.children.iterate(function(child) {
-                    if (child.held == true) {
-                        transportThis.physics.world.timeScale = 1;
-                        arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
-                        arrow.body.y = taco.body.y-arrow.body.height-18;
-                        if (arrow.direction == 1) {
-                            arrow.angle += (delta/16.666)*(4/transportThis.physics.world.timeScale);
-                        } else {
-                            arrow.angle -= (delta/16.666)*(4/transportThis.physics.world.timeScale);
+                    });
+                    poisons.children.iterate(function (child) {
+                        if (child) {
+                            if (child.body.blocked.right || child.body.blocked.left || child.body.velocity.x == 0) {
+                                child.destroy();
+                            } 
                         }
-                        if (arrow.angle > 70 || arrow.angle < -70) {
-                            arrow.direction *= -1;
+                    });
+                    keys.children.iterate(function (child) {
+                        if (child.follow == true) {
+                            if (child.x < taco.x) {
+                                child.body.velocity.x += 5;
+                            } else {
+                                child.body.velocity.x -= 5;
+                            }
+                            if (child.y < taco.y) {
+                                child.body.velocity.y += 5;
+                            } else {
+                                child.body.velocity.y -= 5;
+                            }
+                            child.body.velocity.x *= 0.98;
+                            child.body.velocity.y *= 0.98;
                         }
-                        arrow.visible = true;
-                        child.originX = 0.5;
-                        child.originY = 0.5;
-                        //child.body.gravity.y = 0;
-                        child.body.velocity.x = 0;
-                        child.body.velocity.y = 0;
-                        child.body.x = taco.body.x+taco._displayOriginX;
-                        child.body.y = taco.body.y-43+taco._displayOriginY/2;
-                        //child.x = taco.x;
-                        //child.y = taco.y;
-                        
-                        child.depth = 5;
-                        if (keySpace.isDown == false) {
-                            child.held = false;
-                            child.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
-                            child.body.velocity.y = -700*Math.cos(arrow.angle * Math.PI/180);
-                            arrow.angle = 0;
-                            arrow.visible = false;
+                    });
+                    rocks.children.iterate(function(child) {
+                        if (child.held == true) {
                             transportThis.physics.world.timeScale = 1;
-                        }
-                    }
-                })
-                //reset mites when below screen
-                mites.children.iterate(function(child) {
-                    if (child.body.y > 2000) {
-                        /*
-                        child.anims.stop();
-                        child.anims.play('growingMite');
-                        child.body.x = child.initX;
-                        child.body.y = child.initY;
-                        child.body.gravity.y = 0;
-                        child.body.velocity.y = 0;*/
-                        child.setOrigin(0.5, 0);
-                        //child.refreshBody();
-                        //child.body.allowGravity = true;
-                        child.body.x = child.initX+16-(child.body.width/2);
-                        child.body.y = child.initY;
-                        child.body.velocity.y = 0;
-                        child.body.gravity.y = 0;
-                        child.anims.stop();
-                        child.anims.play('growingMite');
-                    }
-                });
-                platforms.children.iterate(function(child) {
-                    if (creative == false) {
-                        if (child.body.x > child.initX+child.distance) {
-                            child.dir = -1;
-                        }
-                        if (child.body.x < child.initX) {
-                            child.dir = 1;
-                        }
-                        /*
-                        if (child.turn == true && child.waiting == false) {
-                            child.dir *= -1;
-                            child.waiting = true;
-                        }
-                        if (child.turn == false) {
-                            child.waiting = false;
-                        }*/
-                        if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*3*(delta/16.666);
-                            child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
-                        } else {
-                            if (child.angle > 0) {
-                                child.angle -= 0.5;
-                            } 
-                            if (child.angle < 0) {
-                                child.angle += 0.5;
+                            arrow.body.x = taco.body.x+(taco.body.width-arrow.body.width);
+                            arrow.body.y = taco.body.y-arrow.body.height-18;
+                            if (arrow.direction == 1) {
+                                arrow.angle += (delta/16.666)*(4/transportThis.physics.world.timeScale);
+                            } else {
+                                arrow.angle -= (delta/16.666)*(4/transportThis.physics.world.timeScale);
                             }
-                            if (Math.round(child.angle) == 0) {
-                                child.angle = 0;
+                            if (arrow.angle > 70 || arrow.angle < -70) {
+                                arrow.direction *= -1;
                             }
-                        }
-                        //child.turn = false;//reset
-                    }
-                });
-                platformsLeft.children.iterate(function(child) {
-                    if (creative == false) {
-                        if (child.body.x < child.initX-child.distance) {
-                            child.dir = 1;
-                        }
-                        if (child.body.x > child.initX) {
-                            child.dir = -1;
-                        }
-                        if ((child.dir * child.body.velocity.x) < 130) {
-                            child.body.velocity.x += child.dir*3*(delta/16.666);
-                            child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
-
-                        } else {
-                            if (child.angle > 0) {
-                                child.angle -= 0.5;
-                            } 
-                            if (child.angle < 0) {
-                                child.angle += 0.5;
-                            }
-                            if (Math.round(child.angle) == 0) {
-                                child.angle = 0;
-                            }
-                        }
-                    }
-                });
-                platformsDown.children.iterate(function(child) {
-                    if (creative == false) {
-                        if (child.body.y > child.initY+child.distance) {
-                            child.dir = -1;
-                        }
-                        if (child.body.y < child.initY) {
-                            child.dir = 1;
-                        }
-                        if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*3*(delta/16.666);
-                        }
-                    }
-                });
-                platformsUp.children.iterate(function(child) {
-                    if (creative == false) {
-                        if (child.body.y < child.initY-child.distance) {
-                            child.dir = 1;
-                        }
-                        if (child.body.y > child.initY) {
-                            child.dir = -1;
-                        }
-                        if ((child.dir * child.body.velocity.y) < 130) {
-                            child.body.velocity.y += child.dir*3*(delta/16.666);
-                        }
-                    }
-                });
-                //sound effects for burritos and ice effect
-                //this.physics.world.timeScale = 1;
-                burritos.children.iterate(function(child) {
-                    if (child.body.blocked.down && !child.frozen && child.fly == false) {
-                        child.body.velocity.y = -410;
-                        
-                    }
-                });
-                //slow down the rocks
-                rocks.children.iterate(function(child) {
-                    child.body.velocity.x *= 0.97;
-                    if (child.body.blocked.down == true) {
-                        child.body.velocity.x = 0;
-                    }
-                });
-                //slow down the meatballs
-                meatballs.children.iterate(function(child) {
-                    child.body.velocity.x *= 0.97;
-                    child.angle += 0.012 * child.body.velocity.x;
-                    child.body.velocity.x *= 0.995;
-                });
-                //we want to slow down and turn the limes
-                limes.children.iterate(function(child) {
-                    child.angle += 0.012 * child.body.velocity.x;
-                    child.body.velocity.x *= 0.995;
-                });
-                
-                //here we have the code for the drill boss
-                
-                drillers.children.iterate(function(child) {
-                    if (creative == false && child.active == true && (taco.x > 6175 || child.started == true)) {
-                        
-                        if (child.phase == 2) {
-                            if (random(1, 170) == 1) {
-                                boulders.makeNew();
-                            }
-                        }
-                        if (child.phase == 3) {
-                            if (random(1, 120) == 1) {
-                                boulders.makeNew();
-                            }
-                        }
-                        if (child.phase == 4) {
-                            if (random(1, 70) == 1) {
-                                boulders.makeNew();
-                            }
-                        }
-                        if (child.started == false) {
-                            child.started = true;
-                            if (bossMusic[0].isPlaying == false) {
-                                bossMusic[0].play();
-                            }
-                            mainMusic.stop();
-                            mainMusic2.stop();
-                            caveMusic.stop();
-                        }
-                        if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.1 || bossMusic[child.currentSong].isPlaying == false) {
-                            if (child.goUpTo > child.currentSong) {
-                                bossMusic[child.currentSong].stop();
-                                child.currentSong += 1;
-                                bossMusic[child.currentSong].play();
-                            }
-                            if (child.goUpTo == child.currentSong) {
-                                bossMusic[child.currentSong].play();
-                            }
-                            
-                        }
-                        if (child.body.allowGravity == false) {
-                            camera.pan(6176+400, 760+300, 1500);
-                            camera.once('camerapancomplete', ()=>{
-                                taco.setCollideWorldBounds();
-                                rocks.children.iterate((child)=>{
-                                    if (camera.worldView.contains(child.x, child.y)) {
-                                        child.setCollideWorldBounds();
-                                    }
-                                });
-                                child.setCollideWorldBounds();
-                                transportThisGame.physics.world.setBounds(camera.worldView.x, camera.worldView.y, camera.worldView.width, camera.worldView.height);
-                            });
-                            camera.stopFollow();
-                            while (taco.lives < 5) {
-                                taco.lives += 1;
-                                setLives(taco.lives);
-                            }
-                            child.body.velocity.x = child.initXV;
-                            child.body.velocity.y = child.initYV;
-                            child.body.allowGravity = true;
-                            child.que = 1;
-                            child.phase = 1;
-                            child.setOrigin(0.5, 0.5);
-                            //camera.startFollow(child, false, 0.1, 0.1);
-                        }
-                        if (child.body.blocked.down) {
-                            bossEmitter.setQuantity(10);
-                            bossEmitter.setPosition(child.x, child.body.y+child.displayHeight);
-                        } else {
-                            bossEmitter.setQuantity(0);
-                        }
-                        switch (child.phase) {
-                            default:
-                                switch (child.que) {
-                                    case 1:
-                                        if (child.body.x > (child.initX + 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = -200;
-                                        }
-                                        break;
-                                    case 2:
-                                        if (child.body.x < (child.initX - 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = 200;
-                                        }
-                                        break;
-                                    case 3:
-                                        if (child.body.x > (child.initX-100)) {
-                                            child.que += 1;
-                                            child.body.velocity.y = -600;
-                                            camera.shake(400, 0.005);
-                                        }
-                                        break;
-                                    case 4:
-                                        if (child.body.x > (child.initX + 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = -200;
-                                        }
-                                        break;
-                                    case 5:
-                                        if (child.body.x < (child.initX+100)) {
-                                            child.que += 1;
-                                            child.body.velocity.y = -600;
-                                            camera.shake(400, 0.005);
-                                        }
-                                        break;
-                                    case 6:
-                                        if (child.body.x < (child.initX - 200)) {
-                                            child.que += 1
-                                            child.body.velocity.x = 200;
-                                        }
-                                        break;
-                                    
-                                    
-                                    case 7:
-                                        if (child.body.x > (child.initX + 200)) {
-                                            child.que += 1;
-                                            child.anims.stop();
-                                            child.setOrigin(0.5, 1);
-                                            child.pastXV = child.body.velocity.x;
-                                            child.pastGY = child.body.gravity.y;
-                                            child.body.gravity.y = 0;
-                                            child.body.velocity.x = 0;
-                                            child.body.velocity.y = 0;
-                                            child.body.y += (child.displayHeight/2);
-                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
-                                                taco.immortale = true;
-                                                setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
-                                            });
-                                        }
-                                        break;
-                                    case 9:
-                                        child.que += 1;
-                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
-                                            
-                                            child.que += 1;
-                                            child.anims.play('shredingAnimation');
-                                        });
-                                        child.invincible = true;
-                                        break;
-                                    case 11:
-                                        child.que += 1;
-                                        child.body.velocity.x = -300;
-                                        break;
-                                    case 12:
-                                        if (child.body.x < (child.initX - 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = 300;
-                                        }
-                                        break;
-                                    case 13:
-                                        if (child.body.x > (child.initX + 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = 0;
-                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
-                                                setTimeout(function(){child.que += 1;}, 500);
-                                            });
-                                        }
-                                        break;
-                                    case 15:
-                                        child.que += 1;
-                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
-                                            child.que += 1;
-                                            child.setOrigin(0.5, 0.5);
-                                            child.body.velocity.x = -200;
-                                            child.body.gravity.y = 1000;
-                                            child.y -= (child.displayHeight/2);
-                                            child.anims.play('drillingAnimation');
-                                            child.body.velocity.y = -400;
-                                            camera.shake(400, 0.005);
-                                        });
-                                        child.body.velocity.x = 0;
-                                        child.invincible = false;
-                                        break;
-                                    case 17:
-                                        if (child.body.blocked.down == true) {
-                                            child.body.velocity.y = -400;
-                                            camera.shake(400, 0.005);
-                                            child.que += 1;
-                                        }
-                                        break;
-                                    case 18:
-                                        if (child.body.x < (child.initX - 200)) {
-                                            child.body.velocity.x = 200;
-                                            
-                                            if (child.lives == 8 || child.lives == 7) {
-                                                child.que = 1;
-                                            } else if (child.lives == 5 || child.lives == 6) {
-                                                child.que = 1;
-                                                child.phase = 2;
-                                                child.goUpTo = 2;
-                                            } else {
-                                                child.que = 1;
-                                                child.phase += 1;
-                                                child.goUpTo += 1;
-                                            }
-                                            
-                                        }
-                                        break;
-                                }
-                                break;
-                            case 3:
-                                switch (child.que) {
-                                    case 1:
-                                        child.body.velocity.x = 300;
-                                        if (child.body.blocked.down == true) {
-                                            child.body.velocity.y = -300;
-                                            camera.shake(400, 0.005);
-                                            child.que += 1;
-                                        }
-                                        break;
-                                    case 2:
-                                    if (child.body.blocked.down == true) {
-                                            camera.shake(400, 0.005);
-                                            child.que += 1;
-                                            child.setOrigin(0.5, 1);
-                                            child.pastXV = child.body.velocity.x;
-                                            child.pastGY = child.body.gravity.y;
-                                            child.body.gravity.y = 0;
-                                            child.body.velocity.x = 0;
-                                            child.body.velocity.y = 0;
-                                            child.body.y += (child.displayHeight/2);
-                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
-                                                taco.immortale = true;
-                                                setTimeout(()=>{
-                                                    taco.immortale = false;
-                                                    child.que += 1;
-                                                    child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
-                                                        child.anims.play('drillingAnimation');
-                                                        child.body.velocity.y = -300;
-                                                        child.body.velocity.x = 300;
-                                                        child.body.gravity.y = child.pastGY;
-                                                        child.setOrigin(0.5, 0.5);
-                                                        child.y -= (child.displayHeight/2);
-                                                        child.que += 1;
-                                                    });
-                                                }, 400);
-                                            });
-                                        }
-                                        break;
-                                    case 5:
-                                        if (child.body.x > (child.initX + 200) && child.body.blocked.down) {
-                                            child.que += 1;
-                                            child.anims.stop();
-                                            child.setOrigin(0.5, 1);
-                                            child.pastXV = child.body.velocity.x;
-                                            child.pastGY = child.body.gravity.y;
-                                            child.body.gravity.y = 0;
-                                            child.body.velocity.x = 0;
-                                            child.body.velocity.y = 0;
-                                            child.body.y += (child.displayHeight/2);
-                                            camera.shake(400, 0.005);
-                                            child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
-                                                taco.immortale = true;
-                                                child.timer = setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
-                                            });
-                                        }
-                                        break;
-                                    case 7:
-                                        child.que += 1;
-                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
-                                            child.que += 1;
-                                            child.anims.play('shredingAnimation');
-                                        });
-                                        child.invincible = true;
-                                        break;
-                                    case 9:
-                                        child.que += 1;
-                                        child.body.velocity.x = -400;
-                                        break;
-                                    case 10:
-                                        if (child.body.x < (child.initX - 200)) {
-                                            child.que += 1;
-                                            child.body.velocity.x = 0;
-                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
-                                                setTimeout(function(){child.que += 1;}, 400);
-                                            });
-                                        }
-                                        break;
-                                    case 12:
-                                        child.que += 1;
-                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
-                                            child.que += 1;
-                                            child.setOrigin(0.5, 0.5);
-                                            child.body.velocity.x = 300;
-                                            child.body.gravity.y = 1000;
-                                            child.y -= (child.displayHeight/2);
-                                            child.anims.play('drillingAnimation');
-                                            camera.shake(400, 0.005);
-                                            //return to start of this phase, or move on to next
-                                            child.que = 1;
-                                            if (child.lives < 3) {
-                                                child.phase = 4;
-                                                child.goUpTo += 1;
-                                            }
-                                        });
-                                        child.body.velocity.x = 0;
-                                        child.invincible = false;
-                                        break;
-                                }
-                                break;
-                            case 4:
-                                switch(child.que) {
-                                    case 1:
-                                        if (child.x < (taco.x-100)) {
-                                            child.body.velocity.x += 12;
-                                        } else if (child.x > (taco.x+100)) {
-                                            child.body.velocity.x -= 12;
-                                        } else {
-                                            child.que += 1;
-                                            child.setOrigin(0.5, 1);
-                                            child.pastXV = child.body.velocity.x;
-                                            child.pastGY = child.body.gravity.y;
-                                            child.body.gravity.y = 0;
-                                            child.body.velocity.x = 0;
-                                            child.body.velocity.y = 0;
-                                            child.body.y += (child.displayHeight/2);
-                                            camera.shake(400, 0.005);
-                                            setTimeout(()=>{child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
-                                                taco.immortale = true;
-                                                child.timer = setTimeout(function(){child.que += 1;}, 50);
-                                                boulders.makeNew();
-                                            })}, 0);
-                                        }
-                                        child.body.velocity.x *= 0.96;
-                                        break;
-                                    case 3:
-                                        child.gotoX = taco.x;
-                                        child.que += 1;
-                                        setTimeout(()=>{child.que += 1;child.x = child.gotoX}, 900);
-                                        break;
-                                    case 5:
-                                        child.que += 1;
-                                        setTimeout(()=>{taco.immortale = false;}, 300);
-                                        child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
-                                            child.que += 1;
-                                            child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
-                                                child.que += 1;
-                                                taco.immortale = true;
-                                                setTimeout(()=>{child.que += 1;}, 500);
-                                            });
-                                        });
-                                        break;
-                                    case 9:
-                                        child.que += 1;
-                                        taco.immortale = false;
-                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
-                                            child.que += 1;
-                                            child.setOrigin(0.5, 0.5);
-                                            child.body.velocity.x = 200;
-                                            child.body.gravity.y = 1000;
-                                            child.y -= (child.displayHeight/2);
-                                            child.anims.play('drillingAnimation');
-                                            camera.shake(400, 0.005);
-                                        });
-                                        child.body.velocity.x = 0;
-                                        child.invincible = false;
-                                        break;
-                                    case 11:
-                                        child.que += 1;
-                                        if (child.x < taco.x) {
-                                            child.body.velocity.x = 200;
-                                            child.body.velocity.y = -450;
-                                        } else {
-                                            child.body.velocity.x = -200;
-                                            child.body.velocity.y = -450;
-                                        }
-                                        break;
-                                    case 12:
-                                        if (child.body.blocked.down) {
-                                            child.que = 1;
-                                        }
-                                        break;
-                                }
-                                break;
-                        }
-                        
-                        /*
-                        if (child.que == 1 && child.body.x > (child.initX + 230)) { 
-                            child.que += 1;
-                            child.body.velocity.y = -600;
-                            child.body.velocity.x = -200;
-                            camera.shake(400, 0.005);
-                        }else if (child.que == 2 && child.body.x < (child.initX)) {
-                            child.que += 1;
-                            child.body.velocity.y = -600;
-                            child.body.velocity.x = 200;
-                            camera.shake(400, 0.005);
-                        }else if (child.que == 3 && child.body.x > (child.initX + 230)) {
-                            child.que += 1;
-                            child.body.velocity.y = -300;
-                            child.body.velocity.x = -200;
-                        }else if (child.que == 4 && child.body.x < (child.initX + 100)) {
-                            child.que += 1;
-                            child.body.velocity.y = -300;
-                        }else if (child.que == 5 && child.body.x < (child.initX - 50)) {
-                            child.que += 1;
-                            child.body.velocity.y = -300;
-                        }else if (child.que == 6 && child.body.x < (child.initX - 230)) {
-                            child.que += 1
-                            
-                            child.anims.stop();
-                            child.setOrigin(0.5, 1);
-                            child.pastXV = child.body.velocity.x;
-                            child.pastGY = child.body.gravity.y;
-                            child.body.gravity.y = 0;
+                            arrow.visible = true;
+                            child.originX = 0.5;
+                            child.originY = 0.5;
+                            //child.body.gravity.y = 0;
                             child.body.velocity.x = 0;
                             child.body.velocity.y = 0;
-                            child.body.y += (child.body.height/2) + 2;
-                            child.anims.play('downAnimation').on('animationcomplete', ()=>{
-                                taco.immortale = true;
-                                setTimeout(function(){child.que = 8;taco.immortale = false;}, 500);
-                            });
-                        }else if (child.que == 8) {
-                            child.que += 1;
-                            child.anims.play('poppingAnimation').on('animationcomplete', ()=>{
-                                child.que += 1;
-                            });
-                            child.invincible = true;
-                        }else if (child.que == 10) {
-                            child.que += 1;
-                            child.anims.play('shredingAnimation');
-                            child.body.velocity.x = Math.abs(child.pastXV*1.5);
-                        }else if (child.que == 11 && child.body.x > (child.initX + 230)) {
-                            child.que += 1;
-                            child.body.velocity.x = Math.abs(child.pastXV*1.5) * -1;
-                        }else if (child.que == 12 && child.body.x < (child.initX - 230)) {
+                            child.body.x = taco.body.x+taco._displayOriginX;
+                            child.body.y = taco.body.y-43+taco._displayOriginY/2;
+                            //child.x = taco.x;
+                            //child.y = taco.y;
                             
-                            child.que += 1;
-                            child.body.velocity.x = 0;
-                            child.anims.play('unPoppingAnimation').on('animationcomplete', ()=>{
-                                child.que = 14;
-                            });
-                        }else if (child.que == 14 && child.lives < 5) {
-                            child.que += 1;
-                            child.anims.play('upAnimation').on('animationcomplete', ()=>{
-                                child.que = 16;
-                                child.originY = 0.5;
-                                child.body.velocity.x = child.pastXV * -1;
-                                child.body.gravity.y = child.pastGY;
-                                child.body.y -= (child.body.height)+4;
-                                child.anims.play('drillingAnimation');
-                                child.body.velocity.y = -600;
-                                camera.shake(400, 0.005);
-                            });
-                            child.body.velocity.x = 0;
-                            child.invincible = false;
+                            child.depth = 5;
+                            if (keySpace.isDown == false) {
+                                child.held = false;
+                                child.body.velocity.x = 500*Math.sin(arrow.angle * Math.PI/180);
+                                child.body.velocity.y = -700*Math.cos(arrow.angle * Math.PI/180);
+                                arrow.angle = 0;
+                                arrow.visible = false;
+                                transportThis.physics.world.timeScale = 1;
+                            }
                         }
-                        */
-                        
-                    }/* else {
-                        child.body.x = child.initX;
-                        child.body.y = child.initY;
-                        child.body.velocity.x = child.initXV;
-                        child.body.velocity.x = child.initXV;
-                    }*/
+                    })
+                    //reset mites when below screen
+                    mites.children.iterate(function(child) {
+                        if (child.body.y > 2000) {
+                            /*
+                            child.anims.stop();
+                            child.anims.play('growingMite');
+                            child.body.x = child.initX;
+                            child.body.y = child.initY;
+                            child.body.gravity.y = 0;
+                            child.body.velocity.y = 0;*/
+                            child.setOrigin(0.5, 0);
+                            //child.refreshBody();
+                            //child.body.allowGravity = true;
+                            child.body.x = child.initX+16-(child.body.width/2);
+                            child.body.y = child.initY;
+                            child.body.velocity.y = 0;
+                            child.body.gravity.y = 0;
+                            child.anims.stop();
+                            child.anims.play('growingMite');
+                        }
+                    });
+                    platforms.children.iterate(function(child) {
+                        if (creative == false) {
+                            if (child.body.x > child.initX+child.distance) {
+                                child.dir = -1;
+                            }
+                            if (child.body.x < child.initX) {
+                                child.dir = 1;
+                            }
+                            /*
+                            if (child.turn == true && child.waiting == false) {
+                                child.dir *= -1;
+                                child.waiting = true;
+                            }
+                            if (child.turn == false) {
+                                child.waiting = false;
+                            }*/
+                            if ((child.dir * child.body.velocity.x) < 130) {
+                                child.body.velocity.x += child.dir*3*(delta/16.666);
+                                child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
+                            } else {
+                                if (child.angle > 0) {
+                                    child.angle -= 0.5;
+                                } 
+                                if (child.angle < 0) {
+                                    child.angle += 0.5;
+                                }
+                                if (Math.round(child.angle) == 0) {
+                                    child.angle = 0;
+                                }
+                            }
+                            //child.turn = false;//reset
+                        }
+                    });
+                    platformsLeft.children.iterate(function(child) {
+                        if (creative == false) {
+                            if (child.body.x < child.initX-child.distance) {
+                                child.dir = 1;
+                            }
+                            if (child.body.x > child.initX) {
+                                child.dir = -1;
+                            }
+                            if ((child.dir * child.body.velocity.x) < 130) {
+                                child.body.velocity.x += child.dir*3*(delta/16.666);
+                                child.angle += ((child.body.velocity.x * -1)/160)*(delta/16.666);
+
+                            } else {
+                                if (child.angle > 0) {
+                                    child.angle -= 0.5;
+                                } 
+                                if (child.angle < 0) {
+                                    child.angle += 0.5;
+                                }
+                                if (Math.round(child.angle) == 0) {
+                                    child.angle = 0;
+                                }
+                            }
+                        }
+                    });
+                    platformsDown.children.iterate(function(child) {
+                        if (creative == false) {
+                            if (child.body.y > child.initY+child.distance) {
+                                child.dir = -1;
+                            }
+                            if (child.body.y < child.initY) {
+                                child.dir = 1;
+                            }
+                            if ((child.dir * child.body.velocity.y) < 130) {
+                                child.body.velocity.y += child.dir*3*(delta/16.666);
+                            }
+                        }
+                    });
+                    platformsUp.children.iterate(function(child) {
+                        if (creative == false) {
+                            if (child.body.y < child.initY-child.distance) {
+                                child.dir = 1;
+                            }
+                            if (child.body.y > child.initY) {
+                                child.dir = -1;
+                            }
+                            if ((child.dir * child.body.velocity.y) < 130) {
+                                child.body.velocity.y += child.dir*3*(delta/16.666);
+                            }
+                        }
+                    });
+                    //sound effects for burritos and ice effect
+                    //this.physics.world.timeScale = 1;
+                    burritos.children.iterate(function(child) {
+                        if (child.body.blocked.down && !child.frozen && child.fly == false) {
+                            child.body.velocity.y = -410;
+                            
+                        }
+                    });
+                    //slow down the rocks
+                    rocks.children.iterate(function(child) {
+                        child.body.velocity.x *= 0.97;
+                        if (child.body.blocked.down == true) {
+                            child.body.velocity.x = 0;
+                        }
+                    });
+                    //slow down the meatballs
+                    meatballs.children.iterate(function(child) {
+                        child.body.velocity.x *= 0.97;
+                        child.angle += 0.012 * child.body.velocity.x;
+                        child.body.velocity.x *= 0.995;
+                    });
+                    //we want to slow down and turn the limes
+                    limes.children.iterate(function(child) {
+                        child.angle += 0.012 * child.body.velocity.x;
+                        child.body.velocity.x *= 0.995;
+                    });
                     
-                });
-                taco.touchingTree = false;//reset after everything else is done.
+                    //here we have the code for the drill boss
+                    
+                    drillers.children.iterate(function(child) {
+                        if (creative == false && child.active == true && (taco.x > 6175 || child.started == true)) {
+                            
+                            if (child.phase == 2) {
+                                if (random(1, 170) == 1) {
+                                    boulders.makeNew();
+                                }
+                            }
+                            if (child.phase == 3) {
+                                if (random(1, 120) == 1) {
+                                    boulders.makeNew();
+                                }
+                            }
+                            if (child.phase == 4) {
+                                if (random(1, 70) == 1) {
+                                    boulders.makeNew();
+                                }
+                            }
+                            if (child.started == false) {
+                                child.started = true;
+                                if (bossMusic[0].isPlaying == false) {
+                                    bossMusic[0].play();
+                                }
+                                mainMusic.stop();
+                                mainMusic2.stop();
+                                caveMusic.stop();
+                            }
+                            if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.1 || bossMusic[child.currentSong].isPlaying == false) {
+                                if (child.goUpTo > child.currentSong) {
+                                    bossMusic[child.currentSong].stop();
+                                    child.currentSong += 1;
+                                    bossMusic[child.currentSong].play();
+                                }
+                                if (child.goUpTo == child.currentSong) {
+                                    bossMusic[child.currentSong].play();
+                                }
+                                
+                            }
+                            if (child.body.allowGravity == false) {
+                                camera.pan(6176+400, 760+300, 1500);
+                                camera.once('camerapancomplete', ()=>{
+                                    taco.setCollideWorldBounds();
+                                    rocks.children.iterate((child)=>{
+                                        if (camera.worldView.contains(child.x, child.y)) {
+                                            child.setCollideWorldBounds();
+                                        }
+                                    });
+                                    child.setCollideWorldBounds();
+                                    transportThisGame.physics.world.setBounds(camera.worldView.x, camera.worldView.y, camera.worldView.width, camera.worldView.height);
+                                });
+                                camera.stopFollow();
+                                while (taco.lives < 5) {
+                                    taco.lives += 1;
+                                    setLives(taco.lives);
+                                }
+                                child.body.velocity.x = child.initXV;
+                                child.body.velocity.y = child.initYV;
+                                child.body.allowGravity = true;
+                                child.que = 1;
+                                child.phase = 1;
+                                child.setOrigin(0.5, 0.5);
+                                //camera.startFollow(child, false, 0.1, 0.1);
+                            }
+                            if (child.body.blocked.down) {
+                                bossEmitter.setQuantity(10);
+                                bossEmitter.setPosition(child.x, child.body.y+child.displayHeight);
+                            } else {
+                                bossEmitter.setQuantity(0);
+                            }
+                            switch (child.phase) {
+                                default:
+                                    switch (child.que) {
+                                        case 1:
+                                            if (child.body.x > (child.initX + 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = -200;
+                                            }
+                                            break;
+                                        case 2:
+                                            if (child.body.x < (child.initX - 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = 200;
+                                            }
+                                            break;
+                                        case 3:
+                                            if (child.body.x > (child.initX-100)) {
+                                                child.que += 1;
+                                                child.body.velocity.y = -600;
+                                                camera.shake(400, 0.005);
+                                            }
+                                            break;
+                                        case 4:
+                                            if (child.body.x > (child.initX + 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = -200;
+                                            }
+                                            break;
+                                        case 5:
+                                            if (child.body.x < (child.initX+100)) {
+                                                child.que += 1;
+                                                child.body.velocity.y = -600;
+                                                camera.shake(400, 0.005);
+                                            }
+                                            break;
+                                        case 6:
+                                            if (child.body.x < (child.initX - 200)) {
+                                                child.que += 1
+                                                child.body.velocity.x = 200;
+                                            }
+                                            break;
+                                        
+                                        
+                                        case 7:
+                                            if (child.body.x > (child.initX + 200)) {
+                                                child.que += 1;
+                                                child.anims.stop();
+                                                child.setOrigin(0.5, 1);
+                                                child.pastXV = child.body.velocity.x;
+                                                child.pastGY = child.body.gravity.y;
+                                                child.body.gravity.y = 0;
+                                                child.body.velocity.x = 0;
+                                                child.body.velocity.y = 0;
+                                                child.body.y += (child.displayHeight/2);
+                                                child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                    taco.immortale = true;
+                                                    setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
+                                                });
+                                            }
+                                            break;
+                                        case 9:
+                                            child.que += 1;
+                                            child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                                
+                                                child.que += 1;
+                                                child.anims.play('shredingAnimation');
+                                            });
+                                            child.invincible = true;
+                                            break;
+                                        case 11:
+                                            child.que += 1;
+                                            child.body.velocity.x = -300;
+                                            break;
+                                        case 12:
+                                            if (child.body.x < (child.initX - 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = 300;
+                                            }
+                                            break;
+                                        case 13:
+                                            if (child.body.x > (child.initX + 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = 0;
+                                                child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                    setTimeout(function(){child.que += 1;}, 500);
+                                                });
+                                            }
+                                            break;
+                                        case 15:
+                                            child.que += 1;
+                                            child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                                child.que += 1;
+                                                child.setOrigin(0.5, 0.5);
+                                                child.body.velocity.x = -200;
+                                                child.body.gravity.y = 1000;
+                                                child.y -= (child.displayHeight/2);
+                                                child.anims.play('drillingAnimation');
+                                                child.body.velocity.y = -400;
+                                                camera.shake(400, 0.005);
+                                            });
+                                            child.body.velocity.x = 0;
+                                            child.invincible = false;
+                                            break;
+                                        case 17:
+                                            if (child.body.blocked.down == true) {
+                                                child.body.velocity.y = -400;
+                                                camera.shake(400, 0.005);
+                                                child.que += 1;
+                                            }
+                                            break;
+                                        case 18:
+                                            if (child.body.x < (child.initX - 200)) {
+                                                child.body.velocity.x = 200;
+                                                
+                                                if (child.lives == 8 || child.lives == 7) {
+                                                    child.que = 1;
+                                                } else if (child.lives == 5 || child.lives == 6) {
+                                                    child.que = 1;
+                                                    child.phase = 2;
+                                                    child.goUpTo = 2;
+                                                } else {
+                                                    child.que = 1;
+                                                    child.phase += 1;
+                                                    child.goUpTo += 1;
+                                                }
+                                                
+                                            }
+                                            break;
+                                    }
+                                    break;
+                                case 3:
+                                    switch (child.que) {
+                                        case 1:
+                                            child.body.velocity.x = 300;
+                                            if (child.body.blocked.down == true) {
+                                                child.body.velocity.y = -300;
+                                                camera.shake(400, 0.005);
+                                                child.que += 1;
+                                            }
+                                            break;
+                                        case 2:
+                                        if (child.body.blocked.down == true) {
+                                                camera.shake(400, 0.005);
+                                                child.que += 1;
+                                                child.setOrigin(0.5, 1);
+                                                child.pastXV = child.body.velocity.x;
+                                                child.pastGY = child.body.gravity.y;
+                                                child.body.gravity.y = 0;
+                                                child.body.velocity.x = 0;
+                                                child.body.velocity.y = 0;
+                                                child.body.y += (child.displayHeight/2);
+                                                child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                    taco.immortale = true;
+                                                    setTimeout(()=>{
+                                                        taco.immortale = false;
+                                                        child.que += 1;
+                                                        child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                                            child.anims.play('drillingAnimation');
+                                                            child.body.velocity.y = -300;
+                                                            child.body.velocity.x = 300;
+                                                            child.body.gravity.y = child.pastGY;
+                                                            child.setOrigin(0.5, 0.5);
+                                                            child.y -= (child.displayHeight/2);
+                                                            child.que += 1;
+                                                        });
+                                                    }, 400);
+                                                });
+                                            }
+                                            break;
+                                        case 5:
+                                            if (child.body.x > (child.initX + 200) && child.body.blocked.down) {
+                                                child.que += 1;
+                                                child.anims.stop();
+                                                child.setOrigin(0.5, 1);
+                                                child.pastXV = child.body.velocity.x;
+                                                child.pastGY = child.body.gravity.y;
+                                                child.body.gravity.y = 0;
+                                                child.body.velocity.x = 0;
+                                                child.body.velocity.y = 0;
+                                                child.body.y += (child.displayHeight/2);
+                                                camera.shake(400, 0.005);
+                                                child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                    taco.immortale = true;
+                                                    child.timer = setTimeout(function(){child.que += 1;taco.immortale = false;}, 500);
+                                                });
+                                            }
+                                            break;
+                                        case 7:
+                                            child.que += 1;
+                                            child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                                child.que += 1;
+                                                child.anims.play('shredingAnimation');
+                                            });
+                                            child.invincible = true;
+                                            break;
+                                        case 9:
+                                            child.que += 1;
+                                            child.body.velocity.x = -400;
+                                            break;
+                                        case 10:
+                                            if (child.body.x < (child.initX - 200)) {
+                                                child.que += 1;
+                                                child.body.velocity.x = 0;
+                                                child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                    setTimeout(function(){child.que += 1;}, 400);
+                                                });
+                                            }
+                                            break;
+                                        case 12:
+                                            child.que += 1;
+                                            child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                                child.que += 1;
+                                                child.setOrigin(0.5, 0.5);
+                                                child.body.velocity.x = 300;
+                                                child.body.gravity.y = 1000;
+                                                child.y -= (child.displayHeight/2);
+                                                child.anims.play('drillingAnimation');
+                                                camera.shake(400, 0.005);
+                                                //return to start of this phase, or move on to next
+                                                child.que = 1;
+                                                if (child.lives < 3) {
+                                                    child.phase = 4;
+                                                    child.goUpTo += 1;
+                                                }
+                                            });
+                                            child.body.velocity.x = 0;
+                                            child.invincible = false;
+                                            break;
+                                    }
+                                    break;
+                                case 4:
+                                    switch(child.que) {
+                                        case 1:
+                                            if (child.x < (taco.x-100)) {
+                                                child.body.velocity.x += 12;
+                                            } else if (child.x > (taco.x+100)) {
+                                                child.body.velocity.x -= 12;
+                                            } else {
+                                                child.que += 1;
+                                                child.setOrigin(0.5, 1);
+                                                child.pastXV = child.body.velocity.x;
+                                                child.pastGY = child.body.gravity.y;
+                                                child.body.gravity.y = 0;
+                                                child.body.velocity.x = 0;
+                                                child.body.velocity.y = 0;
+                                                child.body.y += (child.displayHeight/2);
+                                                camera.shake(400, 0.005);
+                                                setTimeout(()=>{child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                    taco.immortale = true;
+                                                    child.timer = setTimeout(function(){child.que += 1;}, 50);
+                                                    boulders.makeNew();
+                                                })}, 0);
+                                            }
+                                            child.body.velocity.x *= 0.96;
+                                            break;
+                                        case 3:
+                                            child.gotoX = taco.x;
+                                            child.que += 1;
+                                            setTimeout(()=>{child.que += 1;child.x = child.gotoX}, 900);
+                                            break;
+                                        case 5:
+                                            child.que += 1;
+                                            setTimeout(()=>{taco.immortale = false;}, 300);
+                                            child.anims.play('poppingAnimation').once('animationcomplete-poppingAnimation', ()=>{
+                                                child.que += 1;
+                                                child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
+                                                    child.que += 1;
+                                                    taco.immortale = true;
+                                                    setTimeout(()=>{child.que += 1;}, 500);
+                                                });
+                                            });
+                                            break;
+                                        case 9:
+                                            child.que += 1;
+                                            taco.immortale = false;
+                                            child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
+                                                child.que += 1;
+                                                child.setOrigin(0.5, 0.5);
+                                                child.body.velocity.x = 200;
+                                                child.body.gravity.y = 1000;
+                                                child.y -= (child.displayHeight/2);
+                                                child.anims.play('drillingAnimation');
+                                                camera.shake(400, 0.005);
+                                            });
+                                            child.body.velocity.x = 0;
+                                            child.invincible = false;
+                                            break;
+                                        case 11:
+                                            child.que += 1;
+                                            if (child.x < taco.x) {
+                                                child.body.velocity.x = 200;
+                                                child.body.velocity.y = -450;
+                                            } else {
+                                                child.body.velocity.x = -200;
+                                                child.body.velocity.y = -450;
+                                            }
+                                            break;
+                                        case 12:
+                                            if (child.body.blocked.down) {
+                                                child.que = 1;
+                                            }
+                                            break;
+                                    }
+                                    break;
+                            }
+                            
+                            /*
+                            if (child.que == 1 && child.body.x > (child.initX + 230)) { 
+                                child.que += 1;
+                                child.body.velocity.y = -600;
+                                child.body.velocity.x = -200;
+                                camera.shake(400, 0.005);
+                            }else if (child.que == 2 && child.body.x < (child.initX)) {
+                                child.que += 1;
+                                child.body.velocity.y = -600;
+                                child.body.velocity.x = 200;
+                                camera.shake(400, 0.005);
+                            }else if (child.que == 3 && child.body.x > (child.initX + 230)) {
+                                child.que += 1;
+                                child.body.velocity.y = -300;
+                                child.body.velocity.x = -200;
+                            }else if (child.que == 4 && child.body.x < (child.initX + 100)) {
+                                child.que += 1;
+                                child.body.velocity.y = -300;
+                            }else if (child.que == 5 && child.body.x < (child.initX - 50)) {
+                                child.que += 1;
+                                child.body.velocity.y = -300;
+                            }else if (child.que == 6 && child.body.x < (child.initX - 230)) {
+                                child.que += 1
+                                
+                                child.anims.stop();
+                                child.setOrigin(0.5, 1);
+                                child.pastXV = child.body.velocity.x;
+                                child.pastGY = child.body.gravity.y;
+                                child.body.gravity.y = 0;
+                                child.body.velocity.x = 0;
+                                child.body.velocity.y = 0;
+                                child.body.y += (child.body.height/2) + 2;
+                                child.anims.play('downAnimation').on('animationcomplete', ()=>{
+                                    taco.immortale = true;
+                                    setTimeout(function(){child.que = 8;taco.immortale = false;}, 500);
+                                });
+                            }else if (child.que == 8) {
+                                child.que += 1;
+                                child.anims.play('poppingAnimation').on('animationcomplete', ()=>{
+                                    child.que += 1;
+                                });
+                                child.invincible = true;
+                            }else if (child.que == 10) {
+                                child.que += 1;
+                                child.anims.play('shredingAnimation');
+                                child.body.velocity.x = Math.abs(child.pastXV*1.5);
+                            }else if (child.que == 11 && child.body.x > (child.initX + 230)) {
+                                child.que += 1;
+                                child.body.velocity.x = Math.abs(child.pastXV*1.5) * -1;
+                            }else if (child.que == 12 && child.body.x < (child.initX - 230)) {
+                                
+                                child.que += 1;
+                                child.body.velocity.x = 0;
+                                child.anims.play('unPoppingAnimation').on('animationcomplete', ()=>{
+                                    child.que = 14;
+                                });
+                            }else if (child.que == 14 && child.lives < 5) {
+                                child.que += 1;
+                                child.anims.play('upAnimation').on('animationcomplete', ()=>{
+                                    child.que = 16;
+                                    child.originY = 0.5;
+                                    child.body.velocity.x = child.pastXV * -1;
+                                    child.body.gravity.y = child.pastGY;
+                                    child.body.y -= (child.body.height)+4;
+                                    child.anims.play('drillingAnimation');
+                                    child.body.velocity.y = -600;
+                                    camera.shake(400, 0.005);
+                                });
+                                child.body.velocity.x = 0;
+                                child.invincible = false;
+                            }
+                            */
+                            
+                        }/* else {
+                            child.body.x = child.initX;
+                            child.body.y = child.initY;
+                            child.body.velocity.x = child.initXV;
+                            child.body.velocity.x = child.initXV;
+                        }*/
+                        
+                    });
+                    taco.touchingTree = false;//reset after everything else is done.
+                    
+                }
                 
                 
             }  
