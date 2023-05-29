@@ -1724,7 +1724,7 @@
                     
                     entity1[Math.round(y/32)][Math.round(x/32)] = 28;
                     var coin = stones.create(x+16, y+16, '3by3');
-                    coin.depth = -2;
+                    coin.depth = -3;
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
                     //we need to keep track of initial positions for later.
@@ -2232,7 +2232,7 @@
                 map = this.make.tilemap({data: map1, tileWidth: 32, tileHeight: 32});
                 map.addTilesetImage('landscape')//.setScale(0.5).refreshBody();
                 layer1 = map.createLayer(0, 'landscape', 0, 0);
-                
+                layer1.depth = -2;
                 function createEntities(entityList, gridWidth, gridHeight) {
                     creative = true;
 
@@ -3299,6 +3299,12 @@
                 frameTime += delta;
                 //account for fast monitors
                 if (frameTime > 14.5) {
+                    if (delta > 7 && delta < 9) {
+                        delta *= 2;
+                    }
+                    if (delta > 2.5 && delta < 4.5) {
+                        delta *= 4;
+                    }
                     frameTime = 0;
                     //actual update loop
                     gameDelta = delta;
@@ -3368,6 +3374,11 @@
                             cloud.flipX = true;
                         }
                     }
+                    clouds.children.iterate((child) =>{
+                        if (child.x < -5000 && child.x > layer1.width + 5000) {
+                            child.destroy();
+                        }
+                    });
                     
                     var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
                     mouseZone.x = mousePointer.x;
