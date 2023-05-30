@@ -12,8 +12,8 @@
             var fullScreen = false;
             var loaded = false;
             var lmap1, lentity1;
-            var levelMaps = [null, null, levelMap2, mmap1, lmap1, bossMap1, mmap1, lmap1];
-            var levelEntitys = [tutorialEntity1, levelEntity1, levelEntity2, eentity1, lentity1, bossEntity1, eentity1, lentity1];
+            var levelMaps = [null, null, null, null, null, null, mmap1, lmap1];
+            var levelEntitys = [null, null, null, null, null, null, eentity1, lentity1];
 
             
             for (var i = 0; i < levelStrings.length; i += 1) {
@@ -123,6 +123,9 @@
                 //saving buttons
                 this.load.image('import', 'assets/import.png');
                 this.load.image('export', 'assets/export.png');
+                //score
+
+                this.load.image('counter', 'assets/counter.png');
             }
             var gameLoaded = false;
             var check1 = -1;//tell UI what to display.
@@ -450,14 +453,15 @@
                 timeSkill.scale = 2;
                 timeSkill.visible = false;
                 //score
-                score = this.add.text(20, 60, 'Coins: 0', {fontSize: 20, color: '#ffffff' });
+                counter = this.add.image(50,70, 'counter');
+                score = this.add.text(83, 56, '0', {fontSize: 30, color: '#fb9c00' , fontFamily: 'mono'});
                 score.visible = false;
                 score.scrollFactorX = 0;
                 score.scrollFactorY = 0;
                 score.value = 0;
                 score.add = function(value) {
                     score.value += value;
-                    score.setText('Coins: ' + score.value);
+                    score.setText(score.value);
                 }
                 score.depth = 5;
 
@@ -791,6 +795,7 @@
                         menuOpen = false;
                     }
                 }
+                counter.visible = score.visible;
                 
             }
 
@@ -844,7 +849,7 @@
             {
                 transportThisUI.cameras.main.fadeIn(1);
                 if (true) {
-                    percentage = this.add.text(400, 300, '0%', { fontSize: '32px', fill: 'white' }).setOrigin(0.5);
+                    percentage = this.add.text(400, 300, '0%', { fontSize: '32px', fill: 'white' , fontFamily: 'Mono'}).setOrigin(0.5);
                     this.load.on('progress', function(value) {
                         if (Math.round(value*100)<100) {
                             if (percentage.setText) {
@@ -1053,6 +1058,7 @@
                 this.load.image('coin2', 'assets/coin__2.png');
                 this.load.image('coin3', 'assets/coin__3.png');
                 this.load.image('coin4', 'assets/coin__4.png');
+
 
                 //images for stlagmites (spelling is irrelevent haha).
                 this.load.image('mite1', 'assets/stlagmite1.png');
@@ -2132,6 +2138,7 @@
             var bossMusic;
             function create ()
             {
+
                 textSequence = 0;
 
                 menuOpen = false;
@@ -2140,6 +2147,8 @@
                 setTimeout(()=>{clearInterval(transportThisUI.musicFade);}, 1000);
                 transportThisUI.cameras.main.fadeIn(1000);
                 pause.visible = true;
+                score.setFontFamily('mono');
+                score.setText(score.value);
                 score.visible = true;
                 hearts.setVisible(true);
                 for (var i = 0; i < 5; i += 1) {
@@ -3333,6 +3342,7 @@
                         taco.lives += 1;
                         setLives(taco.lives);
                         score.value = 0;
+                        score.setText(score.value);
                     }
                     var mousePointer = this.input.activePointer.positionToCamera(this.cameras.main);
                     //mouse selector
@@ -3900,14 +3910,14 @@
                         taco.jumpHold -= 8;
                         taco.body.velocity.y -= (taco.jumpHold*0.92);
                     }
-                    if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
+                    if ((cursors.up.isDown || keyW.isDown) && (cursors.right.isDown || cursors.left.isDown || keyA.isDown || keyD.isDown) && !(taco.body.blocked.down) && taco.gum == true) {
                         taco.body.velocity.y = -470;
                         taco.jumpHold = 0;
 
-                        if (cursors.right.isDown && taco.body.blocked.right) {
+                        if ((keyD.isDown || cursors.right.isDown) && taco.body.blocked.right) {
                             tacoVelocityX = -300;
                         }
-                        if (cursors.left.isDown && taco.body.blocked.left) {
+                        if ((keyA.isDown || cursors.left.isDown) && taco.body.blocked.left) {
                             tacoVelocityX = 300;
                         }
                     }
@@ -4697,9 +4707,9 @@
                 mainMusic.destroy();
                 mainMusic2.destroy();
                 caveMusic.destroy();
-                for (var i = 0; i < bossMusic; i += 1) {
+                for (var i = 0; i < bossMusic.length; i += 1) {
                     bossMusic[i].stop();
-                    bossMusic[i].destroy();
+                    //bossMusic[i].destroy();
                 }
                 game.scene.stop('game');
                 game.scene.start('title');
