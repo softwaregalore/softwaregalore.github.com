@@ -637,7 +637,9 @@
                 }
 
                 keyM = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.M);
-                if (Phaser.Input.Keyboard.JustDown(keyM)) {
+                keyS = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.S);
+                cursors = this.input.keyboard.createCursorKeys();
+                if (Phaser.Input.Keyboard.JustDown(keyM) && (level > 5 || (keyS.isDown && cursors.down.isDown))) {
                     if (mode.texture.key == 'unpause') {
                         mode.setTexture('pause');
                         tool.visible = true;
@@ -1141,6 +1143,7 @@
                     child.triggered = "none";
                     child.falling = false;
                     check1 = -1;
+                    child.body.offset.x = 0;
                 });
                 timeSkill.alpha = 1;
                 burritos.children.iterate(function(child) {
@@ -1199,7 +1202,7 @@
                         child.started = false;
                     });*/
                     
-                    if (taco.lives == 0) {
+                    if (taco.lives == 0 && score.visible == true) {
                         rocks.setVisible(false);
                         score.visible = false;
                         hearts.setVisible(false);
@@ -1760,6 +1763,8 @@
             function returnSprites() {
                 
                 camera.stopFollow();
+                taco.x = Math.round(taco.x);
+                taco.y = Math.round(taco.y);
                 camera.startFollow(taco, false, 0.1, 0.1);
                 taco.setCollideWorldBounds(false);
                 while (taco.lives < taco.defLives) {
@@ -1771,6 +1776,7 @@
                 });
                 flags.children.iterate((child)=>{
                     child.anims.play('flagSleepingAnimation');
+                    mainMusic.volume = 1;
                 });
                 coins.children.iterate(function(child) {
                     child.anims.stop();
@@ -2232,7 +2238,7 @@
                 map = this.make.tilemap({data: map1, tileWidth: 32, tileHeight: 32});
                 map.addTilesetImage('landscape')//.setScale(0.5).refreshBody();
                 layer1 = map.createLayer(0, 'landscape', 0, 0);
-                layer1.depth = -2;
+                layer1.depth = 0;
                 function createEntities(entityList, gridWidth, gridHeight) {
                     creative = true;
 
@@ -2258,7 +2264,7 @@
                     } else {
                         cloud.body.velocity.x = random(-25, -50);
                     }
-                    cloud.depth = -3;
+                    cloud.depth = -5;
                     if (random(1, 2) == 1) {
                         cloud.flipX = true;
                     }
@@ -2845,7 +2851,9 @@
                     }
                 }
                 function hitDrill (taco, drill) {
-                    death();
+                    if (drill.texture.key != 'down14') {//make sure he isn't invisible
+                        death();
+                    }
                 };
                 function tacoHitMites(taco, mite) {
                     death();
@@ -2892,7 +2900,7 @@
                         console.log('triggered');
                         Tree.triggered = true;
                         check1 = 0;
-                        Tree.body.offset.x =  175; //move the tree with it.
+                        Tree.body.offset.x = 175; //move the tree with it.
                         Tree.body.offset.y = 0;
                         //Tree.body.width += 175;
                     }
@@ -2987,7 +2995,7 @@
                     death();
                 }
                 function mouseOverlap(mouse, child) {
-                    if (this.input.manager.activePointer.isDown && creative == true && toolSelect == 'erase' || keyE.isDown) {
+                    if (creative == true && ((this.input.manager.activePointer.isDown && toolSelect == 'erase') || keyE.isDown)) {
                         if (child.texture.key == 'tree1') {
                             //checks if it is a tree
                             map.putTileAt(-1, map.worldToTileX(child.initX-32), map.worldToTileY(child.initY));
@@ -3038,36 +3046,41 @@
                 function tacoHitFlag(Taco, Flag) {
                     score.visible = false;
                         if (mainMusic.volume == 1) {//check if started yet
+                            mainMusic.volume = 0.999;
                             Flag.anims.play('flagAwakeAnimation');
-                            if (unlocked < level + 1) {
-                                unlocked = level + 1;
-                            }
-                            levelEnd.alpha = 0;
-                            levelEnd.visible = true;
-                            mainMusic.volume = 0.999;//make sure that it only goes once.
-                            levelEnd.fadeout = setInterval(()=>{
-                                levelEnd.alpha += 0.017;
-                                transportThisGame.sound.volume -= 0.017;
-                                if(levelEnd.alpha >= 1)
-                                {
-                                    
-                                    mainMusic.volume = 0;
-                                    mainMusic2.volume = 0;
-                                    transportThisGame.sound.volume = 1;
-                                    levelEnd.setAlpha(1);
-                                    clearInterval(levelEnd.fadeout);
-                                    menuOpen = true;
-                                    transportThisGame.scene.pause();
+                            if (level < 6) {
+                                if (unlocked < level + 1) {
+                                    unlocked = level + 1;
                                 }
-                            }, 16);
+                                levelEnd.alpha = 0;
+                                levelEnd.visible = true;
+                                mainMusic.volume = 0.999;//make sure that it only goes once.
+                                levelEnd.fadeout = setInterval(()=>{
+                                    levelEnd.alpha += 0.017;
+                                    transportThisGame.sound.volume -= 0.017;
+                                    if(levelEnd.alpha >= 1)
+                                    {
+                                        
+                                        mainMusic.volume = 0;
+                                        mainMusic2.volume = 0;
+                                        transportThisGame.sound.volume = 1;
+                                        levelEnd.setAlpha(1);
+                                        clearInterval(levelEnd.fadeout);
+                                        menuOpen = true;
+                                        transportThisGame.scene.pause();
+                                    }
+                                }, 16);
+                                if (taco.disabled == false) {
+                                    transportThis = this;
+                                    taco.disabled = true;
+                                }
+                                taco.disabled = true;
+                            }
+                            
                         }
                     
                     
-                    if (taco.disabled == false) {
-                        transportThis = this;
-                        taco.disabled = true;
-                    }
-                    taco.disabled = true;
+                    
                 }
                 function tacoHitCream(Taco, Cream) {
                     taco.cream = true;
@@ -3118,6 +3131,8 @@
                 
                 //the main camera
                 this.cameras.main.setBounds(0, 0, map.widthInPixels, map.heightInPixels);//infinite worlds
+                taco.x = Math.round(taco.x);
+                taco.y = Math.round(taco.y);
                 this.cameras.main.startFollow(taco, false, 0.1, 0.1);
                 //restart
                 this.restart = function () {
@@ -3369,7 +3384,7 @@
                             cloud = clouds.create(layer1.width + 200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
                             cloud.body.velocity.x = random(-25, -50);
                         }
-                        cloud.depth = -3;
+                        cloud.depth = -5;
                         if (random(1, 2) == 1) {
                             cloud.flipX = true;
                         }
@@ -3541,6 +3556,8 @@
                                     
                                     potat.goto = false;
                                     camera.pan(taco.x, 3000, 4000).once('camerapancomplete', ()=>{
+                                        taco.x = Math.round(taco.x);
+                                        taco.y = Math.round(taco.y);
                                         camera.startFollow(taco, 0.1, 0.1);
                                         taco.disabled = false;
                                         tutorialSequence += 1;
@@ -3573,6 +3590,8 @@
                                 text('That is a burrito, \nand it wants to \nsmash you.', 150, function(){setTimeout(function(){
                                     potat.goto = false;
                                     camera.pan(taco.x, 3000, 1800).once('camerapancomplete', ()=>{
+                                        taco.x = Math.round(taco.x);
+                                        taco.y = Math.round(taco.y);
                                         camera.startFollow(taco, 0.1, 0.1);
                                         
                                         tutorialSequence += 1;
@@ -3664,7 +3683,7 @@
                     //the map editing
                     
                     //typeEdit is defined at the beggining of the code :)
-                    if (keyB.isDown && creative == true) {
+                    if (keyS.isDown && cursors.down.isDown && keyB.isDown && creative == true) {
                         if (prompt('1.entity 2.block') == '1') {
                             typeEdit = 1;
                             select = prompt('type');
@@ -3693,20 +3712,72 @@
                         hold = false;
                     }
                     
-                    if (this.input.manager.activePointer.isDown && toolSelect == 'erase' || keyE.isDown) {
+                    if (creative == true && ((this.input.manager.activePointer.isDown && toolSelect == 'erase') || keyE.isDown)) {
                         var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
                         
                         if (tile !== null) {
                             map.removeTile(tile, -1, false);
                             map1[tile.y][tile.x] = -1;
                         }
-
-                        
+                        var xAlter = 0;
+                        var yAlter = 0;
+                        for (var i = 0; i < 7; i += 1) {
+                            switch(i) {
+                                case 0:
+                                    xAlter = 0;
+                                    yAlter = -1;
+                                    break;
+                                case 1:
+                                    xAlter = 1;
+                                    yAlter = -1;
+                                    break;
+                                case 2:
+                                    xAlter = 1;
+                                    yAlter = 0;
+                                    break;
+                                case 3:
+                                    xAlter = 1;
+                                    yAlter = 1;
+                                    break;
+                                case 4:
+                                    xAlter = 0;
+                                    yAlter = 1;
+                                    break;
+                                case 5:
+                                    xAlter = -1;
+                                    yAlter = 1;
+                                    break;
+                                case 6:
+                                    xAlter = -1;
+                                    yAlter = 0;
+                                    break;
+                                case 7:
+                                    xAlter = -1;
+                                    yAlter = -1;
+                                    break;
+                            }
+                            if (tileSelectX+xAlter > 0 && tileSelectX+xAlter < layer1.width/32 && tileSelectY+yAlter > 0 && tileSelectY+yAlter < layer1.height/32) {
+                                map.putTileAt(map1[tileSelectY+yAlter][tileSelectX+xAlter], tileSelectX+xAlter, tileSelectY+yAlter);
+                            }
+                        }
                     }
 
                     if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true && disableEdit == false) {
                             map.putTileAt(select, tileSelectX, tileSelectY);
                             map1[tileSelectY][tileSelectX] = select;
+                            //fix block style entities
+                            var blockEntities = [creams, gums, doors];
+                            for (var i = 0; i < blockEntities.length; i += 1) {
+                                blockEntities[i].children.iterate((child) =>{
+                                    if (child) {
+                                        if (Math.round(child.initY/32) == tileSelectY && Math.round(child.initX/32) == tileSelectX) {
+                                            entity1[Math.round(child.initY/32)][Math.round(child.initX/32)] = -1;
+                                            child.destroy();
+                                        }
+                                    }
+                                });
+                            }
+                            
                         //we need to make sure that block groups get updated when we change the map
                         /*
                         spikes = map.filterTiles(function (tile) {
@@ -4114,6 +4185,7 @@
                             }
                         }
                     });
+                    
                     //sound effects for burritos and ice effect
                     //this.physics.world.timeScale = 1;
                     burritos.children.iterate(function(child) {
@@ -4204,6 +4276,8 @@
                                 child.que = 1;
                                 child.phase = 1;
                                 child.setOrigin(0.5, 0.5);
+                                taco.x = Math.round(taco.x);
+                                taco.y = Math.round(taco.y);
                                 //camera.startFollow(child, false, 0.1, 0.1);
                             }
                             if (child.body.blocked.down) {
@@ -4460,6 +4534,7 @@
                                                 child.body.y += (child.displayHeight/2);
                                                 camera.shake(400, 0.005);
                                                 setTimeout(()=>{child.anims.play('downAnimation').once('animationcomplete-downAnimation', ()=>{
+                                                    child.visible = false;
                                                     taco.immortale = true;
                                                     child.timer = setTimeout(function(){child.que += 1;}, 50);
                                                     boulders.makeNew();
@@ -4469,8 +4544,9 @@
                                             break;
                                         case 3:
                                             child.gotoX = taco.x;
+                                            child.y += 20;
                                             child.que += 1;
-                                            setTimeout(()=>{child.que += 1;child.x = child.gotoX}, 900);
+                                            setTimeout(()=>{child.y -= 20;child.visible = true;child.que += 1;child.x = child.gotoX}, 900);
                                             break;
                                         case 5:
                                             child.que += 1;
@@ -4853,7 +4929,7 @@
                     
                     var cloud = clouds.create(random(10, 790), random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
-                    cloud.depth = -3;
+                    cloud.depth = -5;
                 }
                 //the non moving parts (except for button kindof)
                 logo = this.add.image(400, 200, 'background').setScale(2.5);
@@ -5199,7 +5275,7 @@
                     
                     var cloud = clouds.create(cloudX, random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
-                    cloud.depth = -3;
+                    cloud.depth = -5;
                 }
             }
 
