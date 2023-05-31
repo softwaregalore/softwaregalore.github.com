@@ -454,7 +454,8 @@
                 timeSkill.visible = false;
                 //score
                 counter = this.add.image(50,70, 'counter');
-                score = this.add.text(83, 56, '0', {fontSize: 30, color: '#fb9c00' , fontFamily: 'mono'});
+                score = this.add.text(83, 70, '0', {fontSize: 30, color: '#fb9c00' , fontFamily: 'mono'});
+                score.setOrigin(0, 0.5);
                 score.visible = false;
                 score.scrollFactorX = 0;
                 score.scrollFactorY = 0;
@@ -1172,6 +1173,12 @@
                         taco.lives = 0;
                         taco.immortale = false;
                     }*/
+                    keys.children.iterate((child)=> {
+                        if (child.follow) {
+                            child.x = taco.startX;
+                            child.y = taco.startY;
+                        }
+                    });
                     meatballs.children.iterate(function(child) {
                         child.body.x = child.initX;
                         child.body.y = child.initY;
@@ -1188,8 +1195,6 @@
                     }
                     taco.lives -= 1;
                     setLives(taco.lives);
-                    
-                    
                     
                     if (taco.lives < 0) {
                         taco.lives = 0;
@@ -1480,6 +1485,7 @@
                     coin.body.allowGravity = false;
                     coin.body.mass = 1;
                     coin.setOrigin(0.5, 0.5);
+                    coin.body.maxVelocity.y = 900;
                 } 
                 if (type == 15) {
                     
@@ -2580,7 +2586,7 @@
                 taco.lives = 5;
                 taco.defLives = 5;
                 taco.setFrictionX(1);
-                taco.limitX = 664;
+                taco.limitX = 630;
                 //taco.setCollideWorldBounds();
                 taco.jumpHold = 0;
                 taco.minigame = false;
@@ -2755,7 +2761,6 @@
                 this.physics.add.collider(keys, layer1);
                 this.physics.add.collider(taco, doors);
                 this.physics.add.collider(poisons, layer1);
-                this.physics.add.collider(keys, limes);
                 this.physics.add.collider(doors, limes);
                 this.physics.add.collider(burritos, doors);
                 this.physics.add.collider(bottles, doors);
@@ -2956,6 +2961,9 @@
                     if (Math.abs(Lime.body.velocity.x) > 0) {
                         ingredientParticleEmit(Burrito.x, Burrito.y, 10, 400, Burrito);
                         Burrito.disableBody(true, true);
+                        if (Math.abs(Lime.body.velocity.x) < 200) {
+                            Lime.body.velocity.x = 200 * Lime.body.velocity.x/Math.abs(Lime.body.velocity.x);
+                        }
                         Lime.body.velocity.x *= 1.7;
                         if (Lime.x < taco.x) {
                             Lime.body.x -= 5;
@@ -3537,7 +3545,7 @@
                                 tutorialSequence += 1;
                                 //taco.disabled = true;
                                 //potat.goto = potat.x - 230;
-                                text('if you couldn\'t \ntell, these adorable \nlittle spikes will \nsend you to the \nstart of the level. \n(don\'t ask me how)', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
+                                text('if you couldn\'t \ntell, these adorable \nlittle spikes will \nsend you to the \nstart of the level.', 150, function(){setTimeout(function(){tutorialSequence += 1}, 1500)})
                             }
                             if (tutorialSequence == 16) {
                                 tutorialSequence += 1;
@@ -4252,7 +4260,7 @@
                                 mainMusic2.stop();
                                 caveMusic.stop();
                             }
-                            if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.1 || bossMusic[child.currentSong].isPlaying == false) {
+                            if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.07 || bossMusic[child.currentSong].isPlaying == false) {
                                 if (child.goUpTo > child.currentSong) {
                                     bossMusic[child.currentSong].stop();
                                     child.currentSong += 1;
@@ -4921,7 +4929,7 @@
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
                 titleMusic = this.sound.add('titleMusic');
                 introMusic = this.sound.add('introMusic');
-                titleMusic.loop = true;
+                titleMusic.loop = false;//done manually
                 titleMusic.play();
                 //clouds
                 clouds = this.physics.add.group();
@@ -5041,6 +5049,10 @@
             titleScene.update = function () {
                 transportThisTitle = this;
                 inMenu = true;
+                //music
+                if (titleMusic.totalDuration - titleMusic.seek < 0.10) {
+                    titleMusic.play();
+                }
                 //fullscreen
                 if (Phaser.Input.Keyboard.JustDown(keyC)) {
                     /*
