@@ -564,6 +564,7 @@
                     clearInterval(makeText);
                     text('', 30, function(){});
                     menuOpen = false;
+                    menu.scale = 0.2;
                     clearInterval(transportThisUI.musicFade);
                     pause.setTexture('UIplay');
                     sound.setTexture('UIsoundon');
@@ -1595,6 +1596,7 @@
                     coin.setScale(0.5);
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 500;
+                    coin.body.bounce.x = 1;
                     coin.body.allowGravity = false;
                     //we need to keep track of initial positions for later.
                     coin.initX = x;
@@ -2201,7 +2203,11 @@
                 this.physics.world.drawDebug = false;
                 this.cameras.main.roundPixels = true;
                 camera = this.cameras.main;
-                camera.setBackgroundColor("#ADD8E6");
+                if (level == 5) {
+                    camera.setBackgroundColor("#6f6f6f");
+                } else {
+                    camera.setBackgroundColor("#ADD8E6");
+                }
                 camera.zoom = 1.3;
                 this.camera = camera; //better access.
                 //music
@@ -3061,11 +3067,12 @@
                 var transportThis = this;//allow us to restart the game in a callback.
                 var sequenceEnd = 8;
                 function tacoHitFlag(Taco, Flag) {
-                    score.visible = false;
+                    
                         if (mainMusic.volume == 1) {//check if started yet
                             mainMusic.volume = 0.999;
                             Flag.anims.play('flagAwakeAnimation');
                             if (level < 6) {
+                                score.visible = false;
                                 if (unlocked < level + 1) {
                                     unlocked = level + 1;
                                 }
@@ -4856,7 +4863,7 @@
                 {key: 'shooter2'},
                 {key: 'shooter3'},
                 {key: 'shooter2'}],
-                frameRate:0.9,
+                frameRate:0.75,
                 repeat:-1});
                 this.anims.create({key: 'creditAnimation',
                  frames: [{key: 'credit1'},
