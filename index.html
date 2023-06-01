@@ -55,6 +55,7 @@
             var tutorial;
             var inMenu = true;
             var finished = false;
+            var previousLives = null;
             
             function updateCurrentLevel() {
                 if (level == 0) {
@@ -143,7 +144,7 @@
                 this.physics.world.enable(UIZone);
                 UIZone.hover = false;
                 //word zone, used for ensuring they can always place blocks.
-                worldZone = this.add.zone(0, 0).setSize(800, 600);
+                worldZone = this.add.zone(0, 0).setSize(width, height);
                 this.physics.world.enable(worldZone);
                 //we run this first so that the folder.hover overlap can override it if necesary.
                 this.physics.add.overlap(UIZone, worldZone, hoverWorld, null, this);
@@ -151,7 +152,7 @@
                     disableEdit = false;
                 }
                 //level UI
-                folder = this.physics.add.sprite(400, 84, 'tab1').setScale(6).refreshBody();
+                folder = this.physics.add.sprite(width/2, 84, 'tab1').setScale(6).refreshBody();
                 folder.scrollFactorX = 0;
                 folder.scrollFactorY = 0;
                 folder.tab = 0;
@@ -344,7 +345,7 @@
                 selectors.refresh();
                 selectors.setVisible(false);
                 //mode buttons
-                mode = this.physics.add.sprite(760, 40, 'unpause');
+                mode = this.physics.add.sprite(width - 40, 40, 'unpause');
                 //mode.visible = false;//no creative on default.
                 mode.scale = 0.035;
                 mode.setInteractive();
@@ -375,7 +376,7 @@
                 mode.on('pointerover', () => {disableEdit = true});
                 mode.on('pointerout', () => {disableEdit = false});
 
-                tool = this.physics.add.sprite(690, 40, 'mouse');
+                tool = this.physics.add.sprite(width - 110, 40, 'mouse');
                 tool.scale = 0.035;
                 tool.setInteractive();
                 tool.on('pointerup', () => {
@@ -391,7 +392,7 @@
                 tool.on('pointerover', () => {disableEdit = true});
                 tool.on('pointerout', () => {disableEdit = false});
                 //export and import
-                Import = this.physics.add.sprite(760, 110, 'import');
+                Import = this.physics.add.sprite(width - 40, 110, 'import');
                 Import.setInteractive();
                 Import.scale = 3;
                 Import.visible = false;
@@ -441,7 +442,7 @@
                 });
                 Import.on('pointerover', () => {disableEdit = true});
                 Import.on('pointerout', () => {disableEdit = false});
-                Export = this.physics.add.sprite(690, 110, 'export');
+                Export = this.physics.add.sprite(width - 110, 110, 'export');
                 Export.setInteractive();
                 Export.scale = 3;
                 Export.visible = false;
@@ -460,7 +461,7 @@
                 Export.on('pointerover', () => {disableEdit = true});
                 Export.on('pointerout', () => {disableEdit = false});
                 //skill check
-                timeSkill = this.physics.add.sprite(400, 200, 'skill1');
+                timeSkill = this.physics.add.sprite(width/2, 200, 'skill1');
                 timeSkill.scale = 2;
                 timeSkill.visible = false;
                 //score
@@ -477,7 +478,7 @@
                 }
                 score.depth = 5;
 
-                menu = this.physics.add.sprite(400, 350, 'menu').setScale(0.2).refreshBody();
+                menu = this.physics.add.sprite(width/2, (height/2)+50, 'menu').setScale(0.2).refreshBody();
                 menu.scrollFactorX = 0;
                 menu.scrollFactorY = 0;
                 menu.depth = 5;
@@ -500,18 +501,18 @@
                 buttons.depth = 4;
 
                 //also associated with minigame, is the level complete sign.
-                levelEnd = this.physics.add.sprite(400, 300, 'levelEnd');
+                levelEnd = this.physics.add.sprite(width/2, height/2, 'levelEnd');
                 levelEnd.alpha = 0;
                 levelEnd.scrollFactorX = 0;
                 levelEnd.scrollFactorY = 0;
                 levelEnd.depth = 4;
 
                 //guides
-                clickHere = this.physics.add.sprite(400, 300, 'clickHere').setScale(0.35);
+                clickHere = this.physics.add.sprite(width/2, height, 'clickHere').setScale(0.35);
                 clickHere.visible = false;
                 clickHere.depth = 5;
                 //General Ui
-                sound = this.physics.add.sprite(700, 40, 'UIsoundon');
+                sound = this.physics.add.sprite(width-100, 40, 'UIsoundon');
                 sound.visible = false;
                 sound.setInteractive();
                 sound.on('pointerup', ()=>{
@@ -523,7 +524,7 @@
                         transportThisGame.sound.setMute(false);
                     }
                 });
-                pause = this.physics.add.sprite(760, 40, 'UIplay');
+                pause = this.physics.add.sprite(width-40, 40, 'UIplay');
                 pause.setInteractive();
                 pause.on('pointerup', ()=>{
                     if (pause.texture.key == "UIplay") {
@@ -542,7 +543,7 @@
                 });
                 
                 pause.visible = false;
-                restart = this.physics.add.sprite(640, 40, 'UIrestart');
+                restart = this.physics.add.sprite(width-160, 40, 'UIrestart');
                 restart.scale = 2;
                 restart.visible = false;
                 restart.setInteractive();
@@ -565,7 +566,7 @@
                     levelEntitys[7] = lentity1;
                     transportThisGame.scene.restart();
                 });
-                toMenu = this.physics.add.sprite(580, 40, 'UImenu');
+                toMenu = this.physics.add.sprite(width-220, 40, 'UImenu');
                 toMenu.scale = 2;
                 toMenu.visible = false;
                 toMenu.setInteractive();
@@ -607,8 +608,8 @@
                 sprinkles.depth = 6;
                 this.sprinkles = sprinkles.createEmitter({
                     frame: [0, 1, 2],
-                    x: 400,
-                    y: 350,
+                    x: width/2,
+                    y: menu.y,
                     frequency: 40,
                     quantity: 0,
                     angle: { min: -180, max: 180 },
@@ -618,7 +619,7 @@
                     lifespan: { min: 1000, max: 2000 },
                 });
                 //text
-                textBox = this.add.image(400, /*115*/170, 'text').setScale(5);
+                textBox = this.add.image(width/2, /*115*/170, 'text').setScale(5);
                 textBox.scrollFactorX = 0;
                 textBox.scrollFactorY = 0;
                 textBox.depth = -1;
@@ -721,7 +722,7 @@
                         buttons.removeAll();
                         for (var i = 0; i < buttons.count; i += 1) {
                             
-                            button = buttons.create(400 - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, 350, 'level' + String(i));
+                            button = buttons.create((width/2) - (((buttons.count-1)*buttons.spacing)/2) + i * buttons.spacing, menu.y, 'level' + String(i));
                             if (!(i <= unlocked)) {
                                 lock = locks.create(button.x, button.y, 'lock');
                                 lock.depth = 7;
@@ -813,6 +814,7 @@
             }
 
             var titleScene = new Phaser.Scene("title");
+            var width, height;
             //functions are specified further down.
             var width, height;
             /*if (fullScreen) {
@@ -820,8 +822,8 @@
                 height = window.innerHeight;
                 document.getElementById('cnvs').requestFullscreen();
             } else*/ if (true) {
-                width = 800;
-                height = 600;
+                width = 1128;
+                height = 615;
             }
             var config = {
                 type: Phaser.WEBGL,
@@ -862,7 +864,7 @@
             {
                 transportThisUI.cameras.main.fadeIn(1);
                 if (true) {
-                    percentage = this.add.text(400, 300, '0%', { fontSize: '32px', fill: 'white' , fontFamily: 'Mono'}).setOrigin(0.5);
+                    percentage = this.add.text(width/2, height/2, '0%', { fontSize: '32px', fill: 'white' , fontFamily: 'Mono'}).setOrigin(0.5);
                     this.load.on('progress', function(value) {
                         if (Math.round(value*100)<100) {
                             if (percentage.setText) {
@@ -1236,7 +1238,7 @@
                         taco.disabled = true;
 
                         finished = false;
-                        gameOver = transportThisGame.add.image(400, 300, 'gameOver').setScale(0.77);
+                        gameOver = transportThisGame.add.image(width/2, height/2, 'gameOver').setScale(0.77);
                         gameOver.scrollFactorX = 0;
                         gameOver.scrollFactorY = 0;
                         gameOver.alpha = 0;
@@ -2022,6 +2024,8 @@
                 });
                 mites.children.iterate(function(child) {
                     if (child.body.velocity.y == 0) {
+                        child.anims.stop();
+                        child.anims.play('growingMite');
                         child.setOrigin(0.5, 0);
                         child.refreshBody();
                         child.body.allowGravity = true;
@@ -2029,8 +2033,7 @@
                         //child.body.y = child.initY;
                         child.body.velocity.x = child.initXV;
                         child.body.velocity.y = child.initYV;
-                        child.anims.stop();
-                        child.anims.play('growingMite');
+                        
                     }
                     child.body.x = child.initX+16-(child.body.width/2);
                 });
@@ -2183,19 +2186,19 @@
                 
                 if (level == 6 || level == 7) {
                     gameLoaded = true;//let it know to add the button for creative.
-                    pause.y = 560;
-                    sound.y = 560;
-                    restart.y = 560;
-                    toMenu.y = 560;
+                    pause.y = height-40;
+                    sound.y = height-40;
+                    restart.y = height-40;
+                    toMenu.y = height-40;
                     pause.x = 40;
                     sound.x = 100;
                     restart.x = 160;
                     toMenu.x = 220;
                 } else {
-                    pause.x = 760;
-                    sound.x = 700;
-                    restart.x = 640;
-                    toMenu.x = 580;
+                    pause.x = width-40;
+                    sound.x = width-100;
+                    restart.x = width-160;
+                    toMenu.x = width-220;
                     pause.y = 40;
                     sound.y = 40;
                     restart.y = 40;
@@ -2602,7 +2605,12 @@
                 taco.touchingTree = false;
                 taco.immortale = false;//used for boss
                 taco.skipDeath = false;//used for general purpose.
-                taco.lives = 5;
+                if (previousLives == null) {
+                    taco.lives = 5;
+                    console.log('reset lives');
+                } else {
+                    taco.lives = previousLives;
+                }
                 taco.defLives = 5;
                 taco.setFrictionX(1);
                 taco.limitX = 630;
@@ -3084,7 +3092,20 @@
                         if (mainMusic.volume == 1) {//check if started yet
                             mainMusic.volume = 0.999;
                             Flag.anims.play('flagAwakeAnimation');
+                            if (level > 5) {
+                                mode.setTexture('pause');
+                                tool.visible = true;
+                                folder.visible = true;
+                                Import.visible = true;
+                                Export.visible = true;
+                                if (folder.texture.key !== 'tab6') {
+                                    selectors.setVisible(true);
+                                }
+                                creative = true;
+                                creativeUpdate = true;
+                            }
                             if (level < 6) {
+                                previousLives = taco.lives;
                                 score.visible = false;
                                 if (unlocked < level + 1) {
                                     unlocked = level + 1;
@@ -3155,7 +3176,7 @@
                         //add.text(32, 32, 'Bad Bad Burritos', { fontFamily: 'mono', fontSize: 60, color: '#ffffff' });
                     }
                 });
-                textBox = this.add.image(400, /*115*/170, 'text').setScale(0.2);
+                textBox = this.add.image(width/2, /*115*/170, 'text').setScale(0.2);
                 textBox.scrollFactorX = 0;
                 textBox.scrollFactorY = 0;
                 if (tutorial == true) {
@@ -3250,7 +3271,7 @@
                     active: function ()
                     {
                         
-                        currentDialog = add.text(220, 50, text.charAt(0), { fontFamily: 'mono', fontSize: 22, color: '#ffffff' });
+                        currentDialog = add.text(385, 50, text.charAt(0), { fontFamily: 'mono', fontSize: 22, color: '#ffffff' });
                         currentDialog.scrollFactorX = 0;
                         currentDialog.scrollFactorY = 0;
                         //currentDialog.style.wordWrapWidth = 350;
@@ -3413,7 +3434,7 @@
                     }
                     sequence();
                     //update clouds and backgroundthis.input.keyboard.createCursorKeys()
-                    if (random(1, 125) == 3) {
+                    if (random(1, 125) == 3 && level != 5) {
                         
                         if (random(1, 2) == 1) {
                             cloud = clouds.create(-200, random(1, layer1.height-150), 'cloud' + String(random(1, 2))).setScale(random(30, 40)/10).refreshBody(); 
@@ -3481,6 +3502,7 @@
                     if (creativeUpdate == true) {
                         creativeUpdate = false;
                         if (creative == true) {
+                            arrow.visible = false;
                             returnSprites();
                             taco.body.checkCollision.none = true;
                             taco.body.allowGravity = false;
@@ -4128,6 +4150,8 @@
                             child.body.y = child.initY;
                             child.body.gravity.y = 0;
                             child.body.velocity.y = 0;*/
+                            child.anims.stop();
+                            child.anims.play('growingMite');
                             child.setOrigin(0.5, 0);
                             //child.refreshBody();
                             //child.body.allowGravity = true;
@@ -4135,8 +4159,14 @@
                             child.body.y = child.initY;
                             child.body.velocity.y = 0;
                             child.body.gravity.y = 0;
-                            child.anims.stop();
-                            child.anims.play('growingMite');
+                            //mites update collider
+                            mites.children.iterate(function(child) {
+                                child.body.offset.x = 0;
+                                child.body.offset.y = 0;
+                                child.body.width = child.width*child._scaleX;
+                                child.body.height = child.height*child._scaleY;
+                            });
+                            
                         }
                     });
                     platforms.children.iterate(function(child) {
@@ -4826,6 +4856,7 @@
             var start = false;
             setTimeout(function() {start = true;}, 2000);
             titleScene.create = function () {
+                finished = false;//ensure potat doesn't come.
                 camera = this.cameras.main;
                 camera.setBackgroundColor("#ADD8E6");
                 this.anims.create({key: 'birdAnimation',
@@ -4913,7 +4944,7 @@
                 bird.anims.play('birdAnimation');
                 bird.depth = 1;
                 */
-                mountain = this.physics.add.sprite(400, 600, 'mountain1').setScale(8.5).refreshBody();
+                mountain = this.physics.add.sprite(width/2, height, 'mountain1').setScale(8.5).refreshBody();
                 mountain.setOrigin(0.5, 1);
                 mountain.started = false;
                 //mountain.visible = false;
@@ -4965,16 +4996,16 @@
                         cloudT = 'cloud2';
                     }
                     
-                    var cloud = clouds.create(random(10, 790), random(20, 590), cloudT).setScale(random(30, 45)/10).refreshBody();
+                    var cloud = clouds.create(random(10, 790), random(20, width), cloudT).setScale(random(30, 45)/10).refreshBody();
                     cloud.body.velocity.x = cloudV;
                     cloud.depth = -5;
                 }
                 //the non moving parts (except for button kindof)
-                logo = this.add.image(400, 200, 'background').setScale(2.5);
+                logo = this.add.image(width/2, height/3, 'background').setScale(2.5);
                 //logo.visible = false;
                 logo.depth = 1;
                 
-                playButton = this.add.image(400, 545, 'play').setScale(1);
+                playButton = this.add.image(width/2, height-55, 'play').setScale(1);
                 //playButton.visible = false;
                 playButton.depth = 1;
                 playButton.start = function() {
@@ -5303,10 +5334,10 @@
                 */
                 if (random(1, 100) == 3) {
                     if (random(1, 2) == 1) {
-                        cloudX = -150;
+                        cloudX = -250;
                         cloudV = random(50, 100);
                     } else {
-                        cloudX = 1050;
+                        cloudX = width + 250;
                         cloudV = -1*random(50, 100);
                     }
                     if (random(1, 2) == 1) {
