@@ -901,6 +901,7 @@
                 this.load.audio('mainMusic', ['assets/UpTown.mp3']);
                 this.load.audio('caveMusic', ['assets/Cave in.mp3']);
                 this.load.audio('mainMusic2', ['assets/rainingFun.mp3']);
+                this.load.audio('mainMusic3', ['assets/Graceful Grills.mp3']);
                 this.load.audio('burritoJump', ['assets/burritojump.wav']);
                 this.load.audio('walking', ['assets/walking.mp3']);
                 this.load.audio('boss1', ['assets/boss0.mp3']);
@@ -1251,6 +1252,7 @@
                             {
                                 mainMusic.volume = 0;
                                 mainMusic2.volume = 0;
+                                mainMusic3.volume = 0;
                                 caveMusic.volume = 0;
                                 for (var i = 0; i < bossMusic.length; i += 1) {
                                     bossMusic[i].volume = 0;
@@ -1351,7 +1353,7 @@
                     //look above :)
                     driller.initX = x;
                     driller.initY = y;
-                    driller.initXV = 200;
+                    driller.initXV = 250;
                     driller.initYV = 0;
                     driller.started = false;
                     driller.que = 0;
@@ -1592,6 +1594,7 @@
                     var coin = creams.create(x+16, y+16, 'cream');//.setScale(2);//.refreshBody();// this causes a bug i think?
                     coin.setFrame(Math.round((type-19)*10));
                     map.putTileAt(0, map.worldToTileX(x), map.worldToTileY(y));
+                    map1[Math.round(y/32)][Math.round(x/32)] = 0;
                     coin.setScale(0.9999999, 1.0000001);
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
@@ -1726,6 +1729,7 @@
                     entity1[Math.round(y/32)][Math.round(x/32)] = type;
                     
                     map.putTileAt(0, map.worldToTileX(x), map.worldToTileY(y));
+                    map1[Math.round(y/32)][Math.round(x/32)] = 0;
                     coin.setScale(0.100001);
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
@@ -2159,6 +2163,7 @@
             var toolSelect = 'mouse';
             var mainMusic;
             var mainMusic2;
+            var mainMusic3;
             var bossMusic;
             function create ()
             {
@@ -2229,6 +2234,7 @@
                 //music
                 mainMusic = this.sound.add('mainMusic');
                 mainMusic2 = this.sound.add('mainMusic2');
+                mainMusic3 = this.sound.add('mainMusic3');
                 caveMusic = this.sound.add('caveMusic');
                 burritoJump = this.sound.add('burritoJump');
                 bossMusic = [];
@@ -2242,14 +2248,30 @@
                 gameOverMusic = this.sound.add('overMusic');
                 mainMusic.volume = 0;
                 mainMusic2.volume = 0;
+                mainMusic3.volume = 0;
                 
                 //mainMusic.loop = true;
                 if (level != 5) {
-                    if (Math.round(level/2) != level/2) {
-                        mainMusic2.play();
-                        
-                    } else {
-                        mainMusic.play();
+                    switch(level) {
+                        case 0:
+                            mainMusic.play();
+                            break;
+                        case 1: 
+                            mainMusic2.play();
+                            break;
+                        case 2:
+                            mainMusic3.play();
+                            break;
+                        case 3:
+                            mainMusic.play();
+                            break;
+                        case 4:
+                            mainMusic2.play();
+                            break;
+                        case 6:
+                            mainMusic3.play();
+                        case 7:
+                            mainMusic3.play();
                     }
                 } else {
                     caveMusic.play();
@@ -2265,7 +2287,8 @@
                     }
                 }, 16);
                 mainMusic.on('complete', ()=>{setTimeout(()=>{mainMusic2.play();}, 1000)});
-                mainMusic2.on('complete', ()=>{setTimeout(()=>{mainMusic.play();}, 1000)});
+                mainMusic2.on('complete', ()=>{setTimeout(()=>{mainMusic3.play();}, 1000)});
+                mainMusic3.on('complete', ()=>{setTimeout(()=>{mainMusic.play();}, 1000)});
                 caveMusic.on('complete', ()=>{setTimeout(()=>{caveMusic.play();}, 1000)});
                 this.graphics = this.add.graphics();
                 //the variables of the game.
@@ -2433,6 +2456,11 @@
                  {key: 'heart8'},],
                 frameRate:20,
                 repeat:0});
+                //heart animation
+                this.anims.create({key:'heartAnimation2',
+                 frames: [{key: 'heart1'},],
+                frameRate:20,
+                repeat:-1});
                 //moving right
                 this.anims.create({key: 'right',
                  frames: [{key: 'right1'},
@@ -2628,10 +2656,8 @@
                 ship.visible = false;
                 bullets = this.physics.add.group();
                 enemies = this.physics.add.group();
-                
-
                 //collisions with player
-                layer1.setCollision([0, 2, 3, 8, 10, 13, 14, 15, 16, 17, 18, 19, 20]);
+                layer1.setCollision([0, 2, 3, 8, 10, 13, 14, 15, 16, 17, 18, 19, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33]);
                 this.physics.add.collider(taco, layer1);
                 //hearts
                 //hearts = this.physics.add.group();
@@ -2785,7 +2811,7 @@
                 this.physics.add.collider(limes, burritos);
                 this.physics.add.collider(taco, meatballs, false, null, this);
                 this.physics.add.collider(meatballs, layer1);
-                this.physics.add.collider(keys, layer1);
+                //this.physics.add.collider(keys, layer1);
                 this.physics.add.collider(taco, doors);
                 this.physics.add.collider(poisons, layer1);
                 this.physics.add.collider(doors, limes);
@@ -3121,6 +3147,7 @@
                                         
                                         mainMusic.volume = 0;
                                         mainMusic2.volume = 0;
+                                        mainMusic3.volume = 0;
                                         transportThisGame.sound.volume = 1;
                                         levelEnd.setAlpha(1);
                                         clearInterval(levelEnd.fadeout);
@@ -3144,14 +3171,16 @@
                     taco.cream = true;
                 }
                 function tacoHitMeatball(Taco, Meatball) {
-                    if (Math.abs(Taco.x - Meatball.x) < 30 && (Taco.body.y + Taco.height) < Meatball.y) {
-                        if (Taco.body.touching.down) {
-                            Taco.body.velocity.y = -600;
-                            Meatball.body.velocity.x = random(-200, 200);
-                        }
-                        if (Taco.body.touching.down && (cursors.up.isDown || keyW.isDown) && taco.disabled == false) {
-                            Taco.body.velocity.y = -1500;
-                            Meatball.body.velocity.x = random(-200, 200);
+                    if (Math.abs(Meatball.body.velocity.y) < 50) {
+                        if (Math.abs(Taco.x - Meatball.x) < 30 && (Taco.body.y + Taco.height) < Meatball.y) {
+                            if (Taco.body.touching.down) {
+                                Taco.body.velocity.y = -600;
+                                Meatball.body.velocity.x = random(-200, 200);
+                            }
+                            if (Taco.body.touching.down && (cursors.up.isDown || keyW.isDown) && taco.disabled == false) {
+                                Taco.body.velocity.y = -1500;
+                                Meatball.body.velocity.x = random(-200, 200);
+                            }
                         }
                     }
                 }
@@ -3216,7 +3245,12 @@
                     if (lives < hearts.children.entries.length) {
                         heart = hearts.children.entries[hearts.children.entries.length-1];
                         heart.anims.play('heartAnimation').once('animationcomplete', function(){
-                            heart.destroy();
+                            for (var i = 0; i < 10; i += 1) {
+                                if (heart) {
+                                    heart.destroy();
+                                }
+                            }
+                            
                         });
                     }
                     if (lives > hearts.children.entries.length) {
@@ -3309,7 +3343,7 @@
                 if (textBox.scale < 4) {
                     textBox.scale += 0.2;
                 } else {
-                    potat.x = camera.worldView.x + 850;
+                    potat.x = camera.worldView.x + 1000;
                     potat.visible = true;
                     potat.summoned = true;
                 }
@@ -3757,10 +3791,17 @@
                     }
                     
                     if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 1/* && hold == false*/ && creative == true && disableEdit == false) {
-                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== -1) {
+                        var entityType = entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)];
+                        var mapType = map1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)];
+                        var mapTypes = [4, 11, 5, 6, 7];//background block types
+                        if (/*(entityType >= 19 && entityType < 20) || (entityType >= 26 && entityType < 27) || */!mapTypes.includes(mapType)) {
+                            //if the above statement is true, we will want to erase the block underneath it.
+                            removeTile(mousePointer.x, mousePointer.y);
+                        }
+                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] != -1) {
                             this.eraseEntity(Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32);
                         }
-                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] !== select) {
+                        if (entity1[Math.round((-16+mousePointer.y)/32)][Math.round((-16+mousePointer.x)/32)] != select) {
                             newEntity(select, Math.round((mousePointer.x-16)/32)*32, Math.round((mousePointer.y-16)/32)*32, 0, 0);
                         }
                         
@@ -3771,9 +3812,8 @@
                     } else {
                         hold = false;
                     }
-                    
-                    if (creative == true && ((this.input.manager.activePointer.isDown && toolSelect == 'erase') || keyE.isDown)) {
-                        var tile = map.getTileAtWorldXY(mousePointer.x, mousePointer.y);
+                    function removeTile(x, y) {
+                        var tile = map.getTileAtWorldXY(x, y);
                         
                         if (tile !== null) {
                             map.removeTile(tile, -1, false);
@@ -3820,6 +3860,9 @@
                                 map.putTileAt(map1[tileSelectY+yAlter][tileSelectX+xAlter], tileSelectX+xAlter, tileSelectY+yAlter);
                             }
                         }
+                    }
+                    if (creative == true && ((this.input.manager.activePointer.isDown && toolSelect == 'erase') || keyE.isDown)) {
+                        removeTile(mousePointer.x, mousePointer.y);
                     }
 
                     if (toolSelect == 'mouse' && this.input.manager.activePointer.isDown && typeEdit == 2 && creative == true && disableEdit == false) {
@@ -4115,8 +4158,9 @@
                             } else {
                                 arrow.angle -= (delta/16.666)*(4/transportThis.physics.world.timeScale);
                             }
-                            if (arrow.angle > 70 || arrow.angle < -70) {
+                            if (arrow.angle > 75 || arrow.angle < -75) {
                                 arrow.direction *= -1;
+                                arrow.angle += 5*arrow.direction;
                             }
                             arrow.visible = true;
                             child.originX = 0.5;
@@ -4284,7 +4328,7 @@
                     //here we have the code for the drill boss
                     
                     drillers.children.iterate(function(child) {
-                        if (creative == false && child.active == true && (taco.x > 6175 || child.started == true)) {
+                        if (creative == false && child.active == true && ((taco.x > 5945 && taco.y > 775) || child.started == true)) {
                             
                             if (child.phase == 2) {
                                 if (random(1, 170) == 1) {
@@ -4308,6 +4352,7 @@
                                 }
                                 mainMusic.stop();
                                 mainMusic2.stop();
+                                mainMusic3.stop();
                                 caveMusic.stop();
                             }
                             if ((bossMusic[child.currentSong].totalDuration - bossMusic[child.currentSong].seek) < 0.07 || bossMusic[child.currentSong].isPlaying == false) {
@@ -4358,15 +4403,15 @@
                                 default:
                                     switch (child.que) {
                                         case 1:
-                                            if (child.body.x > (child.initX + 200)) {
+                                            if (child.body.x > (child.initX + 350)) {
                                                 child.que += 1;
-                                                child.body.velocity.x = -200;
+                                                child.body.velocity.x = -1 * child.initXV;
                                             }
                                             break;
                                         case 2:
-                                            if (child.body.x < (child.initX - 200)) {
+                                            if (child.body.x < (child.initX - 350)) {
                                                 child.que += 1;
-                                                child.body.velocity.x = 200;
+                                                child.body.velocity.x = child.initXV;
                                             }
                                             break;
                                         case 3:
@@ -4377,9 +4422,9 @@
                                             }
                                             break;
                                         case 4:
-                                            if (child.body.x > (child.initX + 200)) {
+                                            if (child.body.x > (child.initX + 350)) {
                                                 child.que += 1;
-                                                child.body.velocity.x = -200;
+                                                child.body.velocity.x = -1 * child.initXV;
                                             }
                                             break;
                                         case 5:
@@ -4390,15 +4435,15 @@
                                             }
                                             break;
                                         case 6:
-                                            if (child.body.x < (child.initX - 200)) {
+                                            if (child.body.x < (child.initX - 350)) {
                                                 child.que += 1
-                                                child.body.velocity.x = 200;
+                                                child.body.velocity.x = child.initXV;
                                             }
                                             break;
                                         
                                         
                                         case 7:
-                                            if (child.body.x > (child.initX + 200)) {
+                                            if (child.body.x > (child.initX + 350)) {
                                                 child.que += 1;
                                                 child.anims.stop();
                                                 child.setOrigin(0.5, 1);
@@ -4425,16 +4470,16 @@
                                             break;
                                         case 11:
                                             child.que += 1;
-                                            child.body.velocity.x = -300;
+                                            child.body.velocity.x = -1.33 * child.initXV;
                                             break;
                                         case 12:
-                                            if (child.body.x < (child.initX - 200)) {
+                                            if (child.body.x < (child.initX - 350)) {
                                                 child.que += 1;
-                                                child.body.velocity.x = 300;
+                                                child.body.velocity.x = 1.33 * child.initXV;
                                             }
                                             break;
                                         case 13:
-                                            if (child.body.x > (child.initX + 200)) {
+                                            if (child.body.x > (child.initX + 350)) {
                                                 child.que += 1;
                                                 child.body.velocity.x = 0;
                                                 child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
@@ -4447,7 +4492,7 @@
                                             child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
                                                 child.que += 1;
                                                 child.setOrigin(0.5, 0.5);
-                                                child.body.velocity.x = -200;
+                                                child.body.velocity.x = -1 * child.initXV;
                                                 child.body.gravity.y = 1000;
                                                 child.y -= (child.displayHeight/2);
                                                 child.anims.play('drillingAnimation');
@@ -4465,8 +4510,8 @@
                                             }
                                             break;
                                         case 18:
-                                            if (child.body.x < (child.initX - 200)) {
-                                                child.body.velocity.x = 200;
+                                            if (child.body.x < (child.initX - 350)) {
+                                                child.body.velocity.x = child.initXV;
                                                 
                                                 if (child.lives == 8 || child.lives == 7) {
                                                     child.que = 1;
@@ -4489,7 +4534,7 @@
                                         case 1:
                                             child.body.velocity.x = 300;
                                             if (child.body.blocked.down == true) {
-                                                child.body.velocity.y = -300;
+                                                child.body.velocity.y = -600;
                                                 camera.shake(400, 0.005);
                                                 child.que += 1;
                                             }
@@ -4513,7 +4558,7 @@
                                                         child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
                                                             child.anims.play('drillingAnimation');
                                                             child.body.velocity.y = -300;
-                                                            child.body.velocity.x = 300;
+                                                            child.body.velocity.x = 1.33*child.initXV;
                                                             child.body.gravity.y = child.pastGY;
                                                             child.setOrigin(0.5, 0.5);
                                                             child.y -= (child.displayHeight/2);
@@ -4524,7 +4569,7 @@
                                             }
                                             break;
                                         case 5:
-                                            if (child.body.x > (child.initX + 200) && child.body.blocked.down) {
+                                            if (child.body.x > (child.initX + 350) && child.body.blocked.down) {
                                                 child.que += 1;
                                                 child.anims.stop();
                                                 child.setOrigin(0.5, 1);
@@ -4551,10 +4596,10 @@
                                             break;
                                         case 9:
                                             child.que += 1;
-                                            child.body.velocity.x = -400;
+                                            child.body.velocity.x = -1.33 * child.initXV;
                                             break;
                                         case 10:
-                                            if (child.body.x < (child.initX - 200)) {
+                                            if (child.body.x < (child.initX - 350)) {
                                                 child.que += 1;
                                                 child.body.velocity.x = 0;
                                                 child.anims.play('unPoppingAnimation').once('animationcomplete-unPoppingAnimation', ()=>{
@@ -4567,7 +4612,7 @@
                                             child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
                                                 child.que += 1;
                                                 child.setOrigin(0.5, 0.5);
-                                                child.body.velocity.x = 300;
+                                                child.body.velocity.x = child.initXV;
                                                 child.body.gravity.y = 1000;
                                                 child.y -= (child.displayHeight/2);
                                                 child.anims.play('drillingAnimation');
@@ -4634,7 +4679,7 @@
                                             child.anims.play('upAnimation').once('animationcomplete-upAnimation', ()=>{
                                                 child.que += 1;
                                                 child.setOrigin(0.5, 0.5);
-                                                child.body.velocity.x = 200;
+                                                child.body.velocity.x = child.initXV;
                                                 child.body.gravity.y = 1000;
                                                 child.y -= (child.displayHeight/2);
                                                 child.anims.play('drillingAnimation');
@@ -4646,10 +4691,10 @@
                                         case 11:
                                             child.que += 1;
                                             if (child.x < taco.x) {
-                                                child.body.velocity.x = 200;
+                                                child.body.velocity.x = child.initXV;
                                                 child.body.velocity.y = -450;
                                             } else {
-                                                child.body.velocity.x = -200;
+                                                child.body.velocity.x = -1 * child.initXV;
                                                 child.body.velocity.y = -450;
                                             }
                                             break;
@@ -4764,6 +4809,7 @@
                 transportThisGame = null;
                 mainMusic.destroy();
                 mainMusic2.destroy();
+                mainMusic3.destroy();
                 caveMusic.destroy();
                 for (var i = 0; i < bossMusic.length; i += 1) {
                     bossMusic[i].stop();
@@ -5377,6 +5423,7 @@
             * {
                 margin: 0px;
                 padding: 0px;
+                overflow: hidden;
             }
         </style>
         <!--
