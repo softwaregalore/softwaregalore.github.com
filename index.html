@@ -1226,7 +1226,7 @@
                     meatballs.children.iterate(function(child) {
                         child.body.x = child.initX;
                         child.body.y = child.initY;
-                        child.angle = random(0, 1)*180;
+                        child.angle = 0;
                     });
                     if (taco.lives > 0) {
                         taco.skipDeath = true;//after the check.
@@ -2682,6 +2682,7 @@
                     taco.startX = 100;
                 }
                 taco.startY = layer1.height-200;
+                taco.hitFlag = false;
                 //minigame
                 ship = this.physics.add.sprite(400, 480, "still");
                 ship.visible = false;
@@ -3149,8 +3150,8 @@
                 var sequenceEnd = 8;
                 function tacoHitFlag(Taco, Flag) {
                     
-                        if (mainMusic.volume == 1) {//check if started yet
-                            mainMusic.volume = 0.999;
+                        if (taco.hitFlag == false) {//check if started yet
+                            taco.hitFlag = true;
                             Flag.anims.play('flagAwakeAnimation');
                             if (level > 5) {
                                 mode.setTexture('pause');
@@ -3756,7 +3757,7 @@
                             }
                             if (tutorialSequence == 40) {
                                 tutorialSequence += 1;
-                                text('Well, that is all. \nGood luck with the \nrest of the level!', 150, function(){setTimeout(function(){
+                                text('Well, that is all. \nGood luck with the \nrest of the level!\nHint: try pushing \nthe lime.', 150, function(){setTimeout(function(){
                                     tutorialSequence += 1;
                                     taco.disabled = false;
                                     taco.limitX = 4000;
@@ -5065,22 +5066,25 @@
                 titleMusic.play();
                 //clouds
                 clouds = this.physics.add.group();
-                for (var i=0; i<12; i += 1) {
-                    if (random(1, 2) == 1) {
-                        cloudV = random(50, 100);
-                    } else {
-                        cloudV = -1*random(50, 100);
+                if (level != 5) {
+                    for (var i=0; i<12; i += 1) {
+                        if (random(1, 2) == 1) {
+                            cloudV = random(50, 100);
+                        } else {
+                            cloudV = -1*random(50, 100);
+                        }
+                        if (random(1, 2) == 1) {
+                            cloudT = 'cloud1';
+                        } else {
+                            cloudT = 'cloud2';
+                        }
+                        
+                        var cloud = clouds.create(random(10, 790), random(20, width), cloudT).setScale(random(30, 45)/10).refreshBody();
+                        cloud.body.velocity.x = cloudV;
+                        cloud.depth = -5;
                     }
-                    if (random(1, 2) == 1) {
-                        cloudT = 'cloud1';
-                    } else {
-                        cloudT = 'cloud2';
-                    }
-                    
-                    var cloud = clouds.create(random(10, 790), random(20, width), cloudT).setScale(random(30, 45)/10).refreshBody();
-                    cloud.body.velocity.x = cloudV;
-                    cloud.depth = -5;
                 }
+                
                 //the non moving parts (except for button kindof)
                 logo = this.add.image(width/2, height/3, 'background').setScale(2.5);
                 //logo.visible = false;
