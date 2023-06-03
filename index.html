@@ -89,6 +89,7 @@
             var timeSkill;//used later.
             function UIpreload () 
             {
+                window.CrazyGames.SDK.game.sdkGameLoadingStart();
                 //level UI
                 this.load.image('tab1', 'assets/tab1.png');
                 this.load.image('tab2', 'assets/tab2.png');
@@ -550,12 +551,14 @@
                 pause.setInteractive();
                 pause.on('pointerup', ()=>{
                     if (pause.texture.key == "UIplay") {
+                        window.CrazyGames.SDK.game.gameplayStop();
                         pause.setTexture('UIpause');
                         sound.visible = true;
                         restart.visible = true;
                         toMenu.visible = true;
                         transportThisGame.scene.pause();
                     } else {
+                        window.CrazyGames.SDK.game.gameplayStart();
                         pause.setTexture('UIplay');
                         sound.visible = false;
                         restart.visible = false;
@@ -1134,6 +1137,7 @@
                 const callbacks = {
                     adFinished: () => {
                         console.log("End midgame ad (callback)");
+                        window.CrazyGames.SDK.game.gameplayStart();
                         transportThisGame.scene.resume();
                         transportThisGame.sound.setMute(false);
                         //continue with the game.
@@ -1149,6 +1153,7 @@
                     },
                     adStarted: () => {
                         console.log("Start midgame ad (callback)");
+                        window.CrazyGames.SDK.game.gameplayStop();
                     },
                 };
                 transportThisGame.scene.pause();
@@ -1159,6 +1164,7 @@
                 const callbacks = {
                     adFinished: () => {
                         console.log("End rewarded ad (callback)");
+                        window.CrazyGames.SDK.game.gameplayStart();
                         transportThisTitle.scene.resume();
                         transportThisTitle.sound.setMute(false);
                         //continue with the game.
@@ -1174,6 +1180,7 @@
                     },
                     adStarted: () => {
                         console.log("Start rewarded ad (callback)");
+                        window.CrazyGames.SDK.game.gameplayStop();
                     },
                 };
                 transportThisTitle.scene.pause();
@@ -2195,7 +2202,7 @@
             var bossMusic;
             function create ()
             {
-
+                window.CrazyGames.SDK.game.sdkGameLoadingStop();
                 textSequence = 0;
 
                 menuOpen = false;
@@ -4861,6 +4868,7 @@
             var introMusic;
             var titleMusic;
             titleScene.preload = function () {
+                window.CrazyGames.SDK.game.sdkGameLoadingStart();
                 this.load.image('madeBy', 'assets/madeBy.png');
                 this.load.image('tv1', 'assets/tvTransparent.png');
                 this.load.image('tv2', 'assets/tv.png');
@@ -4938,6 +4946,8 @@
             var start = false;
             setTimeout(function() {start = true;}, 2000);
             titleScene.create = function () {
+                window.CrazyGames.SDK.game.sdkGameLoadingStop();
+                window.CrazyGames.SDK.game.gameplayStart();
                 finished = false;//ensure potat doesn't come.
                 camera = this.cameras.main;
                 camera.setBackgroundColor("#ADD8E6");
