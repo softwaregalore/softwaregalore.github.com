@@ -1148,8 +1148,13 @@
                     },
                     adError: (error) => {
                         console.log("Error midgame ad (callback)", error);
+                        window.CrazyGames.SDK.game.gameplayStart();
                         transportThisGame.scene.resume();
                         transportThisGame.sound.setMute(false);
+                        //continue with the game.
+                        if (cont) {
+                            cont();
+                        }
                     },
                     adStarted: () => {
                         console.log("Start midgame ad (callback)");
@@ -1175,8 +1180,13 @@
                     },
                     adError: (error) => {
                         console.log("Error rewarded ad (callback)", error);
+                        window.CrazyGames.SDK.game.gameplayStart();
                         transportThisTitle.scene.resume();
                         transportThisTitle.sound.setMute(false);
+                        //continue with the game.
+                        if (cont) {
+                            cont();
+                        }
                     },
                     adStarted: () => {
                         console.log("Start rewarded ad (callback)");
