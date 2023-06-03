@@ -124,6 +124,8 @@
                 //saving buttons
                 this.load.image('import', 'assets/import.png');
                 this.load.image('export', 'assets/export.png');
+
+                this.load.image('spin', 'assets/spin.png');
                 //score
 
                 this.load.image('counter', 'assets/counter.png');
@@ -356,6 +358,7 @@
                         folder.visible = true;
                         Import.visible = true;
                         Export.visible = true;
+                        Spin.visible = true;
                         if (folder.texture.key !== 'tab6') {
                             selectors.setVisible(true);
                         }
@@ -367,6 +370,7 @@
                         folder.visible = false;
                         Import.visible = false;
                         Export.visible = false;
+                        Spin.visible = false;
                         selectors.setVisible(false);
                         creative = false;
                         creativeUpdate = true;
@@ -430,6 +434,7 @@
                     folder.visible = false;
                     Import.visible = false;
                     Export.visible = false;
+                    Spin.visible = false;
                     selectors.setVisible(false);
                     creative = false;
                     creativeUpdate = true;
@@ -460,6 +465,23 @@
                 });
                 Export.on('pointerover', () => {disableEdit = true});
                 Export.on('pointerout', () => {disableEdit = false});
+                Spin = this.physics.add.sprite(width-180, 40, 'spin');
+                Spin.scale = 0.3;
+                Spin.visible = false;
+                Spin.setInteractive();
+                Spin.on('pointerup', () => {
+                    rotate += 1;
+                    if (rotate >= 8) {
+                        rotate = 0;
+                    }
+                    selectors.refresh();
+                    selectors.refresh();
+                    selectors.refresh();
+                    typeEdit = selectData.tabsType[folder.tab][currentSelector];
+                    select = selectData.tabsSelect[folder.tab][currentSelector];
+                });
+                Spin.on('pointerover', () => {disableEdit = true});
+                Spin.on('pointerout', () => {disableEdit = false});
                 //skill check
                 timeSkill = this.physics.add.sprite(width/2, 200, 'skill1');
                 timeSkill.scale = 2;
@@ -559,6 +581,7 @@
                     folder.visible = false;
                     Import.visible = false;
                     Export.visible = false;
+                    Spin.visible = false;
                     selectors.setVisible(false);
                     creative = false;
                     creativeUpdate = true;
@@ -588,6 +611,7 @@
                     folder.visible = false;
                     Import.visible = false;
                     Export.visible = false;
+                    Spin.visible = false;
                     selectors.setVisible(false);
                     hearts.setVisible(false);
                     creative = false;
@@ -664,6 +688,7 @@
                         folder.visible = true;
                         Import.visible = true;
                         Export.visible = true;
+                        Spin.visible = true;
                         if (folder.texture.key !== 'tab6') {
                             selectors.setVisible(true);
                         }
@@ -675,6 +700,7 @@
                         folder.visible = false;
                         Import.visible = false;
                         Export.visible = false;
+                        Spin.visible = false;
                         selectors.setVisible(false);
                         creative = false;
                         creativeUpdate = true;
@@ -1009,7 +1035,9 @@
                 this.load.image('tree1', 'assets/tree 1.png');
                 this.load.image('streetlight', 'assets/Streetlight.png');
 
-                this.load.image('landscape', 'assets/newLand.png');
+                this.load.image('landscape', 'assets/landSheet.png');
+                this.load.tilemapTiledJSON('landscapeJSON', 'assets/landSheet.json');
+                //this.load.atlas('landscape', 'assets/landSheet.png', 'assets/landSheet.json');
                 this.load.image('platform', 'assets/platform.png');
                 this.load.image('platform1', 'assets/platform1.png');
                 this.load.image('platform2', 'assets/platform2.png');
@@ -2280,9 +2308,11 @@
                 mainMusic.fade = setInterval(()=>{
                     mainMusic.volume += 0.08;
                     mainMusic2.volume += 0.08;
+                    mainMusic3.volume += 0.08;
                     if (mainMusic.volume >= 1) {
                         mainMusic.volume = 1;
                         mainMusic2.volume = 1;
+                        mainMusic3.volume = 1;
                         clearInterval(mainMusic.fade);
                     }
                 }, 16);
@@ -2295,9 +2325,10 @@
                 tacoVelocityX = 0;
                 select = 0;
 
-                map = this.make.tilemap({data: map1, tileWidth: 32, tileHeight: 32});
-                map.addTilesetImage('landscape')//.setScale(0.5).refreshBody();
-                layer1 = map.createLayer(0, 'landscape', 0, 0);
+                map = this.make.tilemap({key: 'landscapeJSON', data: map1, tileWidth: 32, tileHeight: 32});
+                var tileset = map.addTilesetImage('frames', 'landscape', 32, 32, 10, 22);//.setScale(0.5).refreshBody();
+
+                layer1 = map.createLayer(0, tileset, 0, 0);
                 layer1.depth = 0;
                 function createEntities(entityList, gridWidth, gridHeight) {
                     creative = true;
@@ -2988,8 +3019,11 @@
                         //Bottle.allowGravity = false;
                         Bottle.body.gravity.y = 0;
                         Bottle.body.velocity.y = 0;
-                        if (camera.zoom > 1) {
-                            camera.zoom -= 0.015;
+                        if (camera.zoom > 1.3) {
+                            camera.zoom -= 0.02;
+                        }
+                        if (camera.zoom < 1.3) {
+                            camera.zoom = 1.3
                         }
                     }
                 }
@@ -3124,6 +3158,7 @@
                                 folder.visible = true;
                                 Import.visible = true;
                                 Export.visible = true;
+                                Spin.visible = true;
                                 if (folder.texture.key !== 'tab6') {
                                     selectors.setVisible(true);
                                 }
@@ -3511,7 +3546,7 @@
                     keyN = this.input.keyboard.addKey(Phaser.Input.Keyboard.KeyCodes.N);
                     //make sure the camera zoom is right
                     if (camera.zoom <= 1.3 && keySpace.isDown == false) {
-                        camera.zoom += 0.015;
+                        camera.zoom += 0.02;
                     }
                     //debugging cursor position
                     if (Phaser.Input.Keyboard.JustDown(keyC)) {
