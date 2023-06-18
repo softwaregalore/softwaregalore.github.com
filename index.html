@@ -51,7 +51,7 @@
             var level = 3;
             var gameDelta;
             var hearts;
-            var unlocked = 5;
+            var unlocked = 0;
             var tutorial;
             var inMenu = true;
             var finished = false;
@@ -130,6 +130,8 @@
                 //score
 
                 this.load.image('counter', 'assets/counter.png');
+
+                
             }
             var gameLoaded = false;
             var check1 = -1;//tell UI what to display.
@@ -653,6 +655,8 @@
                 textBox.visible = false;
                 //define this here
                 hearts = this.physics.add.group();
+
+                
             }
             var menuOpen = false;
             
@@ -667,7 +671,7 @@
                 if (UIPointer.y > folder.displayHeight) {
                     disableEdit = false;
                 }
-
+                
                 if (gameLoaded == true) {
                     mode.visible = true;
                 } else {
@@ -2343,7 +2347,7 @@
                 select = 0;
 
                 map = this.make.tilemap({key: 'landscapeJSON', data: map1, tileWidth: 32, tileHeight: 32});
-                var tileset = map.addTilesetImage('frames', 'landscape', 32, 32, 10, 22);//.setScale(0.5).refreshBody();
+                var tileset = map.addTilesetImage('frames', 'landscape', 32, 32, 11, 22);//.setScale(0.5).refreshBody();
 
                 layer1 = map.createLayer(0, tileset, 0, 0);
                 layer1.depth = 0;
@@ -4880,6 +4884,7 @@
             titleScene.preload = function () {
                 window.CrazyGames.SDK.game.sdkGameLoadingStart();
                 this.load.image('madeBy', 'assets/madeBy.png');
+                //this.load.image('crazygames', 'crazygames.png');
                 this.load.image('tv1', 'assets/tvTransparent.png');
                 this.load.image('tv2', 'assets/tv.png');
                 this.load.image('lines', 'assets/scanLines.png');
@@ -5078,7 +5083,8 @@
                 //here we have our shooters
                 shooters = this.physics.add.group();
                 shooters.visible = true;
-
+                crazy = this.physics.add.sprite(width-40, height-40, 'crazygames');
+                crazy.scale = 0.06;
                 this.physics.world.drawDebug = false;// we have to specify this because we alternate this later in the code
                 titleMusic = this.sound.add('titleMusic');
                 introMusic = this.sound.add('introMusic');
