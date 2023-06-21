@@ -1267,7 +1267,24 @@
                     burritos.children.iterate(function(child) {
                         child.dying = false;
                     });
-                    
+                    //before we go, check if we need to reset locks
+                    if (level == 4 && taco.x > 3900 && taco.x < 5730) {
+
+                        doors.children.iterate(function(child) {
+                            child.enableBody(true, child.x, child.y, true, true);
+                            child.scale = 1;
+                            child.locked = true;
+                            child.body.velocity.x = 0;
+                            child.body.velocity.y = 0;
+                            child.body.allowGravity = false;
+                        });
+
+                        //start the sequence again
+                        door = doors.children.entries[10];
+                        door.scale = 1.01;
+                        door.locked = false;
+                        setTimeout(()=>{door.disableBody(true, true);}, 200);
+                    }
                     taco.body.x = taco.startX;//for tutorial
                     taco.body.y = taco.startY;
                     taco.body.velocity.x = 0;
@@ -2674,6 +2691,7 @@
                     taco = this.physics.add.sprite(100, layer1.height-200, 'still').setScale(1.75).refreshBody();
                 }
                 taco.body.setMaxVelocityY(900);
+                taco.body.setMaxVelocityX(250);
                 taco.disabled = false;//control whether they can move;
                 taco.cream = false;
                 taco.gum = false;
@@ -2871,6 +2889,10 @@
                 this.physics.add.collider(burritos, doors);
                 this.physics.add.collider(bottles, doors);
                 this.physics.add.collider(meatballs, meatballs);
+                this.physics.add.collider(platforms, meatballs);
+                this.physics.add.collider(platformsLeft, meatballs);
+                this.physics.add.collider(platformsUp, meatballs);
+                this.physics.add.collider(platformsDown, meatballs);
                 Phaser.tacoHarmony = this.physics.add.collider(taco, burritos);//have to access it elsewhere
                 Phaser.tacoHarmony.active = false;
 
@@ -3111,6 +3133,7 @@
                 }
                 function keyHitDoor(key, door) {
                     if (creative == false) {
+                        console.log(door);
                         key.disableBody(true, true);
                         door.scale = 1.01;
                         door.locked = false;
@@ -3477,6 +3500,10 @@
                     }
                     
                     inMenu = false;
+                    //if in creative mode, ensure flags reset
+                    if (creative == true) {
+                        taco.hitFlag = false;
+                    }
                     //coins
                     if (score.value >= 50) {
                         taco.lives += 1;
@@ -4001,7 +4028,7 @@
                         dirtEmitter.setPosition(taco.x, taco.y + 40);
                         if (taco.disabled == false) {
                             if (taco.cream) {
-                                tacoVelocityX -= 4.5;
+                                tacoVelocityX -= 15;
                             } else {
                                 tacoVelocityX -= 27;
                                 if (delta/16.66 > 1.5) {
@@ -4021,7 +4048,7 @@
                         dirtEmitter.setPosition(taco.x, taco.y + 40);
                         if (taco.disabled == false) {
                             if (taco.cream) {
-                                tacoVelocityX += 4.5;
+                                tacoVelocityX += 15;
                             } else {
                                 tacoVelocityX += 27;
                                 if (delta/16.66 > 1.5) {
@@ -4040,7 +4067,7 @@
 
                     taco.setVelocityX(tacoVelocityX);
                     if (taco.cream) {
-                        tacoVelocityX = tacoVelocityX * 0.991;//0.8
+                        tacoVelocityX = tacoVelocityX * 0.965;//0.8
                     } else if (taco.gum) {
                         tacoVelocityX = tacoVelocityX * 0.78;
                         taco.body.velocity.y *= 0.8;
@@ -4381,6 +4408,12 @@
                         child.angle += 0.012 * child.body.velocity.x;
                         child.body.velocity.x *= 0.995;
                     });
+                    if (level == 4 && limes.children.entries.length > 1 && limes.children.entries[1].y > 1260) {
+                        child = limes.children.entries[1];
+                        child.body.x = child.initX;
+                        child.body.y = child.initY;
+                        child.body.velocity.x = 0;
+                    }
                     
                     //here we have the code for the drill boss
                     
