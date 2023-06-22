@@ -1271,7 +1271,11 @@
                     if (level == 4 && taco.x > 3900 && taco.x < 5730) {
 
                         doors.children.iterate(function(child) {
+                            clearTimeout(child.timeout);
+                            clearTimeout(child.timeout2);
                             child.enableBody(true, child.x, child.y, true, true);
+                            setTimeout(()=>{child.enableBody(true, child.x, child.y, true, true);}, 180);
+                            setTimeout(()=>{child.enableBody(true, child.x, child.y, true, true);}, 550);
                             child.scale = 1;
                             child.locked = true;
                             child.body.velocity.x = 0;
@@ -1756,6 +1760,8 @@
                     coin.initY = y;
                     coin.initXV = 0;
                     coin.initYV = 0;
+                    coin.timeout = null;
+                    coin.timeout2 = null;
                 } 
                 if (type == 25) {
                     entity1[Math.round(y/32)][Math.round(x/32)] = 25;
@@ -2041,7 +2047,11 @@
                     child.follow = false;
                 });
                 doors.children.iterate(function(child) {
+                    clearTimeout(child.timeout);
+                    clearTimeout(child.timeout2);
                     child.enableBody(true, child.x, child.y, true, true);
+                    setTimeout(()=>{child.enableBody(true, child.x, child.y, true, true);}, 180);
+                    setTimeout(()=>{child.enableBody(true, child.x, child.y, true, true);}, 550);
                     child.scale = 1;
                     child.locked = true;
                     child.body.velocity.x = 0;
@@ -3137,7 +3147,7 @@
                         key.disableBody(true, true);
                         door.scale = 1.01;
                         door.locked = false;
-                        setTimeout(()=>{door.disableBody(true, true);}, 200);
+                        door.timeout = setTimeout(()=>{door.disableBody(true, true);}, 200);
                     }
                 }
                 function tacoHitPoison(taco, poison) {
@@ -3161,7 +3171,7 @@
                     if (gum.x > taco.x) {
                         taco.gumDir = 1;
                     } else {
-                        taco.gumDir = 01;
+                        taco.gumDir = 1;
                     }
                 }
                 function tacoHitBoulder(Taco, Boulder) {
@@ -3180,12 +3190,12 @@
                             door1.locked = false;
                             door2.locked = false;
                             if (door1.scale == 1) {
-                                setTimeout(()=>{door1.scale = 1.01;}, 200);
-                                setTimeout(()=>{door1.disableBody(true, true);}, 600);
+                                door1.timeout2 = setTimeout(()=>{door1.scale = 1.01;}, 180);
+                                door1.timeout = setTimeout(()=>{door1.disableBody(true, true);}, 500);
                             }
                             if (door2.scale == 1) {
-                                setTimeout(()=>{door2.scale = 1.01;}, 200);
-                                setTimeout(()=>{door2.disableBody(true, true);}, 600);
+                                door2.timeout2 = setTimeout(()=>{door2.scale = 1.01;}, 180);
+                                door2.timeout = setTimeout(()=>{door2.disableBody(true, true);}, 500);
                             }
                         }
                     }
@@ -4101,9 +4111,10 @@
                     if (taco.body.blocked.up && taco.gum == true && (cursors.up.isDown || keyW.isDown)) {
                         if (taco.holding == false) {
                             taco.holding = true;
-                            taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2000*(delta/16.666));
+                            taco.body.velocity.y = -100;
+                            taco.timeout = setTimeout(()=>{taco.holding = false; taco.body.velocity.y = 50;}, 2350*(delta/16.666));
                         } else {
-                            taco.body.velocity.y = -50;
+                            taco.body.velocity.y = -100;
                         }
                         
                         tacoVelocityX *= 0.89;
