@@ -4405,7 +4405,7 @@
                     });
                     //we want to slow down and turn the limes
                     limes.children.iterate(function(child) {
-                        child.angle += 0.012 * child.body.velocity.x;
+                        child.angle += 0.012 * child.body.velocity.x*delta/16.66;
                         child.body.velocity.x *= 0.995;
                     });
                     if (level == 4 && limes.children.entries.length > 1 && limes.children.entries[1].y > 1260) {
