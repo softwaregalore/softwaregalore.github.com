@@ -6,7 +6,7 @@
         
     </head>
     <body>
-        <script src="https://sdk.crazygames.com/crazygames-sdk-v2.js"></script>
+        <script src="sdk.js"></script>
         <script src="data.js"></script>
         <script>
             var fullScreen = false;
@@ -1336,7 +1336,12 @@
                                     setTimeout(()=>{
                                         
                                         midGame(()=>{
+                                            while (taco.lives < 5) {
+                                                taco.lives += 1;
+                                                setLives(taco.lives);
+                                            }
                                             transportThisGame.scene.restart();
+                                            
                                         });
                                     }, 1000);
                                 });
@@ -2866,6 +2871,7 @@
                 this.physics.add.overlap(doors, doors, doorHitDoor, null, this)
 
                 this.physics.add.collider(rocks, rocks);
+                this.physics.add.collider(keys, keys);
                 this.physics.add.collider(doors, meatballs);
                 this.physics.add.collider(doors, platforms);
                 this.physics.add.collider(doors, platformsDown);
@@ -3222,6 +3228,10 @@
                             }
                             if (level < 6) {
                                 previousLives = taco.lives;
+                                while (taco.lives < 5) {
+                                    taco.lives += 1;
+                                    setLives(taco.lives);
+                                }
                                 score.visible = false;
                                 if (unlocked < level + 1) {
                                     unlocked = level + 1;
@@ -4154,7 +4164,9 @@
                             }
                         }
                         if (child.triggered == true || (timeSkill.alpha < 1)) {
-                            timeSkill.alpha -= 0.0022;
+                            if (child.falling == false) {
+                                timeSkill.alpha -= 0.0022;
+                            }
                             if (transportThisGame.physics.world.timeScale < 5) {
                                 transportThisGame.physics.world.timeScale += 0.1;
                             }
