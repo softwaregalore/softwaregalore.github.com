@@ -51,7 +51,7 @@
             var level = 3;
             var gameDelta;
             var hearts;
-            var unlocked = 5;
+            var unlocked = 0;
             var tutorial;
             var inMenu = true;
             var finished = false;
@@ -1825,9 +1825,11 @@
                         }
                     }
                     entity1[Math.round(y/32)][Math.round(x/32)] = type;
-                    
-                    map.putTileAt(0, map.worldToTileX(x), map.worldToTileY(y));
-                    map1[Math.round(y/32)][Math.round(x/32)] = 0;
+                    if (map1[Math.round(y/32)][Math.round(x/32)] != 0) {
+                        console.log('placed block');
+                        map.putTileAt(0, map.worldToTileX(x), map.worldToTileY(y));
+                        map1[Math.round(y/32)][Math.round(x/32)] = 0;
+                    }
                     coin.setScale(0.100001);
                     coin.setOrigin(0.5, 0.5);
                     coin.body.gravity.y = 0;
@@ -2800,7 +2802,7 @@
                 gridSelector = this.physics.add.sprite(0, 0, 'selector');
                 gridSelector.depth = 2;
                 
-                //entity groups etc
+                //entity etc
                 entities = [];//store the groups for erasing and level editor.
                 mouseZone = this.add.zone(0, 0).setSize(2, 2);
                 this.physics.world.enable(mouseZone);
@@ -2868,8 +2870,8 @@
                 arrow.depth = 3;
                 arrow.direction = 1;
                 //colliding/overlaping the groups
-                this.physics.add.overlap(taco, coins, collectCoin, null, this);
                 this.physics.add.overlap(taco, burritos, hitBurrito, null, this);
+                this.physics.add.overlap(taco, coins, collectCoin, null, this);
                 this.physics.add.overlap(taco, shooters, tacoHitShooters, null, this);
                 this.physics.add.overlap(taco, drillers, hitDrill, null, this);
                 this.physics.add.overlap(taco, rocks, touchingRock, null, this);
